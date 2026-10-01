@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-30 px-3 sm:px-6 flex items-center justify-between shadow-xs">
+    <header className="fixed top-[37px] left-0 right-0 h-16 bg-white border-b border-slate-200 z-30 px-3 sm:px-6 flex items-center justify-between shadow-xs">
       {/* LEFT: Mobile toggle & Brand Logo */}
       <div className="flex items-center gap-3">
         <button

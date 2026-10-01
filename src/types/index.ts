@@ -103,6 +103,9 @@ export interface CourseInfo {
   scholarshipsInfo?: string;
   additionalNotes?: string;
   commissionRate: string;
+  requirementsConfig?: CourseRequirementsConfig;
+  campusesList?: string[];
+  aboutUniversity?: string;
 }
 
 export type PrimaryStatusType =
@@ -134,7 +137,7 @@ export interface TimelineEntry {
   status: string;
   date: string;
   description: string;
-  state: "completed" | "current" | "pending";
+  state: "completed" | "current" | "pending" | "not_applicable";
 }
 
 export interface ApplicationRecord {
@@ -277,7 +280,192 @@ export interface NotificationItem {
   title: string;
   message: string;
   timeAgo: string;
-  type: "urgent" | "offer" | "cas" | "finance" | "deadline";
+  type: "urgent" | "offer" | "cas" | "finance" | "deadline" | "document" | "system";
   isRead: boolean;
   camsId?: string;
+  studentId?: string;
 }
+
+// ==========================================
+// COURSE REQUIREMENTS CONFIGURATION
+// ==========================================
+export interface CourseRequirementsConfig {
+  minQualification: string;
+  acceptedDegrees: string[];
+  minPercentage: number;
+  minCgpa: number;
+  maxBacklogs: number;
+  acceptedEnglishTests: string[];
+  minIelts: number;
+  minToefl: number;
+  minPte: number;
+  minDuolingo: number;
+  greRequired: boolean;
+  gmatRequired: boolean;
+  academicEnglishAccepted: boolean;
+  englishWaiverAvailable: boolean;
+  passportRequiredAtApplication: boolean;
+  requiredDocuments: string[];
+}
+
+// ==========================================
+// STUDENT QUALIFICATIONS & TESTS
+// ==========================================
+export type EducationLevelType =
+  | "10th"
+  | "12th"
+  | "Diploma"
+  | "Bachelor"
+  | "Master"
+  | "Other";
+
+export interface EducationQualification {
+  id: string;
+  level: EducationLevelType;
+  institutionName: string;
+  boardOrUniversity: string;
+  country?: string;
+  stream?: string; // For 12th: MPC, BiPC, CEC, MEC, Arts, Commerce, Science, Other
+  degree?: string;
+  course?: string;
+  specialization?: string;
+  startYear?: string;
+  passOutYear: string;
+  percentageOrCgpa: string;
+  cgpaScale?: string; // e.g. 10 or 4
+  englishMarks?: string;
+  maxEnglishMarks?: string;
+  hasBacklogs?: boolean;
+  numberOfBacklogs?: number;
+  activeBacklogs?: number;
+  verificationStatus: "Pending" | "Verified" | "Flagged";
+  adminFeedback?: string;
+}
+
+export interface StandardizedTestItem {
+  id: string;
+  type: "IELTS" | "TOEFL" | "PTE" | "Duolingo" | "GRE" | "GMAT" | "Other";
+  testDate: string;
+  overallScore: string;
+  subScores: Record<string, string>;
+  reportUrl?: string;
+  status: "Uploaded" | "Verified" | "Pending";
+}
+
+export type DocumentCategoryType =
+  | "Passport"
+  | "Profile Photograph"
+  | "10th Certificate"
+  | "12th Certificate"
+  | "Diploma Certificate"
+  | "Bachelor Degree"
+  | "Bachelor Transcripts"
+  | "Master Degree"
+  | "Master Transcripts"
+  | "IELTS"
+  | "TOEFL"
+  | "PTE"
+  | "Duolingo"
+  | "GRE"
+  | "GMAT"
+  | "CV / Resume"
+  | "Statement of Purpose"
+  | "Letter of Recommendation"
+  | "Experience Letter"
+  | "Financial Documents"
+  | "Other Documents";
+
+export type DocumentStatusType =
+  | "Not Uploaded"
+  | "Uploaded"
+  | "Under Review"
+  | "Verified"
+  | "Rejected"
+  | "Re-upload Required";
+
+export interface StudentDocumentItem {
+  id: string;
+  category: DocumentCategoryType;
+  title: string;
+  fileName?: string;
+  fileSize?: string;
+  uploadedDate?: string;
+  status: DocumentStatusType;
+  rejectionReason?: string;
+  actionRequired?: string;
+}
+
+// ==========================================
+// STUDENT COMPLETE PROFILE
+// ==========================================
+export interface StudentProfile {
+  id: string;
+  studentId: string;
+  name: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  email: string;
+  mobile: string;
+  alternateMobile?: string;
+  password?: string;
+  accountStatus: "Active" | "Pending Verification" | "Suspended";
+  registrationDate: string;
+  lastLogin: string;
+  onboardingCompleted: boolean;
+  profileCompletion: number;
+  personal: {
+    dob: string;
+    gender: string;
+    nationality: string;
+    countryOfResidence: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      postalCode: string;
+    };
+    profilePhotoUrl?: string;
+  };
+  passport: {
+    hasPassport: "YES" | "NO";
+    passportNumber?: string;
+    passportCountry?: string;
+    dateOfIssue?: string;
+    expiryDate?: string;
+    placeOfIssue?: string;
+    passportFile?: string;
+    status: "Verified" | "Under Review" | "Passport Pending" | "Not Uploaded";
+  };
+  education: EducationQualification[];
+  testsStatus: "YES" | "NO" | "PLANNING TO TAKE";
+  standardizedTests: StandardizedTestItem[];
+  studyPreferences: {
+    preferredStudyLevel: "Undergraduate" | "Postgraduate" | "Doctorate" | "Other";
+    preferredCountries: string[];
+    preferredIntake: string;
+    preferredCourseSubject: string;
+    preferredUniversity: string;
+    budgetRange: string;
+    scholarshipRequired: "YES" | "NO";
+  };
+  documents: StudentDocumentItem[];
+  notes?: { id: string; author: string; date: string; text: string }[];
+}
+
+// ==========================================
+// FRONTEND ELIGIBILITY RESULT
+// ==========================================
+export interface EligibilityResult {
+  status:
+    | "Likely Eligible"
+    | "Requirements Need Review"
+    | "Missing English Test"
+    | "Missing Academic Information";
+  color: "emerald" | "amber" | "sky" | "slate";
+  reasons: string[];
+  disclaimer: string;
+}
+
+export type PortalRole = "student" | "partner" | "admin";
+
