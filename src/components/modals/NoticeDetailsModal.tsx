@@ -25,7 +25,7 @@ export const NoticeDetailsModal: React.FC<NoticeDetailsModalProps> = ({
         <div className="p-5 border-b border-slate-200 flex items-start justify-between bg-slate-50/60">
           <div className="space-y-1 pr-4">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-emerald-100 text-[#0B5D3B]">
+              <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-[#FDF5F0] text-[#D56732]">
                 {notice.category}
               </span>
               {notice.isUrgent && (
@@ -51,7 +51,7 @@ export const NoticeDetailsModal: React.FC<NoticeDetailsModalProps> = ({
           {/* Metadata pill row */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-1.5 font-medium">
-              <Building className="w-4 h-4 text-[#0B5D3B]" />
+              <Building className="w-4 h-4 text-[#D56732]" />
               <span>{notice.university}</span>
               <span className="text-slate-400 font-normal">({notice.country})</span>
             </div>
@@ -62,7 +62,7 @@ export const NoticeDetailsModal: React.FC<NoticeDetailsModalProps> = ({
           </div>
 
           {/* Abstract / Summary */}
-          <div className="p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs text-emerald-950 font-medium leading-relaxed">
+          <div className="p-3.5 bg-[#FDF5F0]/50 rounded-xl border border-[#F5D2C1] text-xs text-[#3C1609] font-medium leading-relaxed">
             {notice.description}
           </div>
 
@@ -84,7 +84,7 @@ export const NoticeDetailsModal: React.FC<NoticeDetailsModalProps> = ({
               </h4>
               <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-100 text-[#0B5D3B] flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-lg bg-[#FDF5F0] text-[#D56732] flex items-center justify-center font-bold">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
@@ -102,7 +102,7 @@ export const NoticeDetailsModal: React.FC<NoticeDetailsModalProps> = ({
                   }
                   className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#0B5D3B]" />
+                  <Download className="w-3.5 h-3.5 text-[#D56732]" />
                   <span>Download</span>
                 </button>
               </div>
@@ -114,7 +114,7 @@ export const NoticeDetailsModal: React.FC<NoticeDetailsModalProps> = ({
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+            className="px-5 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
           >
             Close
           </button>

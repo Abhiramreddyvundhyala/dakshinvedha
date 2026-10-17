@@ -201,7 +201,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                   setCurrentPage(1);
                 }}
                 placeholder="e.g. Data Science, MBA..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#D56732]"
               />
             </div>
           </div>
@@ -217,7 +217,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 setSearchCountry(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#D56732]"
             >
               <option value="all">All Countries</option>
               <option value="United Kingdom">United Kingdom</option>
@@ -237,7 +237,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
             <select
               value={searchNationality}
               onChange={(e) => setSearchNationality(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#D56732]"
             >
               <option value="all">All Nationalities</option>
               <option value="Indian">Indian</option>
@@ -260,7 +260,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 setSearchCourseType(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#D56732]"
             >
               <option value="all">All Study Levels</option>
               <option value="Undergraduate">Undergraduate (Bachelor&apos;s)</option>
@@ -277,7 +277,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
             onClick={() => setActiveTab("courses")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
               activeTab === "courses"
-                ? "bg-[#0B5D3B] text-white shadow-xs"
+                ? "bg-[#D56732] text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
             }`}
           >
@@ -287,7 +287,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
             onClick={() => setActiveTab("universities")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
               activeTab === "universities"
-                ? "bg-[#0B5D3B] text-white shadow-xs"
+                ? "bg-[#D56732] text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
             }`}
           >
@@ -306,7 +306,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
         <div className="lg:col-span-3 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs space-y-5 text-xs">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#0B5D3B]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#D56732]" />
               Filter Programs
             </span>
             <button
@@ -321,7 +321,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 setMaxTuition(50000);
                 setInterviewFilter("all");
               }}
-              className="text-[11px] text-[#0B5D3B] font-bold hover:underline"
+              className="text-[11px] text-[#D56732] font-bold hover:underline"
             >
               Reset All
             </button>
@@ -339,7 +339,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                     type="checkbox"
                     checked={selectedUniversities.includes(u.name)}
                     onChange={() => toggleUniversityCheckbox(u.name)}
-                    className="accent-[#0B5D3B] rounded"
+                    className="accent-[#D56732] rounded"
                   />
                   <span className="truncate">{u.name}</span>
                 </label>
@@ -347,7 +347,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
             </div>
             <button
               onClick={() => alert("Search other universities opened.")}
-              className="text-[11px] text-[#0B5D3B] font-semibold hover:underline block pt-1"
+              className="text-[11px] text-[#D56732] font-semibold hover:underline block pt-1"
             >
               + Search other universities
             </button>
@@ -361,7 +361,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
             <button
               onClick={() => setActiveIntakeOnly(!activeIntakeOnly)}
               className={`w-9 h-5 rounded-full transition-colors relative ${
-                activeIntakeOnly ? "bg-[#0B5D3B]" : "bg-slate-300"
+                activeIntakeOnly ? "bg-[#D56732]" : "bg-slate-300"
               }`}
             >
               <div
@@ -384,7 +384,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                     type="checkbox"
                     checked={selectedIntakes.includes(intakeName)}
                     onChange={() => toggleIntakeCheckbox(intakeName)}
-                    className="accent-[#0B5D3B] rounded"
+                    className="accent-[#D56732] rounded"
                   />
                   <span>{intakeName}</span>
                 </label>
@@ -392,7 +392,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
             </div>
             <button
               onClick={() => setShowMoreIntakes(!showMoreIntakes)}
-              className="text-[11px] text-[#0B5D3B] font-semibold hover:underline pt-1 block"
+              className="text-[11px] text-[#D56732] font-semibold hover:underline pt-1 block"
             >
               {showMoreIntakes ? "Show less" : "Show more"}
             </button>
@@ -404,7 +404,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
               <label className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
                 Tuition Per Year
               </label>
-              <span className="font-mono font-bold text-[#0B5D3B]">
+              <span className="font-mono font-bold text-[#D56732]">
                 £0 — £{maxTuition.toLocaleString()}+
               </span>
             </div>
@@ -415,7 +415,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
               step={2000}
               value={maxTuition}
               onChange={(e) => setMaxTuition(Number(e.target.value))}
-              className="w-full accent-[#0B5D3B] cursor-pointer"
+              className="w-full accent-[#D56732] cursor-pointer"
             />
           </div>
 
@@ -435,7 +435,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                         prev.includes(dur) ? prev.filter((d) => d !== dur) : [...prev, dur]
                       )
                     }
-                    className="accent-[#0B5D3B] rounded"
+                    className="accent-[#D56732] rounded"
                   />
                   <span>{dur}</span>
                 </label>
@@ -459,7 +459,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                         prev.includes(dep) ? prev.filter((d) => d !== dep) : [...prev, dep]
                       )
                     }
-                    className="accent-[#0B5D3B] rounded"
+                    className="accent-[#D56732] rounded"
                   />
                   <span className="truncate">{dep}</span>
                 </label>
@@ -477,7 +477,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 type="checkbox"
                 checked={filterScholarship}
                 onChange={() => setFilterScholarship(!filterScholarship)}
-                className="accent-[#0B5D3B] rounded"
+                className="accent-[#D56732] rounded"
               />
               <span>Scholarship available</span>
             </label>
@@ -486,7 +486,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 type="checkbox"
                 checked={filterNoAppFee}
                 onChange={() => setFilterNoAppFee(!filterNoAppFee)}
-                className="accent-[#0B5D3B] rounded"
+                className="accent-[#D56732] rounded"
               />
               <span>No application fee</span>
             </label>
@@ -505,7 +505,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                   return (
                     <div
                       key={c.id}
-                      className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-emerald-300"
+                      className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-[#F5D2C1]"
                     >
                       {/* Image Gallery */}
                       <div className="h-32 bg-slate-100 relative overflow-hidden">
@@ -520,11 +520,11 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                         <button
                           type="button"
                           onClick={() => toggleCardCheckbox(c.id)}
-                          className="absolute top-2 left-2 p-1 bg-white/90 rounded-md text-slate-700 hover:text-[#0B5D3B] shadow-xs cursor-pointer"
+                          className="absolute top-2 left-2 p-1 bg-white/90 rounded-md text-slate-700 hover:text-[#D56732] shadow-xs cursor-pointer"
                           title="Select program"
                         >
                           {isChecked ? (
-                            <CheckSquare className="w-4 h-4 text-[#0B5D3B]" />
+                            <CheckSquare className="w-4 h-4 text-[#D56732]" />
                           ) : (
                             <Square className="w-4 h-4 text-slate-400" />
                           )}
@@ -532,7 +532,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
 
                         {/* Top Badges */}
                         <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#0B5D3B] text-white shadow-xs">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D56732] text-white shadow-xs">
                             {c.studyLevel}
                           </span>
                         </div>
@@ -547,7 +547,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                       {/* Card Content Body */}
                       <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                         <div className="space-y-1.5">
-                          <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#0B5D3B] transition-colors line-clamp-2">
+                          <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#D56732] transition-colors line-clamp-2">
                             {c.courseName}
                           </h3>
 
@@ -559,7 +559,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                               </span>
                             )}
                             {c.badges.noAppFee && (
-                              <span className="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[9px] font-bold">
+                              <span className="px-1.5 py-0.2 bg-[#FDF5F0] text-[#D56732] border border-[#F5D2C1] rounded text-[9px] font-bold">
                                 No app fee
                               </span>
                             )}
@@ -583,7 +583,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Active Intake:</span>
-                            <span className="font-semibold text-[#0B5D3B]">{c.activeIntake}</span>
+                            <span className="font-semibold text-[#D56732]">{c.activeIntake}</span>
                           </div>
                         </div>
 
@@ -601,7 +601,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                           <button
                             type="button"
                             onClick={() => onApplyCourse(c)}
-                            className="py-2 px-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
+                            className="py-2 px-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
                           >
                             <span>APPLY NOW</span>
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -631,7 +631,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                       onClick={() => setCurrentPage(i + 1)}
                       className={`w-7 h-7 rounded-lg font-bold ${
                         currentPage === i + 1
-                          ? "bg-[#0B5D3B] text-white"
+                          ? "bg-[#D56732] text-white"
                           : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                       }`}
                     >
@@ -656,7 +656,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
               {MOCK_UNIVERSITIES.map((u) => (
                 <div
                   key={u.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-emerald-300"
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-[#F5D2C1]"
                 >
                   <div className="h-32 bg-slate-100 relative overflow-hidden">
                     <img
@@ -692,7 +692,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                       <button
                         type="button"
                         onClick={() => alert(`University Prospectus opened for ${u.name}`)}
-                        className="py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-bold rounded-lg text-center cursor-pointer"
+                        className="py-2 bg-[#D56732] hover:bg-[#BA5322] text-white font-bold rounded-lg text-center cursor-pointer"
                       >
                         VIEW UNIV
                       </button>

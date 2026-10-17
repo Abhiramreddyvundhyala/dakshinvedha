@@ -144,13 +144,8 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   // 3. Shared Entities
   const [students, setStudents] = useState<StudentProfile[]>(SEED_STUDENTS);
   const [applications, setApplications] = useState<ApplicationRecord[]>(MOCK_APPLICATIONS);
-  const [universities, setUniversities] = useState<UniversityInfo[]>(MOCK_UNIVERSITIES);
-  const [courses, setCourses] = useState<CourseInfo[]>(() => {
-    return MOCK_COURSES.map((c) => ({
-      ...c,
-      requirementsConfig: c.requirementsConfig || DEFAULT_REQUIREMENTS,
-    }));
-  });
+  const [universities, setUniversities] = useState<UniversityInfo[]>([]);
+  const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [notices, setNotices] = useState<NoticeItem[]>(MOCK_NOTICES);
   const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
   const [b2bPartners, setB2bPartners] = useState<B2BPartnerProfile[]>(SEED_B2B_PARTNERS);
@@ -189,11 +184,29 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
           setApplications(parsed);
         }
       }
-      const savedCourses = localStorage.getItem("devgrate_courses_data");
-      if (savedCourses) {
-        const parsed = JSON.parse(savedCourses);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCourses(parsed);
+
+      // One-time migration: Clear cached dummy universities and courses
+      const isCleared = localStorage.getItem("devgrate_univ_courses_cleared_v1");
+      if (!isCleared) {
+        localStorage.removeItem("devgrate_courses_data");
+        localStorage.removeItem("devgrate_universities_data");
+        localStorage.setItem("devgrate_univ_courses_cleared_v1", "true");
+        setUniversities([]);
+        setCourses([]);
+      } else {
+        const savedUniversities = localStorage.getItem("devgrate_universities_data");
+        if (savedUniversities) {
+          const parsedUnivs = JSON.parse(savedUniversities);
+          if (Array.isArray(parsedUnivs)) {
+            setUniversities(parsedUnivs);
+          }
+        }
+        const savedCourses = localStorage.getItem("devgrate_courses_data");
+        if (savedCourses) {
+          const parsedCourses = JSON.parse(savedCourses);
+          if (Array.isArray(parsedCourses)) {
+            setCourses(parsedCourses);
+          }
         }
       }
     } catch {
@@ -212,10 +225,11 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       localStorage.setItem("devgrate_students_data", JSON.stringify(students));
       localStorage.setItem("devgrate_portal_applications", JSON.stringify(applications));
       localStorage.setItem("devgrate_courses_data", JSON.stringify(courses));
+      localStorage.setItem("devgrate_universities_data", JSON.stringify(universities));
     } catch {
       // Ignore storage quota
     }
-  }, [portalRole, isStudentAuthenticated, activeStudentId, students, applications, courses, isHydrated]);
+  }, [portalRole, isStudentAuthenticated, activeStudentId, students, applications, courses, universities, isHydrated]);
 
   const setPortalRole = useCallback((role: PortalRole) => {
     setPortalRoleState(role);
@@ -598,8 +612,34 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     notes?: string;
   }): ApplicationRecord => {
     const student = activeStudent || SEED_STUDENTS[0];
-    const univ = universities.find((u) => u.id === data.universityId) || universities[0];
-    const course = courses.find((c) => c.id === data.courseId) || courses[0];
+    const univ = universities.find((u) => u.id === data.universityId) || universities[0] || {
+      id: data.universityId || "univ-temp",
+      name: "Selected University",
+      country: "International",
+      city: "Campus",
+      logo: "🎓",
+      image: "",
+      availableCoursesCount: 0,
+      availableIntakes: [],
+    };
+    const course = courses.find((c) => c.id === data.courseId) || courses[0] || {
+      id: data.courseId || "course-temp",
+      universityId: univ.id,
+      universityName: univ.name,
+      campus: "Main Campus",
+      city: univ.city,
+      country: univ.country,
+      courseName: "Degree Program",
+      studyLevel: "Postgraduate" as const,
+      courseType: "Full-Time" as const,
+      duration: "1 Year",
+      tuitionFee: "£0",
+      applicationFee: "£0",
+      activeIntake: data.intake || "Upcoming",
+      availableIntakes: [],
+      applicationDeadline: "TBD",
+      badges: { scholarship: false, freeToApply: true, noAppFee: true, interviewRequired: false },
+    };
 
     const newCamsId = `APP-2026-${Math.floor(10000 + Math.random() * 90000)}`;
     const today = new Date().toISOString().slice(0, 10);

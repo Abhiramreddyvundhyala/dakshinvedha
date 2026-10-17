@@ -173,7 +173,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                   {bankDetails.vatNumber}
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF5F0] text-[#BA5322] border border-[#F5D2C1]">
                     {bankDetails.status}
                   </span>
                 </td>
@@ -274,14 +274,14 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                       <td className="py-3 px-3 font-bold text-slate-900">{a.student.name}</td>
                       <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.camsId}</td>
                       <td className="py-3 px-3 font-mono font-bold text-slate-900">{a.commission.amount}</td>
-                      <td className="py-3 px-3 font-mono font-bold text-emerald-600">{a.commission.eligibleAmount}</td>
+                      <td className="py-3 px-3 font-mono font-bold text-[#D56732]">{a.commission.eligibleAmount}</td>
                       <td className="py-3 px-3 text-center">
                         <button
                           disabled={isClaimed}
                           onClick={() => handleClaim(a.camsId)}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                             isClaimed
-                              ? "bg-emerald-100 text-emerald-800 cursor-not-allowed"
+                              ? "bg-[#FDF5F0] text-[#BA5322] cursor-not-allowed"
                               : "bg-orange-500 hover:bg-orange-600 text-white shadow-xs cursor-pointer active:scale-98"
                           }`}
                         >
@@ -348,7 +348,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                     <td className="py-3 px-3 font-bold text-slate-900">{a.student.name}</td>
                     <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.camsId}</td>
                     <td className="py-3 px-3 font-medium text-slate-800">{a.university.name}</td>
-                    <td className="py-3 px-3 font-mono font-bold text-emerald-600">{a.commission.amount}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-[#D56732]">{a.commission.amount}</td>
                     <td className="py-3 px-3 text-slate-600">{a.commission.paidDate || a.dateModified}</td>
                     <td className="py-3 px-3 font-mono text-slate-700">{a.commission.referenceNumber || "TXN-2026-9041"}</td>
                   </tr>
@@ -367,7 +367,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                   <th className="py-3 px-3">Transaction ID</th>
                   <th className="py-3 px-3">Date</th>
                   <th className="py-3 px-3">Description</th>
-                  <th className="py-3 px-3 font-mono text-emerald-700">Credit</th>
+                  <th className="py-3 px-3 font-mono text-[#D56732]">Credit</th>
                   <th className="py-3 px-3 font-mono text-rose-700">Debit</th>
                   <th className="py-3 px-3 font-mono font-bold">Balance</th>
                 </tr>
@@ -378,7 +378,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                     <td className="py-3 px-3 font-mono font-bold text-slate-800">{tx.transactionId}</td>
                     <td className="py-3 px-3 text-slate-500">{tx.date}</td>
                     <td className="py-3 px-3 text-slate-700 max-w-[280px]">{tx.description}</td>
-                    <td className="py-3 px-3 font-mono font-semibold text-emerald-700">{tx.credit}</td>
+                    <td className="py-3 px-3 font-mono font-semibold text-[#D56732]">{tx.credit}</td>
                     <td className="py-3 px-3 font-mono font-semibold text-rose-700">{tx.debit}</td>
                     <td className="py-3 px-3 font-mono font-black text-slate-900">{tx.balance}</td>
                   </tr>

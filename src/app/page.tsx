@@ -429,7 +429,7 @@ export default function UnifiedLoginPage() {
       {/* =========================================================
           LEFT PANEL: DAKSHINVEDHA ABROAD SOLUTIONS BRANDING
           ========================================================= */}
-      <div className="hidden lg:flex lg:w-[54%] xl:w-[52%] relative bg-gradient-to-br from-[#060e24] via-[#0b1a3e] to-[#14234d] overflow-hidden select-none">
+      <div className="hidden lg:flex lg:w-[54%] xl:w-[52%] relative bg-gradient-to-br from-[#1A0C06] via-[#2D150B] to-[#451F0E] overflow-hidden select-none">
         {/* Geometric Grid Pattern */}
         <div
           className="absolute inset-0 opacity-[0.035]"
@@ -443,7 +443,7 @@ export default function UnifiedLoginPage() {
         />
 
         {/* Ambient Glows */}
-        <div className="absolute top-16 right-16 w-[420px] h-[420px] bg-orange-500/10 rounded-full blur-[110px]" />
+        <div className="absolute top-16 right-16 w-[420px] h-[420px] bg-[#D56732]/15 rounded-full blur-[110px]" />
         <div className="absolute bottom-16 left-12 w-[340px] h-[340px] bg-blue-500/10 rounded-full blur-[90px]" />
 
         {/* Left Content Area */}
@@ -454,14 +454,14 @@ export default function UnifiedLoginPage() {
               href={WEBSITE_URL}
               className="inline-flex items-center gap-3.5 group transition-transform hover:translate-x-0.5"
             >
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/25 ring-2 ring-white/10">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-[#D56732]/25 ring-2 ring-white/10">
                 <GraduationCap className="w-7 h-7 text-white" />
               </div>
               <div>
                 <span className="text-2xl font-black text-white tracking-tight leading-none block">
                   Dakshinvedha
                 </span>
-                <span className="text-[11px] text-orange-400 font-extrabold tracking-widest uppercase block mt-1">
+                <span className="text-[11px] text-[#D56732] font-extrabold tracking-widest uppercase block mt-1">
                   ABROAD SOLUTIONS
                 </span>
               </div>
@@ -471,8 +471,8 @@ export default function UnifiedLoginPage() {
           {/* Higher Education in Abroad Content */}
           <div className="space-y-8 my-auto py-8">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-orange-300 text-xs font-semibold backdrop-blur-xs">
-                <Globe2 className="w-3.5 h-3.5 text-orange-400" />
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[#F5D2C1] text-xs font-semibold backdrop-blur-xs">
+                <Globe2 className="w-3.5 h-3.5 text-[#D56732]" />
                 <span>Global Higher Education & Overseas Admissions</span>
               </div>
               <h1 className="text-4xl xl:text-5xl font-black text-white leading-[1.14] tracking-tight">
@@ -497,8 +497,8 @@ export default function UnifiedLoginPage() {
                 "Complete documentation, SOP review, mock interviews & student visa filing",
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-orange-500/15 flex items-center justify-center shrink-0 border border-orange-500/20">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-orange-400" />
+                  <div className="w-6 h-6 rounded-full bg-[#D56732]/20 flex items-center justify-center shrink-0 border border-orange-500/20">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#D56732]" />
                   </div>
                   <span className="text-sm text-slate-300 font-medium">{item}</span>
                 </div>
@@ -517,7 +517,7 @@ export default function UnifiedLoginPage() {
                   key={i}
                   className="p-3 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xs text-center"
                 >
-                  <div className="text-lg font-black text-orange-400 leading-tight">{stat.number}</div>
+                  <div className="text-lg font-black text-[#D56732] leading-tight">{stat.number}</div>
                   <div className="text-xs font-bold text-white mt-0.5">{stat.label}</div>
                   <div className="text-[10px] text-slate-400">{stat.sub}</div>
                 </div>
@@ -528,11 +528,11 @@ export default function UnifiedLoginPage() {
           {/* Trust & Academic Accreditation Footer */}
           <div className="flex items-center justify-between pt-6 border-t border-white/5 text-xs text-slate-400">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
+              <Shield className="w-4 h-4 text-[#E58D5F]" />
               <span>Certified Overseas Education Consultants</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#D56732] animate-pulse" />
               <span>Accredited Global Admissions Network</span>
             </div>
           </div>
@@ -554,7 +554,7 @@ export default function UnifiedLoginPage() {
                 <span className="text-lg font-black text-slate-900 tracking-tight leading-none block">
                   Dakshinvedha
                 </span>
-                <span className="text-[10px] font-extrabold text-orange-600 tracking-wider uppercase block">
+                <span className="text-[10px] font-extrabold text-[#D56732] tracking-wider uppercase block">
                   ABROAD SOLUTIONS
                 </span>
               </div>
@@ -619,8 +619,8 @@ export default function UnifiedLoginPage() {
 
             {/* Redirecting Progress Notice */}
             {redirectNotice && (
-              <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2.5">
-                <Loader2 className="w-4 h-4 text-emerald-600 animate-spin shrink-0" />
+              <div className="mb-5 p-3.5 bg-[#FDF5F0] border border-[#F5D2C1] text-[#BA5322] rounded-xl text-xs flex items-center gap-2.5">
+                <Loader2 className="w-4 h-4 text-[#D56732] animate-spin shrink-0" />
                 <span className="font-bold">{redirectNotice}</span>
               </div>
             )}
@@ -656,7 +656,7 @@ export default function UnifiedLoginPage() {
                         setError(null);
                       }}
                       placeholder="name@dakshinvedha.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all placeholder:text-slate-400"
                     />
                   </div>
 
@@ -670,7 +670,7 @@ export default function UnifiedLoginPage() {
                       <button
                         type="button"
                         onClick={() => alert("Please contact support or platform administration for password reset.")}
-                        className="text-[11px] font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
+                        className="text-[11px] font-semibold text-[#D56732] hover:text-[#BA5322] cursor-pointer"
                       >
                         Forgot password?
                       </button>
@@ -685,7 +685,7 @@ export default function UnifiedLoginPage() {
                           setError(null);
                         }}
                         placeholder="Enter your password"
-                        className="w-full px-3.5 pr-11 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
+                        className="w-full px-3.5 pr-11 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all placeholder:text-slate-400"
                       />
                       <button
                         type="button"
@@ -705,7 +705,7 @@ export default function UnifiedLoginPage() {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500 border-slate-300"
+                        className="w-4 h-4 rounded text-[#D56732] focus:ring-[#D56732] border-slate-300"
                       />
                       <span>Stay signed in on this device</span>
                     </label>
@@ -715,7 +715,7 @@ export default function UnifiedLoginPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-1"
+                    className="w-full py-3 bg-gradient-to-r from-[#D56732] via-[#BA5322] to-[#BA5322] hover:from-[#BA5322] hover:to-[#8C370F] text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#D56732]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-1"
                   >
                     {isLoading ? (
                       <>
@@ -740,7 +740,7 @@ export default function UnifiedLoginPage() {
                       setAuthMode("signup");
                       setError(null);
                     }}
-                    className="font-bold text-orange-600 hover:text-orange-700 hover:underline cursor-pointer"
+                    className="font-bold text-[#D56732] hover:text-[#BA5322] hover:underline cursor-pointer"
                   >
                     Sign Up
                   </button>
@@ -778,7 +778,7 @@ export default function UnifiedLoginPage() {
                         placeholder="e.g. Vikramaditya Reddy"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                       />
                     </div>
 
@@ -790,7 +790,7 @@ export default function UnifiedLoginPage() {
                           <span>Phone Number</span>
                           <span className="text-rose-500">*</span>
                         </label>
-                        <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-[#BA5322] bg-[#FDF5F0] px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Smartphone className="w-3 h-3" />
                           <span>SMS OTP</span>
                         </span>
@@ -806,7 +806,7 @@ export default function UnifiedLoginPage() {
                           placeholder="98765 43210"
                           value={mobileNumber}
                           onChange={(e) => setMobileNumber(e.target.value)}
-                          className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-mono"
+                          className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all font-mono"
                         />
                       </div>
                       <p className="text-[10px] text-slate-400">
@@ -833,7 +833,7 @@ export default function UnifiedLoginPage() {
                         placeholder="vikram@example.com"
                         value={emailAddress}
                         onChange={(e) => setEmailAddress(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                       />
                       <p className="text-[10px] text-slate-400">
                         An email verification code will be sent to this address.
@@ -852,7 +852,7 @@ export default function UnifiedLoginPage() {
                           placeholder="Choose password for sign-in"
                           value={studentPassword}
                           onChange={(e) => setStudentPassword(e.target.value)}
-                          className="w-full px-3.5 pr-11 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                          className="w-full px-3.5 pr-11 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                         />
                         <button
                           type="button"
@@ -868,7 +868,7 @@ export default function UnifiedLoginPage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-2"
+                      className="w-full py-3 bg-gradient-to-r from-[#D56732] via-[#BA5322] to-[#BA5322] hover:from-[#BA5322] hover:to-[#8C370F] text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#D56732]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-2"
                     >
                       {isLoading ? (
                         <>
@@ -891,7 +891,7 @@ export default function UnifiedLoginPage() {
                           setAuthMode("signin");
                           setError(null);
                         }}
-                        className="font-bold text-orange-600 hover:text-orange-700 hover:underline cursor-pointer"
+                        className="font-bold text-[#D56732] hover:text-[#BA5322] hover:underline cursor-pointer"
                       >
                         Log In
                       </button>
@@ -915,7 +915,7 @@ export default function UnifiedLoginPage() {
                     {/* Contact Badges */}
                     <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
                       <div className="flex items-center gap-2 truncate">
-                        <Smartphone className="w-3.5 h-3.5 text-orange-600 shrink-0" />
+                        <Smartphone className="w-3.5 h-3.5 text-[#D56732] shrink-0" />
                         <span className="text-slate-600 truncate font-mono">
                           +91 {mobileNumber || "9876543210"}
                         </span>
@@ -940,13 +940,13 @@ export default function UnifiedLoginPage() {
                     <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2.5 shadow-xs">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Smartphone className="w-4 h-4 text-orange-600" />
+                          <Smartphone className="w-4 h-4 text-[#D56732]" />
                           <span className="text-xs font-black text-slate-800">
                             1. SMS Code (Phone)
                           </span>
                         </div>
                         {smsVerified ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#D56732] bg-[#FDF5F0] px-2 py-0.5 rounded-full">
                             <Check className="w-3 h-3" />
                             <span>Verified</span>
                           </span>
@@ -973,8 +973,8 @@ export default function UnifiedLoginPage() {
                             }}
                             className={`w-10 h-12 sm:w-11 sm:h-12 text-center text-lg font-black rounded-xl border-2 transition-all font-mono ${
                               smsVerified
-                                ? "border-emerald-500 bg-emerald-50/50 text-emerald-900"
-                                : "border-slate-300 bg-slate-50 text-slate-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                                ? "border-[#D56732] bg-[#FDF5F0]/50 text-[#8C370F]"
+                                : "border-slate-300 bg-slate-50 text-slate-900 focus:border-[#D56732] focus:ring-2 focus:ring-[#D56732]/20"
                             }`}
                           />
                         ))}
@@ -991,7 +991,7 @@ export default function UnifiedLoginPage() {
                           </span>
                         </div>
                         {emailVerified ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#D56732] bg-[#FDF5F0] px-2 py-0.5 rounded-full">
                             <Check className="w-3 h-3" />
                             <span>Verified</span>
                           </span>
@@ -1018,7 +1018,7 @@ export default function UnifiedLoginPage() {
                             }}
                             className={`w-10 h-12 sm:w-11 sm:h-12 text-center text-lg font-black rounded-xl border-2 transition-all font-mono ${
                               emailVerified
-                                ? "border-emerald-500 bg-emerald-50/50 text-emerald-900"
+                                ? "border-[#D56732] bg-[#FDF5F0]/50 text-[#8C370F]"
                                 : "border-slate-300 bg-slate-50 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                             }`}
                           />
@@ -1030,7 +1030,7 @@ export default function UnifiedLoginPage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                      className="w-full py-3 bg-gradient-to-r from-[#D56732] via-[#BA5322] to-[#BA5322] hover:from-[#BA5322] hover:to-[#8C370F] text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#D56732]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
                     >
                       {isLoading ? (
                         <>
@@ -1057,7 +1057,7 @@ export default function UnifiedLoginPage() {
                         className={`flex items-center gap-1 font-bold ${
                           resendCooldown > 0
                             ? "text-slate-400 cursor-not-allowed"
-                            : "text-orange-600 hover:text-orange-700 cursor-pointer"
+                            : "text-[#D56732] hover:text-[#BA5322] cursor-pointer"
                         }`}
                       >
                         <RotateCcw className="w-3.5 h-3.5" />

@@ -40,7 +40,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
         <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-start justify-between border-b border-slate-700">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#0B5D3B] text-white">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#D56732] text-white">
                 {course.studyLevel}
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-700 text-slate-300">
@@ -56,7 +56,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
               {course.courseName}
             </h2>
             <p className="text-xs text-slate-300 flex items-center gap-2">
-              <Building className="w-3.5 h-3.5 text-emerald-400" />
+              <Building className="w-3.5 h-3.5 text-[#E58D5F]" />
               <span>{course.universityName}</span>
               <span>•</span>
               <Globe className="w-3.5 h-3.5 text-slate-400" />
@@ -95,7 +95,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
             </div>
             <div>
               <span className="text-slate-400 text-[11px] font-medium">Agency Commission</span>
-              <p className="font-bold text-[#0B5D3B] text-sm mt-0.5">
+              <p className="font-bold text-[#D56732] text-sm mt-0.5">
                 {course.commissionRate}
               </p>
             </div>
@@ -115,7 +115,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
               <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">
                 Intake Schedules & Deadlines
               </span>
-              <p className="font-semibold text-[#0B5D3B]">Active: {course.activeIntake}</p>
+              <p className="font-semibold text-[#D56732]">Active: {course.activeIntake}</p>
               <p className="text-slate-500">
                 Application Deadline: <strong className="text-slate-900">{course.applicationDeadline}</strong>
               </p>
@@ -130,7 +130,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-start gap-2">
-                <FileCheck2 className="w-4 h-4 text-[#0B5D3B] shrink-0 mt-0.5" />
+                <FileCheck2 className="w-4 h-4 text-[#D56732] shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-slate-800">Academic Criteria:</span>
                   <p className="text-slate-600 leading-relaxed mt-0.5">
@@ -140,7 +140,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
               </div>
 
               <div className="flex items-start gap-2 pt-2 border-t border-slate-200/60">
-                <Globe className="w-4 h-4 text-[#0B5D3B] shrink-0 mt-0.5" />
+                <Globe className="w-4 h-4 text-[#D56732] shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-slate-800">English Language Requirements:</span>
                   <p className="text-slate-600 leading-relaxed mt-0.5">
@@ -151,7 +151,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
 
               {course.entryRequirements.workExperience && (
                 <div className="flex items-start gap-2 pt-2 border-t border-slate-200/60">
-                  <Briefcase className="w-4 h-4 text-[#0B5D3B] shrink-0 mt-0.5" />
+                  <Briefcase className="w-4 h-4 text-[#D56732] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-800">Work Experience:</span>
                     <p className="text-slate-600 leading-relaxed mt-0.5">
@@ -165,8 +165,8 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
 
           {/* Interview & Scholarship Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-3.5 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-1">
-              <span className="font-bold text-emerald-950">Scholarship Information</span>
+            <div className="p-3.5 bg-[#FDF5F0]/50 border border-[#F5D2C1] rounded-xl space-y-1">
+              <span className="font-bold text-[#3C1609]">Scholarship Information</span>
               <p className="text-slate-700">
                 {course.scholarshipsInfo || "Standard institutional international bursaries applicable."}
               </p>
@@ -204,7 +204,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
               onClose();
               onApplyNow(course);
             }}
-            className="px-6 py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-colors cursor-pointer"
+            className="px-6 py-2.5 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-colors cursor-pointer"
           >
             <span>APPLY NOW</span>
             <ArrowRight className="w-4 h-4" />

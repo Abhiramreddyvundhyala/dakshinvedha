@@ -51,7 +51,7 @@ export const URMContactView: React.FC = () => {
       {/* 1. Large Top Filter Card */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0B5D3B]">
+          <div className="w-10 h-10 rounded-xl bg-[#FDF5F0] border border-[#F5D2C1] flex items-center justify-center text-[#D56732]">
             <PhoneCall className="w-5 h-5" />
           </div>
           <div>
@@ -76,7 +76,7 @@ export const URMContactView: React.FC = () => {
                 setFilterCountry(e.target.value);
                 setFilterUniversity("all");
               }}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#D56732]"
             >
               <option value="all">All University Countries</option>
               {countries.map((c) => (
@@ -95,7 +95,7 @@ export const URMContactView: React.FC = () => {
             <select
               value={filterUniversity}
               onChange={(e) => setFilterUniversity(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#D56732]"
             >
               <option value="all">All Universities</option>
               {MOCK_UNIVERSITIES.filter(
@@ -120,7 +120,7 @@ export const URMContactView: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="e.g. Marcus Sterling..."
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#D56732]"
               />
             </div>
           </div>
@@ -133,7 +133,7 @@ export const URMContactView: React.FC = () => {
           filteredURMs.map((u) => (
             <div
               key={u.id}
-              className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4 hover:border-emerald-300"
+              className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4 hover:border-[#F5D2C1]"
             >
               <div className="space-y-3.5">
                 {/* University Logo & University Name */}
@@ -158,7 +158,7 @@ export const URMContactView: React.FC = () => {
                     Name
                   </span>
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-[#0B5D3B] shrink-0" />
+                    <User className="w-4 h-4 text-[#D56732] shrink-0" />
                     <div>
                       <p className="font-bold text-slate-900 text-sm">
                         {u.urmRepresentative.name}
@@ -179,7 +179,7 @@ export const URMContactView: React.FC = () => {
                     {/* Clickable Mobile */}
                     <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
                       <div className="flex items-center gap-2">
-                        <Smartphone className="w-3.5 h-3.5 text-[#0B5D3B]" />
+                        <Smartphone className="w-3.5 h-3.5 text-[#D56732]" />
                         <span className="font-mono font-bold text-slate-800 text-xs">
                           {u.urmRepresentative.mobile}
                         </span>
@@ -190,7 +190,7 @@ export const URMContactView: React.FC = () => {
                         title="Copy Mobile Number"
                       >
                         {copiedId === `${u.id}-mob` ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <Check className="w-3.5 h-3.5 text-[#D56732]" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -211,7 +211,7 @@ export const URMContactView: React.FC = () => {
                         title="Copy Phone Number"
                       >
                         {copiedId === `${u.id}-phone` ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <Check className="w-3.5 h-3.5 text-[#D56732]" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -226,7 +226,7 @@ export const URMContactView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => alert(`Dialing simulation: ${u.urmRepresentative.mobile}`)}
-                  className="py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                  className="py-2 bg-[#FDF5F0] hover:bg-[#FBE5D8] text-[#D56732] font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>WhatsApp</span>

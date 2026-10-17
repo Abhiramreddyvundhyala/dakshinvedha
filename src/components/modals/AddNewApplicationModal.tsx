@@ -268,7 +268,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
                 step === s.num
                   ? "text-orange-600 font-bold"
                   : step > s.num
-                  ? "text-emerald-600 font-semibold"
+                  ? "text-[#D56732] font-semibold"
                   : "text-slate-400"
               }`}
             >
@@ -277,7 +277,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
                   step === s.num
                     ? "bg-orange-500 text-white"
                     : step > s.num
-                    ? "bg-emerald-500 text-white"
+                    ? "bg-[#D56732] text-white"
                     : "bg-slate-200 text-slate-500"
                 }`}
               >
@@ -639,7 +639,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
                       <span className="font-medium text-slate-800">{f.name}</span>
                       <span className="text-slate-400 text-[10px]">({f.size})</span>
                     </div>
-                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">
+                    <span className="text-[10px] text-[#D56732] font-bold bg-[#FDF5F0] px-2 py-0.5 rounded">
                       Ready
                     </span>
                   </div>

@@ -42,10 +42,10 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
-        <div className="p-6 bg-emerald-950 border-b border-emerald-900 text-white flex items-start justify-between gap-4">
+        <div className="p-6 bg-[#2E1810] border-b border-[#452216] text-white flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-extrabold text-emerald-300 bg-emerald-900/80 px-2.5 py-0.5 rounded-full border border-emerald-700/60">
+              <span className="text-xs font-mono font-extrabold text-[#F5D2C1] bg-[#452216]/80 px-2.5 py-0.5 rounded-full border border-[#BA5322]/60">
                 {application.camsId}
               </span>
               <span className="text-xs text-slate-300 font-bold">
@@ -84,8 +84,8 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
               onClick={() => setModalTab("offer")}
               className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
                 modalTab === "offer"
-                  ? "border-emerald-600 text-emerald-600"
-                  : "border-transparent text-emerald-700 hover:text-emerald-900"
+                  ? "border-[#D56732] text-[#D56732]"
+                  : "border-transparent text-[#D56732] hover:text-[#8C370F]"
               }`}
             >
               <Award className="w-3.5 h-3.5" />
@@ -142,7 +142,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                       <div
                         className={`absolute -left-6 sm:-left-8 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                           isCompleted
-                            ? "bg-emerald-500 border-white text-white shadow-xs"
+                            ? "bg-[#D56732] border-white text-white shadow-xs"
                             : isCurrent
                             ? "bg-orange-500 border-white text-white shadow-md shadow-orange-500/30 animate-pulse"
                             : isNA
@@ -176,7 +176,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                                 Not Applicable
                               </span>
                             ) : isCompleted ? (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FDF5F0] text-[#BA5322]">
                                 Completed • {stage.date}
                               </span>
                             ) : isCurrent ? (
@@ -201,14 +201,14 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
 
           {/* TAB 2: OFFICIAL OFFER LETTER */}
           {modalTab === "offer" && (
-            <div className="p-6 bg-emerald-50/50 border-2 border-emerald-200 rounded-3xl space-y-5 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-emerald-200/80 pb-4">
+            <div className="p-6 bg-[#FDF5F0]/50 border-2 border-[#F5D2C1] rounded-3xl space-y-5 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-[#F5D2C1] pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-[#FDF5F0] text-[#D56732] flex items-center justify-center font-bold text-xl shadow-xs">
                     {application.university.logo}
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#D56732] bg-[#FDF5F0] px-2 py-0.5 rounded-full">
                       Conditional Offer Confirmed
                     </span>
                     <h3 className="text-base font-black text-slate-900 mt-0.5">
@@ -222,17 +222,17 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 bg-white rounded-xl border border-emerald-100">
+                <div className="p-3 bg-white rounded-xl border border-[#F5D2C1]">
                   <span className="text-[10px] text-slate-400 font-bold block">Annual Tuition</span>
                   <strong className="text-slate-900 text-sm">{application.course.tuitionFee}</strong>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-emerald-100">
+                <div className="p-3 bg-white rounded-xl border border-[#F5D2C1]">
                   <span className="text-[10px] text-slate-400 font-bold block">
                     Scholarship Awarded
                   </span>
-                  <strong className="text-emerald-700 text-sm">£2,500 Merit Grant</strong>
+                  <strong className="text-[#D56732] text-sm">£2,500 Merit Grant</strong>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-emerald-100">
+                <div className="p-3 bg-white rounded-xl border border-[#F5D2C1]">
                   <span className="text-[10px] text-slate-400 font-bold block">
                     Acceptance Deposit
                   </span>
@@ -240,7 +240,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                 </div>
               </div>
 
-              <div className="p-4 bg-white rounded-2xl border border-emerald-100 space-y-1.5 text-xs text-slate-700">
+              <div className="p-4 bg-white rounded-2xl border border-[#F5D2C1] space-y-1.5 text-xs text-slate-700">
                 <p className="font-bold text-slate-900">Offer Acceptance Conditions:</p>
                 <p>• Submit final official degree certificate prior to CAS issuance.</p>
                 <p>• Maintain minimum 60% standard in final undergraduate semester.</p>
@@ -251,14 +251,14 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                 <button
                   type="button"
                   onClick={() => alert("Downloading official Offer Letter PDF.")}
-                  className="px-4 py-2 border border-emerald-300 text-emerald-800 font-bold text-xs rounded-xl hover:bg-emerald-50 transition-colors cursor-pointer"
+                  className="px-4 py-2 border border-[#F5D2C1] text-[#BA5322] font-bold text-xs rounded-xl hover:bg-[#FDF5F0] transition-colors cursor-pointer"
                 >
                   Download Offer Letter PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => alert("Offer accepted! Our admissions counselor will contact you for deposit clearance.")}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                  className="px-5 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
                   Accept Offer Online
                 </button>
@@ -299,7 +299,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                     <span
                       className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
                         doc.status === "Verified"
-                          ? "bg-emerald-100 text-emerald-800"
+                          ? "bg-[#FDF5F0] text-[#BA5322]"
                           : "bg-slate-100 text-slate-700"
                       }`}
                     >

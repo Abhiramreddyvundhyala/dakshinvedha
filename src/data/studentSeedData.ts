@@ -348,8 +348,8 @@ export const SEED_STUDENTS: StudentProfile[] = [
 
 // Helper: Frontend eligibility evaluation
 export function evaluateFrontendEligibility(
-  student: StudentProfile | null,
-  course: CourseInfo
+  student: StudentProfile | null | undefined,
+  course?: CourseInfo | null
 ): EligibilityResult {
   const disclaimer =
     "Frontend eligibility estimate only based on your profile inputs. This does NOT guarantee official university admission.";
@@ -359,6 +359,15 @@ export function evaluateFrontendEligibility(
       status: "Missing Academic Information",
       color: "slate",
       reasons: ["Sign in or complete profile to evaluate eligibility."],
+      disclaimer,
+    };
+  }
+
+  if (!course) {
+    return {
+      status: "Missing Academic Information",
+      color: "slate",
+      reasons: ["Select a university course to evaluate eligibility."],
       disclaimer,
     };
   }
@@ -384,8 +393,7 @@ export function evaluateFrontendEligibility(
 
       if (effectiveCgpa >= req.minCgpa) {
         reasons.push(
-          `Academic requirement satisfied: ${bachelorDegree.degree || "Bachelor's"} (${bachelorDegree.percentageOrCgpa}${
-            isScale10 ? "/10" : "%"
+          `Academic requirement satisfied: ${bachelorDegree.degree || "Bachelor's"} (${bachelorDegree.percentageOrCgpa}${isScale10 ? "/10" : "%"
           }) meets min ${req.minCgpa}/10 requirement.`
         );
       } else {

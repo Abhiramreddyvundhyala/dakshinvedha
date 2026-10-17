@@ -56,12 +56,12 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
   const getPrimaryStatusStyle = (status: string) => {
     switch (status) {
       case "Offer Issued":
-        return "bg-emerald-100 text-emerald-800 border-emerald-300";
+        return "bg-[#FDF5F0] text-[#BA5322] border-[#F5D2C1]";
       case "Payment Done":
         return "bg-blue-100 text-blue-800 border-blue-300";
       case "CAS Processing":
       case "CAS Issued":
-        return "bg-teal-100 text-teal-800 border-teal-300";
+        return "bg-[#FDF5F0] text-[#D56732] border-[#F5D2C1]";
       case "Visa Processing":
       case "Completed":
         return "bg-purple-100 text-purple-800 border-purple-300";
@@ -122,12 +122,12 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
         {/* Header */}
         <div className="p-4 sm:p-6 bg-slate-900 text-white flex items-start justify-between border-b border-slate-800">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-mono font-bold text-lg">
+            <div className="w-12 h-12 rounded-xl bg-[#D56732]/20 border border-[#D56732]/30 flex items-center justify-center text-[#E58D5F] font-mono font-bold text-lg">
               {application.camsId.slice(-3)}
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-base font-extrabold text-emerald-400">
+                <span className="font-mono text-base font-extrabold text-[#E58D5F]">
                   {application.camsId}
                 </span>
                 <span
@@ -164,7 +164,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-[#0B5D3B]" />
+                <Clock className="w-4 h-4 text-[#D56732]" />
                 9-Stage Status Timeline
               </span>
               <span className="text-slate-400 text-[11px]">
@@ -182,18 +182,18 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                     key={stage.title}
                     className={`p-2 rounded-lg text-center flex flex-col items-center justify-between border ${
                       isCurrent
-                        ? "bg-emerald-50 border-[#0B5D3B] text-[#0B5D3B] font-bold shadow-2xs"
+                        ? "bg-[#FDF5F0] border-[#D56732] text-[#D56732] font-bold shadow-2xs"
                         : isCompleted
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                        ? "bg-[#FDF5F0] border-[#F5D2C1] text-[#BA5322]"
                         : "bg-white border-slate-200 text-slate-400 opacity-60"
                     }`}
                   >
                     <div
                       className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold mb-1 ${
                         isCurrent
-                          ? "bg-[#0B5D3B] text-white animate-pulse"
+                          ? "bg-[#D56732] text-white animate-pulse"
                           : isCompleted
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-[#D56732] text-white"
                           : "bg-slate-200 text-slate-500"
                       }`}
                     >
@@ -211,7 +211,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             {/* Student Information */}
             <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-900 border-b border-slate-100 pb-2">
-                <User className="w-4 h-4 text-[#0B5D3B]" />
+                <User className="w-4 h-4 text-[#D56732]" />
                 <span>1. Student Information</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-slate-600">
@@ -227,7 +227,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             {/* Passport Information */}
             <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-900 border-b border-slate-100 pb-2">
-                <FileCheck2 className="w-4 h-4 text-[#0B5D3B]" />
+                <FileCheck2 className="w-4 h-4 text-[#D56732]" />
                 <span>2. Passport & Identification</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-slate-600">
@@ -244,7 +244,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             {/* University Information */}
             <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-900 border-b border-slate-100 pb-2">
-                <Building className="w-4 h-4 text-[#0B5D3B]" />
+                <Building className="w-4 h-4 text-[#D56732]" />
                 <span>3. University & URM Contact</span>
               </div>
               <p>University: <strong className="text-slate-900">{application.university.name}</strong></p>
@@ -259,12 +259,12 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             {/* Course Information */}
             <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-900 border-b border-slate-100 pb-2">
-                <GraduationCap className="w-4 h-4 text-[#0B5D3B]" />
+                <GraduationCap className="w-4 h-4 text-[#D56732]" />
                 <span>4. Course Selection</span>
               </div>
               <p>Course: <strong className="text-slate-900">{application.course.courseName}</strong></p>
               <p>Level: <strong className="text-slate-900">{application.course.studyLevel}</strong> • Duration: <strong className="text-slate-900">{application.course.duration}</strong></p>
-              <p>Intake: <strong className="text-[#0B5D3B]">{application.course.activeIntake}</strong></p>
+              <p>Intake: <strong className="text-[#D56732]">{application.course.activeIntake}</strong></p>
               <p>Tuition Fee: <strong className="font-mono text-slate-900">{application.course.tuitionFee}</strong></p>
             </div>
           </div>
@@ -273,7 +273,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-900 border-b border-slate-100 pb-2">
-                <GraduationCap className="w-4 h-4 text-[#0B5D3B]" />
+                <GraduationCap className="w-4 h-4 text-[#D56732]" />
                 <span>5. Academic History</span>
               </div>
               {application.qualifications.length > 0 ? (
@@ -281,7 +281,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                   <div key={q.id} className="p-2 bg-slate-50 rounded-lg space-y-0.5 text-[11px]">
                     <p className="font-bold text-slate-800">{q.highestQualification}</p>
                     <p className="text-slate-600">{q.institution} ({q.yearCompleted})</p>
-                    <p className="text-emerald-700 font-semibold">Grade: {q.gradePercentage}</p>
+                    <p className="text-[#D56732] font-semibold">Grade: {q.gradePercentage}</p>
                   </div>
                 ))
               ) : (
@@ -291,7 +291,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
 
             <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-900 border-b border-slate-100 pb-2">
-                <Languages className="w-4 h-4 text-[#0B5D3B]" />
+                <Languages className="w-4 h-4 text-[#D56732]" />
                 <span>6. English Language Proficiency</span>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg space-y-1.5 text-xs">
@@ -301,7 +301,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Overall Score:</span>
-                  <span className="font-bold text-[#0B5D3B]">{application.englishProficiency.overallScore}</span>
+                  <span className="font-bold text-[#D56732]">{application.englishProficiency.overallScore}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1 text-[10px] text-center pt-1 border-t border-slate-200">
                   <div className="p-1 bg-white rounded">R: {application.englishProficiency.readingScore}</div>
@@ -317,7 +317,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
           <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <span className="font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#0B5D3B]" />
+                <FileText className="w-4 h-4 text-[#D56732]" />
                 7. Verification Documents ({application.documents.length})
               </span>
             </div>
@@ -325,13 +325,13 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
               {application.documents.map((doc) => (
                 <div key={doc.id} className="p-2.5 bg-slate-50 rounded-lg flex items-center justify-between border border-slate-200">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-[#0B5D3B]" />
+                    <FileText className="w-4 h-4 text-[#D56732]" />
                     <div>
                       <p className="font-semibold text-slate-800 truncate max-w-[200px]">{doc.fileName}</p>
                       <p className="text-[10px] text-slate-400">{doc.category} • {doc.fileSize}</p>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FDF5F0] text-[#BA5322]">
                     {doc.status}
                   </span>
                 </div>
@@ -350,13 +350,13 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
               <span className="text-slate-400 uppercase font-bold text-[10px]">9. Tuition & Payment</span>
               <p className="font-bold text-slate-900 text-sm">Gross: {application.payment.grossTuition}</p>
-              <p className="text-emerald-700">Scholarship: -{application.payment.scholarship}</p>
+              <p className="text-[#D56732]">Scholarship: -{application.payment.scholarship}</p>
               <p className="text-slate-600">Net Due: {application.payment.netBalanceDue}</p>
             </div>
 
-            <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-1.5">
-              <span className="text-emerald-700 uppercase font-bold text-[10px]">10. Commission Status</span>
-              <p className="font-bold text-emerald-950 text-sm">{application.commission.amount}</p>
+            <div className="p-4 bg-[#FDF5F0]/60 border border-[#F5D2C1] rounded-xl space-y-1.5">
+              <span className="text-[#D56732] uppercase font-bold text-[10px]">10. Commission Status</span>
+              <p className="font-bold text-[#3C1609] text-sm">{application.commission.amount}</p>
               <p className="text-slate-600">Status: <strong className="text-slate-800">{application.commission.status}</strong></p>
             </div>
           </div>
@@ -364,7 +364,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
           {/* 11. Notes Section */}
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
             <span className="font-bold text-slate-900 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#0B5D3B]" />
+              <MessageSquare className="w-4 h-4 text-[#D56732]" />
               11. Internal Counselor & Case Notes
             </span>
 
@@ -374,11 +374,11 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add case observation..."
-                className="flex-1 p-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+                className="flex-1 p-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#D56732]"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-lg font-bold cursor-pointer"
+                className="px-4 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-lg font-bold cursor-pointer"
               >
                 Add Note
               </button>
@@ -401,13 +401,13 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             onClick={() => alert(`Downloaded CAMS summary PDF for ${application.camsId}`)}
             className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5"
           >
-            <Download className="w-3.5 h-3.5 text-[#0B5D3B]" />
+            <Download className="w-3.5 h-3.5 text-[#D56732]" />
             <span>Export Application Dossier PDF</span>
           </button>
 
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
+            className="px-6 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
           >
             Close
           </button>

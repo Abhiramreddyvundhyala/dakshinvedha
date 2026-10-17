@@ -124,7 +124,7 @@ export const PartnerPortalRoot: React.FC = () => {
   const isB2BMode = !!(activeB2BPartner);
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans selection:bg-[#0B5D3B] selection:text-white">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans selection:bg-[#D56732] selection:text-white">
       {/* 1. Fixed Top Header */}
       <Header
         onToggleSidebarMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -137,7 +137,7 @@ export const PartnerPortalRoot: React.FC = () => {
       {/* Global Success Notification Toast */}
       {successToast && (
         <div className="fixed top-24 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-fade-in">
-          <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[#D56732]/20 text-[#E58D5F] flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <p className="text-xs font-semibold">{successToast}</p>
@@ -180,7 +180,7 @@ export const PartnerPortalRoot: React.FC = () => {
                       <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                         <span>Welcome back!</span>
                         <span className="text-sm font-normal text-slate-400">|</span>
-                        <span className="text-xs font-semibold text-[#0B5D3B] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                        <span className="text-xs font-semibold text-[#D56732] bg-[#FDF5F0] px-2.5 py-0.5 rounded-full border border-[#F5D2C1]">
                           Partner ID: AGT-9041
                         </span>
                       </h1>
@@ -192,7 +192,7 @@ export const PartnerPortalRoot: React.FC = () => {
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                       <button
                         onClick={() => setIsApplyNewCourseOpen(true)}
-                        className="px-4 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-sm shadow-emerald-900/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-xl text-xs font-bold shadow-sm shadow-[#D56732]/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>+ Add New Application</span>
                       </button>

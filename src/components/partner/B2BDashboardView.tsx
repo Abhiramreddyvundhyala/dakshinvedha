@@ -54,7 +54,7 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 1. Welcome Header (No 'Verified Partner', No 'Central Admissions Intake...') */}
-      <div className="bg-[#0B5D3B] rounded-2xl p-6 text-white relative overflow-hidden shadow-xs border border-[#08482D]">
+      <div className="bg-[#D56732] rounded-2xl p-6 text-white relative overflow-hidden shadow-xs border border-[#BA5322]">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-extrabold text-sm shrink-0">
@@ -74,7 +74,7 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
             {onAddNewApplication && (
               <button
                 onClick={onAddNewApplication}
-                className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#0B5D3B] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
+                className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#D56732] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Add New Application</span>
@@ -95,10 +95,10 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
               label: "Total Applications",
               value: m.totalApplications,
               icon: FileText,
-              color: "bg-[#0B5D3B]",
-              bg: "bg-emerald-50/60",
-              text: "text-[#0B5D3B]",
-              border: "border-emerald-200/80",
+              color: "bg-[#D56732]",
+              bg: "bg-[#FDF5F0]/60",
+              text: "text-[#D56732]",
+              border: "border-[#F5D2C1]",
               change: "+12 this month",
               positive: true,
             },
@@ -106,10 +106,10 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
               label: "Processing",
               value: m.processingApplications,
               icon: Loader2,
-              color: "bg-emerald-700",
-              bg: "bg-emerald-50/40",
-              text: "text-[#0B5D3B]",
-              border: "border-emerald-200/60",
+              color: "bg-[#D56732]",
+              bg: "bg-[#FDF5F0]/40",
+              text: "text-[#D56732]",
+              border: "border-[#F5D2C1]",
               change: "In progress",
               positive: null,
             },
@@ -117,10 +117,10 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
               label: "Completed",
               value: m.completedApplications,
               icon: CheckCircle2,
-              color: "bg-[#0B5D3B]",
-              bg: "bg-emerald-50/60",
-              text: "text-[#0B5D3B]",
-              border: "border-emerald-200/80",
+              color: "bg-[#D56732]",
+              bg: "bg-[#FDF5F0]/60",
+              text: "text-[#D56732]",
+              border: "border-[#F5D2C1]",
               change: "+8 this month",
               positive: true,
             },
@@ -155,7 +155,7 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
                 <p
                   className={`text-[11px] font-semibold ${
                     card.positive === true
-                      ? "text-emerald-700"
+                      ? "text-[#D56732]"
                       : card.positive === false
                       ? "text-rose-600"
                       : "text-slate-500"

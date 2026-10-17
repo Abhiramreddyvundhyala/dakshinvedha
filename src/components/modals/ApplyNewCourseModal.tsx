@@ -165,7 +165,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
         {/* Modal Header */}
         <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between border-b border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-xl bg-[#D56732]/20 border border-[#D56732]/30 flex items-center justify-center text-[#E58D5F]">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
@@ -187,8 +187,8 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
 
         {/* Modal Body with Dependent Selections */}
         <div className="p-6 overflow-y-auto space-y-4 text-xs">
-          <div className="p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl text-emerald-950 text-xs flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#0B5D3B] shrink-0" />
+          <div className="p-3 bg-[#FDF5F0]/60 border border-[#F5D2C1] rounded-xl text-[#3C1609] text-xs flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#D56732] shrink-0" />
             <span>
               Selections are dynamically linked. Choose the destination country first to unlock intakes, universities, and courses.
             </span>
@@ -203,7 +203,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
               <select
                 value={countryToApply}
                 onChange={(e) => handleCountryChange(e.target.value)}
-                className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] font-medium"
+                className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] font-medium"
               >
                 <option value="">Select Target Country...</option>
                 {availableCountries.map((c) => (
@@ -222,7 +222,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
               <select
                 value={studentPassportCountry}
                 onChange={(e) => setStudentPassportCountry(e.target.value)}
-                className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] font-medium"
+                className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] font-medium"
               >
                 {passportCountries.map((pc) => (
                   <option key={pc} value={pc}>
@@ -241,7 +241,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
                 disabled={!countryToApply}
                 value={intake}
                 onChange={(e) => handleIntakeChange(e.target.value)}
-                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] font-medium ${
+                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] font-medium ${
                   !countryToApply
                     ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
                     : "bg-white border-slate-200"
@@ -267,7 +267,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
                 disabled={!intake}
                 value={courseType}
                 onChange={(e) => handleCourseTypeChange(e.target.value)}
-                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] font-medium ${
+                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] font-medium ${
                   !intake
                     ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
                     : "bg-white border-slate-200"
@@ -293,7 +293,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
                 disabled={!courseType}
                 value={universityId}
                 onChange={(e) => handleUniversityChange(e.target.value)}
-                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] font-medium ${
+                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] font-medium ${
                   !courseType
                     ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
                     : "bg-white border-slate-200"
@@ -319,7 +319,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
                 disabled={!universityId}
                 value={courseId}
                 onChange={(e) => setCourseId(e.target.value)}
-                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] font-medium ${
+                className={`w-full p-2.5 border rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] font-medium ${
                   !universityId
                     ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
                     : "bg-white border-slate-200"
@@ -342,7 +342,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 animate-fade-in">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-900">{selectedCourseObj.courseName}</span>
-                <span className="font-bold text-[#0B5D3B] font-mono">{selectedCourseObj.tuitionFee}</span>
+                <span className="font-bold text-[#D56732] font-mono">{selectedCourseObj.tuitionFee}</span>
               </div>
               <p className="text-slate-600">
                 {selectedUnivObj.name} • {selectedCourseObj.campus} • {selectedCourseObj.studyLevel}
@@ -372,7 +372,7 @@ export const ApplyNewCourseModal: React.FC<ApplyNewCourseModalProps> = ({
             onClick={handleApplyClick}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all flex items-center gap-2 ${
               isFormComplete
-                ? "bg-[#0B5D3B] hover:bg-[#08482D] text-white shadow-md shadow-emerald-900/20 cursor-pointer active:scale-98"
+                ? "bg-[#D56732] hover:bg-[#BA5322] text-white shadow-md shadow-[#D56732]/20 cursor-pointer active:scale-98"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
           >

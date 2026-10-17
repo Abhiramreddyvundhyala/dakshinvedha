@@ -106,7 +106,7 @@ export const TeamManagementView: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
-      <div className="bg-[#0B5D3B] rounded-2xl p-6 text-white relative overflow-hidden shadow-xs border border-[#08482D]">
+      <div className="bg-[#D56732] rounded-2xl p-6 text-white relative overflow-hidden shadow-xs border border-[#BA5322]">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white">
@@ -123,7 +123,7 @@ export const TeamManagementView: React.FC = () => {
           {canAddMore && (
             <button
               onClick={() => { setIsAddingMember(true); setFormError(""); }}
-              className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#0B5D3B] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
+              className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#D56732] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
             >
               <Plus className="w-4 h-4" />
               <span>Add Team Member</span>
@@ -149,9 +149,9 @@ export const TeamManagementView: React.FC = () => {
 
       {/* Success Toast */}
       {successMsg && (
-        <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-emerald-800 font-medium">{successMsg}</p>
+        <div className="flex items-start gap-3 bg-[#FDF5F0] border border-[#F5D2C1] rounded-xl p-4">
+          <CheckCircle2 className="w-5 h-5 text-[#D56732] shrink-0 mt-0.5" />
+          <p className="text-sm text-[#BA5322] font-medium">{successMsg}</p>
         </div>
       )}
 
@@ -160,8 +160,8 @@ export const TeamManagementView: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden animate-fade-in">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/60">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#0B5D3B]/10 flex items-center justify-center">
-                <Plus className="w-4 h-4 text-[#0B5D3B]" />
+              <div className="w-8 h-8 rounded-lg bg-[#D56732]/10 flex items-center justify-center">
+                <Plus className="w-4 h-4 text-[#D56732]" />
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">Create New Team Member</h2>
@@ -196,7 +196,7 @@ export const TeamManagementView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rahul Sharma"
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B] focus:border-[#0B5D3B] transition-all"
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D56732] focus:border-[#D56732] transition-all"
                   autoFocus
                 />
               </div>
@@ -212,7 +212,7 @@ export const TeamManagementView: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. rahul@yourcompany.com"
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B] focus:border-[#0B5D3B] transition-all"
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D56732] focus:border-[#D56732] transition-all"
                 />
               </div>
 
@@ -228,7 +228,7 @@ export const TeamManagementView: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Set a password (min. 6 characters)"
-                    className="w-full px-3.5 py-2.5 pr-11 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B] focus:border-[#0B5D3B] transition-all"
+                    className="w-full px-3.5 py-2.5 pr-11 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D56732] focus:border-[#D56732] transition-all"
                   />
                   <button
                     type="button"
@@ -248,7 +248,7 @@ export const TeamManagementView: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white text-xs font-bold rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-60"
+                className="px-5 py-2.5 bg-[#D56732] hover:bg-[#BA5322] text-white text-xs font-bold rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-60"
               >
                 {isSubmitting ? "Creating..." : "Create Team Member"}
               </button>
@@ -268,7 +268,7 @@ export const TeamManagementView: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0B5D3B]">
+            <div className="w-8 h-8 rounded-lg bg-[#FDF5F0] border border-[#F5D2C1] flex items-center justify-center text-[#D56732]">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -299,7 +299,7 @@ export const TeamManagementView: React.FC = () => {
             {canAddMore && (
               <button
                 onClick={() => setIsAddingMember(true)}
-                className="mt-4 px-4 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white text-xs font-bold rounded-xl cursor-pointer transition-all"
+                className="mt-4 px-4 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white text-xs font-bold rounded-xl cursor-pointer transition-all"
               >
                 + Add First Team Member
               </button>
@@ -324,7 +324,7 @@ export const TeamManagementView: React.FC = () => {
                       <div
                         className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold shrink-0 ${
                           member.status === "Active"
-                            ? "bg-[#0B5D3B]/10 text-[#0B5D3B]"
+                            ? "bg-[#D56732]/10 text-[#D56732]"
                             : "bg-slate-100 text-slate-500"
                         }`}
                       >
@@ -341,7 +341,7 @@ export const TeamManagementView: React.FC = () => {
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                               member.status === "Active"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                ? "bg-[#FDF5F0] text-[#D56732] border-[#F5D2C1]"
                                 : "bg-slate-100 text-slate-500 border-slate-200"
                             }`}
                           >
@@ -381,7 +381,7 @@ export const TeamManagementView: React.FC = () => {
                           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                             member.status === "Active"
                               ? "bg-amber-50 hover:bg-amber-100 text-amber-700"
-                              : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
+                              : "bg-[#FDF5F0] hover:bg-[#FBE5D8] text-[#D56732]"
                           }`}
                           title={member.status === "Active" ? "Suspend member" : "Reactivate member"}
                         >
@@ -437,7 +437,7 @@ export const TeamManagementView: React.FC = () => {
                           <div className="flex items-center gap-2 min-w-0">
                             <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span className="text-[11px] text-slate-400 shrink-0">Email</span>
-                            <span className="font-mono text-xs text-emerald-300 truncate">{member.email}</span>
+                            <span className="font-mono text-xs text-[#F5D2C1] truncate">{member.email}</span>
                           </div>
                           <button
                             onClick={() => handleCopy(member.email, `email-${member.id}`)}
@@ -445,7 +445,7 @@ export const TeamManagementView: React.FC = () => {
                             title="Copy email"
                           >
                             {copiedField === `email-${member.id}` ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#E58D5F]" />
                             ) : (
                               <Copy className="w-3.5 h-3.5" />
                             )}
@@ -457,7 +457,7 @@ export const TeamManagementView: React.FC = () => {
                           <div className="flex items-center gap-2 min-w-0">
                             <Key className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span className="text-[11px] text-slate-400 shrink-0">Password</span>
-                            <span className="font-mono text-xs text-emerald-300 truncate">{member.password}</span>
+                            <span className="font-mono text-xs text-[#F5D2C1] truncate">{member.password}</span>
                           </div>
                           <button
                             onClick={() => handleCopy(member.password, `pwd-${member.id}`)}
@@ -465,7 +465,7 @@ export const TeamManagementView: React.FC = () => {
                             title="Copy password"
                           >
                             {copiedField === `pwd-${member.id}` ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#E58D5F]" />
                             ) : (
                               <Copy className="w-3.5 h-3.5" />
                             )}

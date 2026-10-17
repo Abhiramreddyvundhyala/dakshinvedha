@@ -169,7 +169,7 @@ export const AdminApplicationsView: React.FC = () => {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
                           app.primaryStatus.includes("Offer")
-                            ? "bg-emerald-100 text-emerald-800"
+                            ? "bg-[#FDF5F0] text-[#BA5322]"
                             : "bg-slate-100 text-slate-800"
                         }`}
                       >
@@ -187,7 +187,7 @@ export const AdminApplicationsView: React.FC = () => {
                               key={idx}
                               className={`h-full flex-1 ${
                                 t.state === "completed"
-                                  ? "bg-emerald-500"
+                                  ? "bg-[#D56732]"
                                   : t.state === "current"
                                   ? "bg-purple-600 animate-pulse"
                                   : t.state === "not_applicable"

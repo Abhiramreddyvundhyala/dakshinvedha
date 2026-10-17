@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import { StudentHeader, StudentNavTab } from "./StudentHeader";
+import { StudentSidebar } from "./StudentSidebar";
 import { StudentAuthView } from "./StudentAuthView";
 import { StudentDashboardView } from "./StudentDashboardView";
 import { StudentUniversitiesView } from "./StudentUniversitiesView";
@@ -20,6 +21,10 @@ export const StudentPortalRoot: React.FC = () => {
 
   // Navigation tab inside student portal
   const [currentTab, setCurrentTab] = useState<StudentNavTab>("dashboard");
+
+  // Sidebar collapse and mobile drawer state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Selected University & target subtab ("details" | "courses")
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
@@ -55,15 +60,37 @@ export const StudentPortalRoot: React.FC = () => {
         currentTab={currentTab}
         onSelectTab={(tab) => {
           if (tab === "universities") {
-            // keep or reset selected university
+            setSelectedUniversity(null);
           }
           setCurrentTab(tab);
         }}
         onOpenCompleteProfile={() => setIsOnboardingOpen(true)}
+        onToggleSidebarMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+      />
+
+      {/* Student Left Sidebar */}
+      <StudentSidebar
+        currentTab={currentTab}
+        onSelectTab={(tab) => {
+          if (tab === "universities") {
+            setSelectedUniversity(null);
+          }
+          setCurrentTab(tab);
+        }}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        onOpenCompleteProfile={() => setIsOnboardingOpen(true)}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-7 space-y-6">
+      <main
+        className={`flex-1 transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+        }`}
+      >
+        <div className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-7 space-y-6">
         {/* TAB 1: DASHBOARD */}
         {currentTab === "dashboard" && (
           <StudentDashboardView
@@ -114,6 +141,7 @@ export const StudentPortalRoot: React.FC = () => {
 
         {/* TAB 4: PROFILE & DOCUMENTS */}
         {currentTab === "profile" && <StudentProfileView />}
+        </div>
       </main>
 
       {/* MODALS */}

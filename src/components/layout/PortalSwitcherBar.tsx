@@ -66,7 +66,7 @@ export const PortalSwitcherBar: React.FC = () => {
           onClick={() => setPortalRole("agent")}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             portalRole === "agent"
-              ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-500/30 scale-[1.02]"
+              ? "bg-gradient-to-r from-[#D56732] to-[#BA5322] text-white shadow-sm shadow-[#D56732]/30 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
           }`}
           title="Open Agent Portal"
@@ -100,7 +100,7 @@ export const PortalSwitcherBar: React.FC = () => {
       <div className="flex items-center gap-2">
         {portalRole === "student" && (
           <div className="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/60 text-[11px]">
-            <UserCheck className="w-3 h-3 text-orange-400" />
+            <UserCheck className="w-3 h-3 text-[#D56732]" />
             {isStudentAuthenticated && activeStudent ? (
               <span className="text-slate-300">
                 Logged In: <strong className="text-white">{activeStudent.name}</strong> ({activeStudent.profileCompletion}% profile)
@@ -113,7 +113,7 @@ export const PortalSwitcherBar: React.FC = () => {
 
         {(portalRole === "partner" || portalRole === "agent") && (
           <div className="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/60 text-[11px]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="w-2 h-2 rounded-full bg-[#D56732]" />
             <span className="text-slate-300">
               {activeB2BPartner ? (
                 <>Partner ID: <strong className="text-white">{activeB2BPartner.partnerId}</strong> ({activeB2BPartner.name})</>
