@@ -52,7 +52,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
       <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <Ticket className="w-5 h-5 text-orange-500" />
+            <Ticket className="w-5 h-5 text-[#0B5D3B]" />
             Voucher Management Portal
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -66,7 +66,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
             onClick={() => setActiveTab("buy")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === "buy"
-                ? "bg-orange-500 text-white shadow-xs"
+                ? "bg-[#0B5D3B] text-white shadow-xs"
                 : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
             }`}
           >
@@ -78,7 +78,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
             onClick={() => setActiveTab("manage")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === "manage"
-                ? "bg-orange-500 text-white shadow-xs"
+                ? "bg-[#0B5D3B] text-white shadow-xs"
                 : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
             }`}
           >
@@ -92,7 +92,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
       {activeTab === "buy" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1 */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-orange-300 transition-colors">
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-emerald-300 transition-colors">
             <div className="space-y-2">
               <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[10px] font-bold rounded">
                 British Council & IDP
@@ -112,7 +112,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
 
             <button
               onClick={() => handleBuyProduct("IELTS Academic Test Voucher", "£145.00")}
-              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+              className="w-full py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Purchase IELTS Voucher</span>
@@ -120,7 +120,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-orange-300 transition-colors">
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-emerald-300 transition-colors">
             <div className="space-y-2">
               <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded">
                 Pearson Official
@@ -140,7 +140,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
 
             <button
               onClick={() => handleBuyProduct("PTE Academic Voucher", "£135.00")}
-              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+              className="w-full py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Purchase PTE Voucher</span>
@@ -148,7 +148,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-orange-300 transition-colors">
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-emerald-300 transition-colors">
             <div className="space-y-2">
               <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded">
                 Duolingo Fast-Track
@@ -168,7 +168,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
 
             <button
               onClick={() => handleBuyProduct("Duolingo English Test (DET)", "£45.00")}
-              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+              className="w-full py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Purchase DET Voucher</span>
@@ -204,7 +204,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
                 {vouchers.map((v) => (
                   <tr key={v.id} className="hover:bg-slate-50/80 transition-colors">
                     {/* Voucher ID */}
-                    <td className="py-3 px-3 font-mono font-bold text-orange-600">
+                    <td className="py-3 px-3 font-mono font-bold text-[#0B5D3B]">
                       {v.code}
                     </td>
 
@@ -247,7 +247,7 @@ export const VoucherView: React.FC<VoucherViewProps> = ({ subTab = "buy" }) => {
                     <td className="py-3 px-3 text-center">
                       <button
                         onClick={() => copyCode(v.id, v.code)}
-                        className="p-1.5 bg-slate-100 hover:bg-orange-500 hover:text-white text-slate-600 rounded-lg transition-colors inline-flex items-center gap-1"
+                        className="p-1.5 bg-slate-100 hover:bg-[#0B5D3B] hover:text-white text-slate-600 rounded-lg transition-colors inline-flex items-center gap-1"
                         title="Copy Voucher Code"
                       >
                         {copiedId === v.id ? (

@@ -23,6 +23,7 @@ import {
   PiggyBank,
   Tag,
   Gift,
+  Users,
 } from "lucide-react";
 
 export type NavItemKey =
@@ -42,7 +43,8 @@ export type NavItemKey =
   | "finance-loan-commission"
   | "finance-promotional-deals"
   | "chat"
-  | "other";
+  | "other"
+  | "team";
 
 interface SidebarProps {
   currentTab: NavItemKey;
@@ -87,13 +89,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-slate-950/60 z-30 lg:hidden backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-slate-950/40 z-30 lg:hidden backdrop-blur-xs transition-opacity"
         />
       )}
 
-      {/* Main Sidebar Container */}
+      {/* Main Sidebar Container (Clean white aesthetic - NO dark blue/black) */}
       <aside
-        className={`fixed top-[101px] bottom-0 left-0 z-40 bg-[#0B132B] text-slate-300 border-r border-slate-800 flex flex-col transition-all duration-300 ease-in-out ${
+        className={`fixed top-16 bottom-0 left-0 z-40 bg-white text-slate-700 border-r border-[#E7E5E0] shadow-2xs flex flex-col transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-20" : "w-64"
         } ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -102,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Circular Sidebar Collapse Control on Right Edge */}
         <button
           onClick={onToggleCollapse}
-          className="hidden lg:flex absolute -right-3.5 top-5 w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-600 text-white border-2 border-[#0B132B] items-center justify-center shadow-md transition-transform hover:scale-110 z-50 focus:outline-none"
+          className="hidden lg:flex absolute -right-3.5 top-5 w-7 h-7 rounded-full bg-[#0B5D3B] hover:bg-[#08482D] text-white border-2 border-white items-center justify-center shadow-md transition-transform hover:scale-110 z-50 focus:outline-none cursor-pointer"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           aria-label="Toggle Sidebar"
         >
@@ -113,11 +115,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </button>
 
-        {/* Top Prominent Orange Button: "+ Add New Application" */}
-        <div className="p-3.5 border-b border-slate-800/80">
+        {/* Top Prominent Button: "+ Add New Application" (Brand Emerald) */}
+        <div className="p-3.5 border-b border-[#E7E5E0]">
           <button
             onClick={onOpenAddNewModal}
-            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-600/20 active:scale-98 transition-all flex items-center justify-center gap-2.5 py-3 ${
+            className={`w-full bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold rounded-xl shadow-xs active:scale-98 transition-all flex items-center justify-center gap-2.5 py-3 cursor-pointer ${
               isCollapsed ? "px-2" : "px-4"
             }`}
             title="Add New Application"
@@ -136,18 +138,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Dashboard */}
           <button
             onClick={() => handleNavClick("dashboard")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "dashboard"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Dashboard" : undefined}
           >
             <LayoutDashboard
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "dashboard"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">Dashboard</span>}
@@ -156,18 +158,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Application History */}
           <button
             onClick={() => handleNavClick("application-history")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "application-history"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Application History" : undefined}
           >
             <History
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "application-history"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">Application History</span>}
@@ -176,10 +178,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Mail */}
           <button
             onClick={() => handleNavClick("mail")}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "mail"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Mail" : undefined}
           >
@@ -187,14 +189,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Mail
                 className={`w-4 h-4 shrink-0 transition-colors ${
                   currentTab === "mail"
-                    ? "text-orange-400"
-                    : "text-slate-400 group-hover:text-white"
+                    ? "text-[#0B5D3B]"
+                    : "text-slate-400 group-hover:text-slate-700"
                 }`}
               />
               {!isCollapsed && <span className="truncate">Mail</span>}
             </div>
             {!isCollapsed && (
-              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">
+              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#0B5D3B]/10 text-[#0B5D3B] rounded-full">
                 3
               </span>
             )}
@@ -203,18 +205,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Apply Enquiry */}
           <button
             onClick={() => handleNavClick("apply-enquiry")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "apply-enquiry"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Apply Enquiry" : undefined}
           >
             <Send
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "apply-enquiry"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">Apply Enquiry</span>}
@@ -223,18 +225,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Search Program */}
           <button
             onClick={() => handleNavClick("search-program")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "search-program"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Search Program" : undefined}
           >
             <Search
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "search-program"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">Search Program</span>}
@@ -243,18 +245,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* URM Contact Number */}
           <button
             onClick={() => handleNavClick("urm-contact")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "urm-contact"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "URM Contact Number" : undefined}
           >
             <PhoneCall
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "urm-contact"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">URM Contact Number</span>}
@@ -263,18 +265,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Value Added Services */}
           <button
             onClick={() => handleNavClick("vas")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "vas"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Value Added Services" : undefined}
           >
             <Sparkles
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "vas"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && (
@@ -289,10 +291,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 if (isCollapsed) onToggleCollapse();
                 setIsVoucherExpanded(!isVoucherExpanded);
               }}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
                 isVoucherActive
-                  ? "text-white bg-white/5"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "text-[#0B5D3B] bg-[#EAF5EF] font-semibold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
               title={isCollapsed ? "Voucher" : undefined}
             >
@@ -300,8 +302,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Ticket
                   className={`w-4 h-4 shrink-0 transition-colors ${
                     isVoucherActive
-                      ? "text-orange-400"
-                      : "text-slate-400 group-hover:text-white"
+                      ? "text-[#0B5D3B]"
+                      : "text-slate-400 group-hover:text-slate-700"
                   }`}
                 />
                 {!isCollapsed && <span className="truncate">Voucher</span>}
@@ -317,13 +319,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Voucher Submenu */}
             {!isCollapsed && isVoucherExpanded && (
-              <div className="ml-5 pl-3 border-l border-slate-800 space-y-1 my-1 animate-fade-in">
+              <div className="ml-5 pl-3 border-l border-[#E7E5E0] space-y-1 my-1 animate-fade-in">
                 <button
                   onClick={() => handleNavClick("voucher-buy")}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "voucher-buy"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <Tag className="w-3.5 h-3.5" />
@@ -331,10 +333,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <button
                   onClick={() => handleNavClick("voucher-manage")}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "voucher-manage"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <Gift className="w-3.5 h-3.5" />
@@ -351,10 +353,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 if (isCollapsed) onToggleCollapse();
                 setIsFinanceExpanded(!isFinanceExpanded);
               }}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
                 isFinanceActive
-                  ? "text-white bg-white/5"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "text-[#0B5D3B] bg-[#EAF5EF] font-semibold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
               title={isCollapsed ? "Finance" : undefined}
             >
@@ -362,8 +364,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <DollarSign
                   className={`w-4 h-4 shrink-0 transition-colors ${
                     isFinanceActive
-                      ? "text-orange-400"
-                      : "text-slate-400 group-hover:text-white"
+                      ? "text-[#0B5D3B]"
+                      : "text-slate-400 group-hover:text-slate-700"
                   }`}
                 />
                 {!isCollapsed && <span className="truncate">Finance</span>}
@@ -379,13 +381,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Finance Submenu */}
             {!isCollapsed && isFinanceExpanded && (
-              <div className="ml-5 pl-3 border-l border-slate-800 space-y-1 my-1 animate-fade-in">
+              <div className="ml-5 pl-3 border-l border-[#E7E5E0] space-y-1 my-1 animate-fade-in">
                 <button
                   onClick={() => handleNavClick("finance-account")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-account"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <CreditCard className="w-3.5 h-3.5" />
@@ -393,10 +395,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <button
                   onClick={() => handleNavClick("finance-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-commission"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <DollarSign className="w-3.5 h-3.5" />
@@ -404,10 +406,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <button
                   onClick={() => handleNavClick("finance-promotional-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-promotional-commission"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -415,10 +417,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <button
                   onClick={() => handleNavClick("finance-accommodation-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-accommodation-commission"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <Building className="w-3.5 h-3.5" />
@@ -426,10 +428,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <button
                   onClick={() => handleNavClick("finance-loan-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-loan-commission"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <PiggyBank className="w-3.5 h-3.5" />
@@ -437,10 +439,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <button
                   onClick={() => handleNavClick("finance-promotional-deals")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-promotional-deals"
-                      ? "text-orange-400 font-semibold bg-white/5"
-                      : "text-slate-400 hover:text-white"
+                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -453,10 +455,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Chat */}
           <button
             onClick={() => handleNavClick("chat")}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "chat"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Chat" : undefined}
           >
@@ -464,8 +466,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <MessageSquare
                 className={`w-4 h-4 shrink-0 transition-colors ${
                   currentTab === "chat"
-                    ? "text-orange-400"
-                    : "text-slate-400 group-hover:text-white"
+                    ? "text-[#0B5D3B]"
+                    : "text-slate-400 group-hover:text-slate-700"
                 }`}
               />
               {!isCollapsed && <span className="truncate">Chat</span>}
@@ -478,21 +480,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
+          {/* Team Management */}
+          <button
+            onClick={() => handleNavClick("team")}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
+              currentTab === "team"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
+            }`}
+            title={isCollapsed ? "Team Management" : undefined}
+          >
+            <Users
+              className={`w-4 h-4 shrink-0 transition-colors ${
+                currentTab === "team"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
+              }`}
+            />
+            {!isCollapsed && <span className="truncate">Team Management</span>}
+          </button>
+
           {/* Other */}
           <button
             onClick={() => handleNavClick("other")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "other"
-                ? "bg-[#060B17] text-white border-l-4 border-orange-500 font-semibold shadow-inner"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent"
+                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Other" : undefined}
           >
             <MoreHorizontal
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "other"
-                  ? "text-orange-400"
-                  : "text-slate-400 group-hover:text-white"
+                  ? "text-[#0B5D3B]"
+                  : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">Other</span>}
@@ -500,11 +522,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-3 border-t border-slate-800/80 bg-[#060B17]/60 text-slate-500 text-[10px] text-center">
+        <div className="p-3 border-t border-[#E7E5E0] bg-[#FAFAF8] text-slate-400 text-[10px] text-center">
           {!isCollapsed ? (
             <div className="space-y-0.5">
-              <p>© 2026 Company Name - All Rights Reserved.</p>
-              <p className="font-semibold text-slate-400">Version 1.0.0</p>
+              <p>© 2026 Dakshinvedha Abroad Solutions</p>
+              <p className="font-semibold text-slate-500">Version 1.0.0</p>
             </div>
           ) : (
             <span className="font-bold text-slate-400">v1.0</span>

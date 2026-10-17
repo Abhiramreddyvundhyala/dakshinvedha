@@ -43,10 +43,10 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
-        <div className="p-6 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-start justify-between gap-4">
+        <div className="p-6 bg-emerald-950 border-b border-emerald-900 text-white flex items-start justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-orange-500 text-white">
+              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-700 text-white">
                 {course.studyLevel}
               </span>
               <span className="text-xs text-slate-300 font-bold">
@@ -219,7 +219,7 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
               onClose();
               onApplyNow(course);
             }}
-            className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+            className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
           >
             <span>APPLY NOW FOR THIS COURSE</span>
             <ArrowRight className="w-4 h-4" />

@@ -55,7 +55,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
   }, []);
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-[37px] z-40 shadow-2xs">
+    <header className="bg-white border-b border-[#E7E5E0] sticky top-0 z-40 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand & Navigation */}
         <div className="flex items-center gap-6">
@@ -63,57 +63,57 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             onClick={() => onSelectTab("dashboard")}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-[#0B5D3B] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-sm font-black text-slate-900 tracking-tight leading-none block">
-                DevGrate
+              <span className="text-sm font-bold text-slate-900 tracking-tight leading-none block">
+                Dakshinvedha
               </span>
-              <span className="text-[10px] font-bold text-orange-600 tracking-wider uppercase block">
-                Student Portal
+              <span className="text-[10px] font-semibold text-[#0B5D3B] tracking-wider uppercase block">
+                Abroad Solutions
               </span>
             </div>
           </div>
 
           {/* Student Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl">
+          <nav className="hidden md:flex items-center gap-1 bg-[#F4F3EF] p-1 rounded-full border border-[#E7E5E0]/70">
             <button
               onClick={() => onSelectTab("dashboard")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentTab === "dashboard"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900 font-medium"
               }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => onSelectTab("universities")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentTab === "universities"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900 font-medium"
               }`}
             >
               Universities & Courses
             </button>
             <button
               onClick={() => onSelectTab("applications")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentTab === "applications"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900 font-medium"
               }`}
             >
               My Applications
             </button>
             <button
               onClick={() => onSelectTab("profile")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentTab === "profile"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900 font-medium"
               }`}
             >
               Profile & Documents
@@ -124,19 +124,19 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
         {/* Right: Profile completion pill, Notifications & User menu */}
         <div className="flex items-center gap-3">
           {/* Profile Completion Widget Pill */}
-          <div className="hidden lg:flex items-center gap-2.5 bg-orange-50 border border-orange-200/80 px-3 py-1.5 rounded-xl">
-            <div className="w-16 h-2 bg-orange-200 rounded-full overflow-hidden">
+          <div className="hidden lg:flex items-center gap-2.5 bg-white border border-[#E7E5E0] px-3.5 py-1.5 rounded-full shadow-xs">
+            <div className="w-16 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-500"
+                className="h-full bg-[#0B5D3B] rounded-full transition-all duration-500"
                 style={{ width: `${activeStudent?.profileCompletion || 72}%` }}
               />
             </div>
-            <span className="text-xs font-extrabold text-orange-900">
+            <span className="text-xs font-bold text-slate-800">
               {activeStudent?.profileCompletion || 72}%
             </span>
             <button
               onClick={onOpenCompleteProfile}
-              className="text-[11px] font-bold text-orange-600 hover:text-orange-700 bg-white px-2 py-0.5 rounded-md border border-orange-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+              className="text-[11px] font-semibold text-[#0B5D3B] hover:text-[#08482D] bg-[#EAF5EF] hover:bg-[#DCEFE3] border border-[#C8E5D5]/80 px-2.5 py-1 rounded-full transition-all cursor-pointer"
             >
               COMPLETE PROFILE
             </button>
@@ -204,14 +204,14 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 p-1.5 pl-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-[#0B5D3B] text-white font-bold text-xs flex items-center justify-center">
                 {activeStudent?.firstName?.charAt(0) || "S"}
               </div>
               <div className="hidden sm:flex flex-col text-left">
                 <span className="text-xs font-bold text-slate-900 leading-tight">
                   {activeStudent?.name || "Student"}
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">
+                <span className="text-[10px] text-slate-500 font-medium">
                   ID: {activeStudent?.studentId || "STU-2026-101"}
                 </span>
               </div>
@@ -223,7 +223,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                 <div className="px-3 py-2 border-b border-slate-100 mb-1">
                   <p className="font-bold text-slate-900">{activeStudent?.name}</p>
                   <p className="text-[11px] text-slate-400">{activeStudent?.email}</p>
-                  <p className="text-[10px] text-orange-600 font-bold mt-1">
+                  <p className="text-[10px] text-[#0B5D3B] font-bold mt-1">
                     Student ID: {activeStudent?.studentId}
                   </p>
                 </div>

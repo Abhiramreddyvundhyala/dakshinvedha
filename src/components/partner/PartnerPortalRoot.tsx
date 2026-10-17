@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar, NavItemKey } from "@/components/layout/Sidebar";
-import { FloatingSupport } from "@/components/layout/FloatingSupport";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { ImportantNotices } from "@/components/dashboard/ImportantNotices";
 import { UniversityDeadlines } from "@/components/dashboard/UniversityDeadlines";
@@ -11,7 +10,6 @@ import { LatestApplications } from "@/components/dashboard/LatestApplications";
 import { ApplicationDetailsModal } from "@/components/modals/ApplicationDetailsModal";
 import { ApplyNewCourseModal } from "@/components/modals/ApplyNewCourseModal";
 import { ApplicationWizardModal } from "@/components/modals/ApplicationWizardModal";
-import { PartnerGrowthModal } from "@/components/modals/PartnerGrowthModal";
 import { ApplicationHistoryView } from "@/components/views/ApplicationHistoryView";
 import { SearchProgramView } from "@/components/views/SearchProgramView";
 import { URMContactView } from "@/components/views/URMContactView";
@@ -22,12 +20,18 @@ import { ApplyEnquiryView } from "@/components/views/ApplyEnquiryView";
 import { ChatView } from "@/components/views/ChatView";
 import { ValueAddedServicesView } from "@/components/views/ValueAddedServicesView";
 import { OtherView } from "@/components/views/OtherView";
+import { B2BProfileWizard } from "./B2BProfileWizard";
+import { B2BDashboardView } from "./B2BDashboardView";
 import { usePlatform } from "@/context/PlatformContext";
 import { ApplicationRecord, CourseInfo } from "@/types";
 import { CheckCircle2 } from "lucide-react";
+import { TeamManagementView } from "@/components/views/TeamManagementView";
 
 export const PartnerPortalRoot: React.FC = () => {
-  const { applications, updateApplicationStatus, universities } = usePlatform();
+  const { applications, updateApplicationStatus, universities, activeB2BPartner, portalRole } = usePlatform();
+
+  // Profile completion state (once wizard is submitted in session, show dashboard)
+  const [profileJustCompleted, setProfileJustCompleted] = useState(false);
 
   // Navigation & Layout States
   const [currentTab, setCurrentTab] = useState<NavItemKey>("dashboard");
@@ -48,8 +52,6 @@ export const PartnerPortalRoot: React.FC = () => {
     course: CourseInfo;
   } | null>(null);
 
-  // Partner Growth Modal
-  const [isPartnerGrowthOpen, setIsPartnerGrowthOpen] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // Stage 1 -> Stage 2: Moving from "Apply For New Course" modal to the 7-step Application Wizard
@@ -104,13 +106,29 @@ export const PartnerPortalRoot: React.FC = () => {
     setTimeout(() => setSuccessToast(null), 4000);
   };
 
+  // ============================================================
+  // B2B PROFILE INCOMPLETE → Show Wizard
+  // ============================================================
+  if (activeB2BPartner && !activeB2BPartner.profileCompleted && !profileJustCompleted) {
+    return (
+      <B2BProfileWizard
+        partner={activeB2BPartner}
+        onComplete={() => setProfileJustCompleted(true)}
+      />
+    );
+  }
+
+  // ============================================================
+  // B2B DASHBOARD TAB (special — uses B2BDashboardView for 'dashboard' tab)
+  // ============================================================
+  const isB2BMode = !!(activeB2BPartner);
+
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans selection:bg-[#0B5D3B] selection:text-white">
       {/* 1. Fixed Top Header */}
       <Header
         onToggleSidebarMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         onSelectApplication={(app) => setSelectedApplication(app)}
-        onOpenPartnerProgram={() => setIsPartnerGrowthOpen(true)}
         onOpenURMModal={() => setCurrentTab("urm-contact")}
         onOpenFinanceQuick={() => setCurrentTab("finance-commission")}
         onOpenSupportModal={() => setCurrentTab("chat")}
@@ -139,61 +157,72 @@ export const PartnerPortalRoot: React.FC = () => {
 
       {/* 3. Scrollable Main Content Area */}
       <main
-        className={`flex-1 transition-all duration-300 ease-in-out pt-[101px] ${
+        className={`flex-1 transition-all duration-300 ease-in-out pt-16 ${
           isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
         }`}
       >
         <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-7 space-y-6">
-          {/* TAB: DASHBOARD */}
+          {/* TAB: DASHBOARD — Show B2B Dashboard for b2b/agent, standard for classic agents */}
           {currentTab === "dashboard" && (
-            <div className="space-y-6 animate-fade-in">
-              {/* Agent Welcome Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <div>
-                  <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span>Welcome back, Sarah!</span>
-                    <span className="text-sm font-normal text-slate-400">|</span>
-                    <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-                      Partner ID: AGT-9041
-                    </span>
-                  </h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Central Admissions Intake 2026/2027 Dashboard • Partner B2B Operations
-                  </p>
+            <>
+              {isB2BMode ? (
+                <B2BDashboardView
+                  partner={activeB2BPartner!}
+                  onSelectApplication={(app) => setSelectedApplication(app)}
+                  onViewAllApplications={() => setCurrentTab("application-history")}
+                  onAddNewApplication={() => setIsApplyNewCourseOpen(true)}
+                />
+              ) : (
+                <div className="space-y-6 animate-fade-in">
+                  {/* Agent Welcome Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
+                    <div>
+                      <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                        <span>Welcome back!</span>
+                        <span className="text-sm font-normal text-slate-400">|</span>
+                        <span className="text-xs font-semibold text-[#0B5D3B] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                          Partner ID: AGT-9041
+                        </span>
+                      </h1>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Central Admissions Intake 2026/2027 Dashboard • Partner B2B Operations
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <button
+                        onClick={() => setIsApplyNewCourseOpen(true)}
+                        className="px-4 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-sm shadow-emerald-900/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>+ Add New Application</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* TOP SECTION: KPI CARDS */}
+                  <KPICards
+                    onCardClick={(type) => {
+                      if (type === "total" || type === "processed" || type === "cas") {
+                        setCurrentTab("application-history");
+                      }
+                    }}
+                  />
+
+                  {/* MIDDLE SECTION: IMPORTANT NOTICES & UNIVERSITY DEADLINES */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
+                    <ImportantNotices />
+                    <UniversityDeadlines />
+                  </div>
+
+                  {/* BOTTOM SECTION: LATEST APPLICATIONS TABLE */}
+                  <LatestApplications
+                    applications={applications}
+                    onSelectApplication={(app) => setSelectedApplication(app)}
+                    onViewAllClick={() => setCurrentTab("application-history")}
+                  />
                 </div>
-
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <button
-                    onClick={() => setIsApplyNewCourseOpen(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-bold shadow-sm shadow-orange-500/20 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <span>+ Add New Application</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* TOP SECTION: KPI CARDS */}
-              <KPICards
-                onCardClick={(type) => {
-                  if (type === "total" || type === "processed" || type === "cas") {
-                    setCurrentTab("application-history");
-                  }
-                }}
-              />
-
-              {/* MIDDLE SECTION: IMPORTANT NOTICES & UNIVERSITY DEADLINES */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
-                <ImportantNotices />
-                <UniversityDeadlines />
-              </div>
-
-              {/* BOTTOM SECTION: LATEST APPLICATIONS TABLE */}
-              <LatestApplications
-                applications={applications}
-                onSelectApplication={(app) => setSelectedApplication(app)}
-                onViewAllClick={() => setCurrentTab("application-history")}
-              />
-            </div>
+              )}
+            </>
           )}
 
           {/* TAB: APPLICATION HISTORY */}
@@ -246,13 +275,13 @@ export const PartnerPortalRoot: React.FC = () => {
           {/* TAB: CHAT */}
           {currentTab === "chat" && <ChatView />}
 
+          {/* TAB: TEAM MANAGEMENT */}
+          {currentTab === "team" && <TeamManagementView />}
+
           {/* TAB: OTHER */}
           {currentTab === "other" && <OtherView />}
         </div>
       </main>
-
-      {/* 4. Floating Support Button with onStartChat callback */}
-      <FloatingSupport onStartChat={() => setCurrentTab("chat")} />
 
       {/* Modals */}
       <ApplicationDetailsModal
@@ -275,11 +304,6 @@ export const PartnerPortalRoot: React.FC = () => {
         initialCourseSelection={wizardCourseSelection}
         onApplicationSubmitted={handleApplicationSubmitted}
         onSaveDraft={handleSaveDraft}
-      />
-
-      <PartnerGrowthModal
-        isOpen={isPartnerGrowthOpen}
-        onClose={() => setIsPartnerGrowthOpen(false)}
       />
     </div>
   );

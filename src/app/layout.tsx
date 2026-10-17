@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "EduPath Global | Education Consultant & Agent Portal",
-  description: "Comprehensive Study Abroad Recruitment Partner Portal - Monitor applications, search programs, track university deadlines, and access commission finance.",
+  title: "Dakshinvedha ABROAD Solutions — Unified Portal",
+  description: "Sign in to Dakshinvedha ABROAD Solutions. Access your student dashboard, B2B partner portal, agent panel, or admin control center.",
 };
 
 export default function RootLayout({
@@ -25,11 +27,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${fraunces.variable} font-sans h-full antialiased`}
       suppressHydrationWarning
     >
       <body
-        className="min-h-full flex flex-col bg-[#f4f6f9] text-slate-800"
+        className="min-h-full flex flex-col bg-[#FAFAF8] text-slate-800"
         suppressHydrationWarning
       >
         {children}

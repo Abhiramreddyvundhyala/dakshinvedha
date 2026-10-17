@@ -33,10 +33,6 @@ export const StudentPortalRoot: React.FC = () => {
     useState<ApplicationRecord | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
-  // If not authenticated, render dedicated Student Auth experience
-  if (!isStudentAuthenticated) {
-    return <StudentAuthView />;
-  }
 
   // Handler: When student selects university from discovery or dashboard
   const handleSelectUniversity = (univ: UniversityInfo, targetSection: "details" | "courses" = "details") => {
@@ -53,7 +49,7 @@ export const StudentPortalRoot: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FAFAF8] text-slate-800 flex flex-col font-sans">
       {/* Student Top Header */}
       <StudentHeader
         currentTab={currentTab}

@@ -362,7 +362,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
         {/* Wizard Header */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between border-b border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
@@ -400,7 +400,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 onClick={() => setStep(s.num)}
                 className={`flex items-center gap-2 pb-1 border-b-2 whitespace-nowrap transition-colors ${
                   step === s.num
-                    ? "border-orange-500 text-orange-600 font-bold"
+                    ? "border-[#0B5D3B] text-[#0B5D3B] font-bold"
                     : step > s.num
                     ? "border-emerald-500 text-emerald-700"
                     : "border-transparent text-slate-400 hover:text-slate-600"
@@ -409,7 +409,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <div
                   className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                     step === s.num
-                      ? "bg-orange-500 text-white"
+                      ? "bg-[#0B5D3B] text-white"
                       : step > s.num
                       ? "bg-emerald-500 text-white"
                       : "bg-slate-200 text-slate-500"
@@ -438,7 +438,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <p className="text-xs text-slate-500 mt-1">
                   Candidate dossier has been registered into the admissions pipeline with ID:
                 </p>
-                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl inline-block font-mono text-base font-extrabold text-orange-600">
+                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl inline-block font-mono text-base font-extrabold text-[#0B5D3B]">
                   {submittedApp.camsId}
                 </div>
               </div>
@@ -451,7 +451,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
               </div>
               <button
                 onClick={onClose}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-xs transition-colors"
+                className="px-6 py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
               >
                 Return to Dashboard
               </button>
@@ -473,7 +473,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                         required
                       />
                     </div>
@@ -485,7 +485,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={middleName}
                         onChange={(e) => setMiddleName(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       />
                     </div>
                     <div>
@@ -496,7 +496,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                         required
                       />
                     </div>
@@ -508,7 +508,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="date"
                         value={dob}
                         onChange={(e) => setDob(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       />
                     </div>
                     <div>
@@ -518,7 +518,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                       <select
                         value={gender}
                         onChange={(e) => setGender(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       >
                         <option value="Female">Female</option>
                         <option value="Male">Male</option>
@@ -533,7 +533,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={nationality}
                         onChange={(e) => setNationality(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       />
                     </div>
                     <div>
@@ -544,7 +544,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={passportNumber}
                         onChange={(e) => setPassportNumber(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B] font-mono"
                       />
                     </div>
                     <div>
@@ -555,7 +555,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="date"
                         value={passportExpiry}
                         onChange={(e) => setPassportExpiry(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       />
                     </div>
                     <div>
@@ -566,7 +566,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       />
                     </div>
                     <div>
@@ -577,7 +577,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
                       />
                     </div>
                   </div>
@@ -660,7 +660,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                     <button
                       type="button"
                       onClick={addQualification}
-                      className="px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg font-semibold hover:bg-orange-100 flex items-center gap-1"
+                      className="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg font-semibold hover:bg-emerald-100 flex items-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Another Qualification</span>
@@ -937,7 +937,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         onChange={(e) =>
                           setCourseSelection({ ...courseSelection, tuitionFee: e.target.value })
                         }
-                        className="w-full p-2.5 border border-slate-200 rounded-lg font-mono font-bold text-orange-600"
+                        className="w-full p-2.5 border border-slate-200 rounded-lg font-mono font-bold text-[#0B5D3B]"
                       />
                     </div>
                   </div>
@@ -966,9 +966,9 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                             key={cat}
                             type="button"
                             onClick={() => handleSimulateUpload(cat)}
-                            className="px-2.5 py-1 bg-white border border-slate-200 hover:border-orange-400 text-slate-700 rounded text-[11px] font-semibold flex items-center gap-1"
+                            className="px-2.5 py-1 bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                           >
-                            <UploadCloud className="w-3 h-3 text-orange-500" />
+                            <UploadCloud className="w-3 h-3 text-[#0B5D3B]" />
                             <span>+ {cat}</span>
                           </button>
                         )
@@ -984,7 +984,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         className="p-3 bg-white flex items-center justify-between hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-[10px]">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#0B5D3B] flex items-center justify-center font-bold text-[10px]">
                             PDF
                           </div>
                           <div>
@@ -1029,7 +1029,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setStep(1)}
-                          className="text-orange-600 font-bold hover:underline"
+                          className="text-[#0B5D3B] font-bold hover:underline"
                         >
                           EDIT
                         </button>
@@ -1049,7 +1049,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setStep(3)}
-                          className="text-orange-600 font-bold hover:underline"
+                          className="text-[#0B5D3B] font-bold hover:underline"
                         >
                           EDIT
                         </button>
@@ -1062,13 +1062,13 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                     </div>
 
                     {/* Course Box */}
-                    <div className="p-4 bg-orange-50/60 border border-orange-200 rounded-xl space-y-2">
-                      <div className="flex items-center justify-between pb-1 border-b border-orange-200">
-                        <span className="font-bold text-orange-950">Target Destination</span>
+                    <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
+                      <div className="flex items-center justify-between pb-1 border-b border-emerald-200">
+                        <span className="font-bold text-emerald-950">Target Destination</span>
                         <button
                           type="button"
                           onClick={() => setStep(5)}
-                          className="text-orange-600 font-bold hover:underline"
+                          className="text-[#0B5D3B] font-bold hover:underline"
                         >
                           EDIT
                         </button>
@@ -1124,7 +1124,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setStep(step + 1)}
-                  className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>Continue</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1133,7 +1133,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <button
                   type="button"
                   onClick={handleFinalSubmit}
-                  className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/25 flex items-center gap-1.5 transition-all"
+                  className="px-6 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-900/20 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>SUBMIT APPLICATION</span>

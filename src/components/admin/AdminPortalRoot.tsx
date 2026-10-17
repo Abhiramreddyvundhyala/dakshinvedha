@@ -9,6 +9,7 @@ import { AdminApplicationsView } from "./AdminApplicationsView";
 import { AdminCoursesView } from "./AdminCoursesView";
 import { AdminDocumentsQueueView } from "./AdminDocumentsQueueView";
 import { AdminNoticesView } from "./AdminNoticesView";
+import { AdminPartnersView } from "./AdminPartnersView";
 import { StudentProfile } from "@/types";
 
 export const AdminPortalRoot: React.FC = () => {
@@ -37,6 +38,8 @@ export const AdminPortalRoot: React.FC = () => {
         {currentTab === "courses" && <AdminCoursesView />}
 
         {currentTab === "documents" && <AdminDocumentsQueueView />}
+
+        {currentTab === "partners" && <AdminPartnersView />}
 
         {currentTab === "notices" && <AdminNoticesView />}
       </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from "react";
 import {
   PortalRole,
   StudentProfile,
@@ -15,6 +15,8 @@ import {
   CourseRequirementsConfig,
   PrimaryStatusType,
   SecondaryStatusType,
+  B2BPartnerProfile,
+  B2BTeamMember,
 } from "@/types";
 import {
   MOCK_UNIVERSITIES,
@@ -24,6 +26,8 @@ import {
   MOCK_NOTIFICATIONS,
 } from "@/data/mockData";
 import { SEED_STUDENTS, DEFAULT_REQUIREMENTS } from "@/data/studentSeedData";
+import { SEED_B2B_PARTNERS } from "@/data/b2bSeedData";
+import { performLogout } from "@/utils/auth";
 
 interface PlatformContextType {
   // Navigation & Role
@@ -38,6 +42,7 @@ interface PlatformContextType {
   loginStudent: (identifier: string, method: "password" | "otp", codeOrPass: string) => boolean;
   registerStudent: (basic: { name: string; mobile: string; email: string }) => StudentProfile;
   logoutStudent: () => void;
+  logout: () => void;
   switchActiveStudent: (studentId: string) => void;
   updateActiveStudentProfile: (updates: Partial<StudentProfile>) => void;
   completeOnboarding: () => void;
@@ -90,6 +95,19 @@ interface PlatformContextType {
   updateCourseRequirements: (courseId: string, req: CourseRequirementsConfig) => void;
   addUniversity: (univ: UniversityInfo) => void;
 
+  // B2B / Partner Management
+  b2bPartners: B2BPartnerProfile[];
+  activeB2BPartner: B2BPartnerProfile | null;
+  createB2BAccount: (basic: { name: string; phone: string; email: string }) => B2BPartnerProfile;
+  updateB2BProfile: (partnerId: string, updates: Partial<B2BPartnerProfile>) => void;
+  verifyB2BPartner: (partnerId: string) => void;
+  loginB2B: (email: string, password: string) => B2BPartnerProfile | null;
+
+  // B2B Team Management
+  addB2BTeamMember: (partnerId: string, member: { name: string; email: string; password: string }) => B2BTeamMember | { error: string };
+  removeB2BTeamMember: (partnerId: string, memberId: string) => void;
+  updateB2BTeamMember: (partnerId: string, memberId: string, updates: Partial<B2BTeamMember>) => void;
+
   // Notices & Notifications
   notices: NoticeItem[];
   publishNotice: (notice: Omit<NoticeItem, "id" | "dateAdded">) => void;
@@ -135,16 +153,21 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   });
   const [notices, setNotices] = useState<NoticeItem[]>(MOCK_NOTICES);
   const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
+  const [b2bPartners, setB2bPartners] = useState<B2BPartnerProfile[]>(SEED_B2B_PARTNERS);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
   // Hydrate from localStorage
   useEffect(() => {
     try {
       const savedRole = localStorage.getItem("devgrate_portal_role");
-      if (savedRole === "student" || savedRole === "partner" || savedRole === "admin") {
+      if (savedRole === "student" || savedRole === "partner" || savedRole === "agent" || savedRole === "admin") {
         setPortalRoleState(savedRole);
       }
-      const savedAuth = localStorage.getItem("devgrate_student_auth");
+      const savedAuth =
+        sessionStorage.getItem("dakshin_authenticated") ||
+        localStorage.getItem("dakshin_authenticated") ||
+        localStorage.getItem("devgrate_authenticated") ||
+        localStorage.getItem("devgrate_student_auth");
       if (savedAuth !== null) {
         setIsStudentAuthenticated(savedAuth === "true");
       }
@@ -194,9 +217,9 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [portalRole, isStudentAuthenticated, activeStudentId, students, applications, courses, isHydrated]);
 
-  const setPortalRole = (role: PortalRole) => {
+  const setPortalRole = useCallback((role: PortalRole) => {
     setPortalRoleState(role);
-  };
+  }, []);
 
   const activeStudent = useMemo(() => {
     return students.find((s) => s.id === activeStudentId) || students[0] || null;
@@ -357,6 +380,12 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const logoutStudent = () => {
     setIsStudentAuthenticated(false);
+    performLogout();
+  };
+
+  const logout = () => {
+    setIsStudentAuthenticated(false);
+    performLogout();
   };
 
   const switchActiveStudent = (id: string) => {
@@ -616,7 +645,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       secondaryStatus: "Documents Pending",
       dateAdded: today,
       dateModified: today,
-      counselorName: "DevGrate Student Self-Apply",
+      counselorName: "Dakshinvedha Student Self-Apply",
       qualifications: student.education.map((e) => ({
         id: e.id,
         highestQualification: e.degree || e.level,
@@ -901,6 +930,217 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     );
   }, [applications, activeStudent]);
 
+  // ==========================================
+  // B2B / PARTNER MANAGEMENT
+  // ==========================================
+  const activeB2BPartner = useMemo(() => {
+    if (portalRole !== "partner" && portalRole !== "agent") return null;
+    const userEmail = typeof window !== "undefined" ? localStorage.getItem("devgrate_user_email") : null;
+    if (userEmail) {
+      return b2bPartners.find((p) => p.email.toLowerCase() === userEmail.toLowerCase()) || b2bPartners[0] || null;
+    }
+    return b2bPartners[0] || null;
+  }, [b2bPartners, portalRole]);
+
+  // Admin creates B2B account with credentials
+  const createB2BAccount = (basic: { name: string; phone: string; email: string }): B2BPartnerProfile => {
+    const newId = `b2b-${Date.now()}`;
+    const partnerCode = `PTR-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const newPartner: B2BPartnerProfile = {
+      id: newId,
+      partnerId: partnerCode,
+      name: basic.name,
+      phone: basic.phone,
+      email: basic.email,
+      password: "password123",
+      accountStatus: "Pending Profile",
+      profileCompleted: false,
+      verificationStatus: "Pending",
+      createdByAdmin: "Super Admin",
+      createdDate: new Date().toISOString().slice(0, 10),
+      lastLogin: "",
+      organizationName: "",
+      organizationEmail: "",
+      organizationPhone: "",
+      incorporationNumber: "",
+      registrationNumber: "",
+      personalDocuments: {
+        aadhaarNumber: "",
+        aadhaarStatus: "Pending",
+        panNumber: "",
+        panStatus: "Pending",
+      },
+      organizationDocuments: {
+        orgPanNumber: "",
+        orgPanStatus: "Pending",
+        orgCertificateStatus: "Pending",
+        gstNumber: "",
+        gstCertificateStatus: "Pending",
+      },
+      bankDetails: {
+        ifsc: "",
+        bankName: "",
+        accountNumber: "",
+        swiftCode: "",
+        accountHolderName: "",
+        status: "Pending",
+      },
+      metrics: {
+        totalApplications: 0,
+        processingApplications: 0,
+        completedApplications: 0,
+        rejectedApplications: 0,
+        intakeStudents: { january: 0, may: 0, september: 0, december: 0 },
+        commissionAmount: "₹0",
+        commissionPending: "₹0",
+        commissionPaid: "₹0",
+      },
+    };
+    setB2bPartners((prev) => [newPartner, ...prev]);
+
+    const adminNotif: NotificationItem = {
+      id: `notif-${Date.now()}`,
+      title: "New B2B Partner Created",
+      message: `B2B account created for ${basic.name} (${basic.email}). Credentials: password123. Profile pending completion.`,
+      timeAgo: "Just now",
+      type: "system",
+      isRead: false,
+    };
+    setNotifications((prev) => [adminNotif, ...prev]);
+
+    return newPartner;
+  };
+
+  // B2B partner updates their profile
+  const updateB2BProfile = (partnerId: string, updates: Partial<B2BPartnerProfile>) => {
+    setB2bPartners((prev) =>
+      prev.map((p) => {
+        if (p.id === partnerId || p.partnerId === partnerId) {
+          const merged = { ...p, ...updates };
+          // Check if all critical fields are filled to mark profile as complete
+          const isComplete = !!(
+            merged.organizationName &&
+            merged.organizationEmail &&
+            merged.incorporationNumber &&
+            merged.personalDocuments.aadhaarNumber &&
+            merged.personalDocuments.panNumber &&
+            merged.organizationDocuments.orgPanNumber &&
+            merged.organizationDocuments.gstNumber &&
+            merged.bankDetails.accountNumber
+          );
+          merged.profileCompleted = isComplete;
+          if (isComplete && merged.accountStatus === "Pending Profile") {
+            merged.accountStatus = "Under Verification";
+          }
+          return merged;
+        }
+        return p;
+      })
+    );
+  };
+
+  // Admin verifies a B2B partner
+  const verifyB2BPartner = (partnerId: string) => {
+    setB2bPartners((prev) =>
+      prev.map((p) => {
+        if (p.id === partnerId || p.partnerId === partnerId) {
+          return {
+            ...p,
+            verificationStatus: "Verified" as const,
+            accountStatus: "Active" as const,
+            personalDocuments: {
+              ...p.personalDocuments,
+              aadhaarStatus: "Verified" as const,
+              panStatus: "Verified" as const,
+            },
+            organizationDocuments: {
+              ...p.organizationDocuments,
+              orgPanStatus: "Verified" as const,
+              orgCertificateStatus: "Verified" as const,
+              gstCertificateStatus: "Verified" as const,
+            },
+            bankDetails: {
+              ...p.bankDetails,
+              status: "Verified" as const,
+            },
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  // B2B Login
+  const loginB2B = (email: string, password: string): B2BPartnerProfile | null => {
+    const found = b2bPartners.find((p) => p.email.toLowerCase() === email.toLowerCase());
+    if (!found) return null;
+    // Demo: accept any password
+    return found;
+  };
+
+  // ==========================================
+  // B2B TEAM MANAGEMENT
+  // ==========================================
+  const addB2BTeamMember = (
+    partnerId: string,
+    member: { name: string; email: string; password: string }
+  ): B2BTeamMember | { error: string } => {
+    const partner = b2bPartners.find((p) => p.id === partnerId || p.partnerId === partnerId);
+    if (!partner) return { error: "Partner not found" };
+    const currentMembers = partner.teamMembers || [];
+    if (currentMembers.length >= 5) {
+      return { error: "Maximum of 5 team members allowed" };
+    }
+    // Check if email already exists
+    const emailExists = currentMembers.some((m) => m.email.toLowerCase() === member.email.toLowerCase());
+    if (emailExists) return { error: "A team member with this email already exists" };
+    const newMember: B2BTeamMember = {
+      id: `mem-${Date.now()}`,
+      name: member.name,
+      email: member.email,
+      password: member.password,
+      role: "Team Member",
+      status: "Active",
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    setB2bPartners((prev) =>
+      prev.map((p) => {
+        if (p.id === partnerId || p.partnerId === partnerId) {
+          return { ...p, teamMembers: [...(p.teamMembers || []), newMember] };
+        }
+        return p;
+      })
+    );
+    return newMember;
+  };
+
+  const removeB2BTeamMember = (partnerId: string, memberId: string) => {
+    setB2bPartners((prev) =>
+      prev.map((p) => {
+        if (p.id === partnerId || p.partnerId === partnerId) {
+          return { ...p, teamMembers: (p.teamMembers || []).filter((m) => m.id !== memberId) };
+        }
+        return p;
+      })
+    );
+  };
+
+  const updateB2BTeamMember = (partnerId: string, memberId: string, updates: Partial<B2BTeamMember>) => {
+    setB2bPartners((prev) =>
+      prev.map((p) => {
+        if (p.id === partnerId || p.partnerId === partnerId) {
+          return {
+            ...p,
+            teamMembers: (p.teamMembers || []).map((m) =>
+              m.id === memberId ? { ...m, ...updates } : m
+            ),
+          };
+        }
+        return p;
+      })
+    );
+  };
+
   return (
     <PlatformContext.Provider
       value={{
@@ -913,6 +1153,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         loginStudent,
         registerStudent,
         logoutStudent,
+        logout,
         switchActiveStudent,
         updateActiveStudentProfile,
         completeOnboarding,
@@ -936,6 +1177,15 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         courses,
         updateCourseRequirements,
         addUniversity,
+        b2bPartners,
+        activeB2BPartner,
+        createB2BAccount,
+        updateB2BProfile,
+        verifyB2BPartner,
+        loginB2B,
+        addB2BTeamMember,
+        removeB2BTeamMember,
+        updateB2BTeamMember,
         notices,
         publishNotice,
         notifications,

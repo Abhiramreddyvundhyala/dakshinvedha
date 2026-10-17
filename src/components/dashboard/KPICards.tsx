@@ -32,7 +32,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
       value: KPI_DATA.withCasTeam.value,
       subtext: KPI_DATA.withCasTeam.change,
       icon: ShieldCheck,
-      badgeColor: "text-orange-700 bg-orange-50",
+      badgeColor: "text-emerald-700 bg-emerald-50",
     },
     {
       id: "closed",
@@ -52,11 +52,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
           <div
             key={card.id}
             onClick={() => onCardClick && onCardClick(card.id)}
-            className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-orange-300"
+            className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-emerald-300"
           >
             <div className="flex items-start justify-between">
-              {/* Large circular icon container with orange line icon */}
-              <div className="w-14 h-14 rounded-full bg-orange-50/80 border border-orange-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200 shadow-xs">
+              {/* Large circular icon container with emerald line icon */}
+              <div className="w-14 h-14 rounded-full bg-emerald-50/80 border border-emerald-100 flex items-center justify-center text-[#0B5D3B] group-hover:bg-[#0B5D3B] group-hover:text-white transition-colors duration-200 shadow-xs">
                 <IconComponent className="w-7 h-7 stroke-[1.75]" />
               </div>
 
@@ -66,7 +66,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
                   <TrendingUp className="w-3 h-3" />
                   Active
                 </span>
-                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-[#0B5D3B] transition-colors" />
               </div>
             </div>
 
@@ -85,7 +85,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
 
               {/* Auxiliary metric detail */}
               <p className="text-[11px] text-slate-500 mt-1 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 {card.subtext}
               </p>
             </div>

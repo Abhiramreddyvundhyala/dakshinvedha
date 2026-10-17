@@ -2,10 +2,10 @@
 
 import React from "react";
 import { usePlatform } from "@/context/PlatformContext";
-import { GraduationCap, Briefcase, ShieldCheck, UserCheck, Layers, HelpCircle } from "lucide-react";
+import { GraduationCap, Briefcase, ShieldCheck, UserCheck, Layers, Building2 } from "lucide-react";
 
 export const PortalSwitcherBar: React.FC = () => {
-  const { portalRole, setPortalRole, activeStudent, isStudentAuthenticated } = usePlatform();
+  const { portalRole, setPortalRole, activeStudent, isStudentAuthenticated, activeB2BPartner } = usePlatform();
 
   return (
     <div className="bg-slate-900 border-b border-slate-800 text-white text-xs py-2 px-4 sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 shadow-md backdrop-blur-md">
@@ -13,15 +13,15 @@ export const PortalSwitcherBar: React.FC = () => {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center font-black text-[10px] text-white shadow-xs">
-            DG
+            DV
           </div>
           <span className="font-extrabold tracking-tight text-slate-100 hidden sm:inline">
-            DevGrate Unified Platform
+            Dakshinvedha ABROAD Solutions
           </span>
         </div>
         <span className="text-slate-600 hidden md:inline">|</span>
         <span className="text-slate-400 text-[11px] hidden md:inline">
-          Shared Reactive Architecture (Student • Partner • Super Admin)
+          Shared Reactive Architecture (Student • B2B • Agent • Super Admin)
         </span>
       </div>
 
@@ -35,7 +35,7 @@ export const PortalSwitcherBar: React.FC = () => {
               ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-500/30 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
           }`}
-          title="Open Dedicated Student Portal"
+          title="Open Student Portal"
         >
           <GraduationCap className="w-3.5 h-3.5" />
           <span>Student Portal</span>
@@ -44,7 +44,7 @@ export const PortalSwitcherBar: React.FC = () => {
           )}
         </button>
 
-        {/* 2. Partner / B2B Portal */}
+        {/* 2. B2B / Partner Portal */}
         <button
           onClick={() => setPortalRole("partner")}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -52,16 +52,33 @@ export const PortalSwitcherBar: React.FC = () => {
               ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/30 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
           }`}
-          title="Open Existing Partner / B2B Portal"
+          title="Open B2B / Partner Portal"
         >
-          <Briefcase className="w-3.5 h-3.5" />
-          <span>Partner / B2B</span>
+          <Building2 className="w-3.5 h-3.5" />
+          <span>B2B / Partner</span>
           {portalRole === "partner" && (
             <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
           )}
         </button>
 
-        {/* 3. Super Admin Portal */}
+        {/* 3. Agent Portal */}
+        <button
+          onClick={() => setPortalRole("agent")}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            portalRole === "agent"
+              ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-500/30 scale-[1.02]"
+              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+          }`}
+          title="Open Agent Portal"
+        >
+          <Briefcase className="w-3.5 h-3.5" />
+          <span>Agent</span>
+          {portalRole === "agent" && (
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+          )}
+        </button>
+
+        {/* 4. Super Admin Portal */}
         <button
           onClick={() => setPortalRole("admin")}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -69,7 +86,7 @@ export const PortalSwitcherBar: React.FC = () => {
               ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-sm shadow-purple-500/30 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
           }`}
-          title="Open Super Admin Platform Control Center"
+          title="Open Super Admin Control Center"
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Super Admin</span>
@@ -79,7 +96,7 @@ export const PortalSwitcherBar: React.FC = () => {
         </button>
       </div>
 
-      {/* Contextual Status Badge & Architecture Reminder */}
+      {/* Contextual Status Badge */}
       <div className="flex items-center gap-2">
         {portalRole === "student" && (
           <div className="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/60 text-[11px]">
@@ -94,11 +111,15 @@ export const PortalSwitcherBar: React.FC = () => {
           </div>
         )}
 
-        {portalRole === "partner" && (
+        {(portalRole === "partner" || portalRole === "agent") && (
           <div className="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/60 text-[11px]">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="text-slate-300">
-              Agent ID: <strong className="text-white">AGT-9041</strong> (Sarah Jenkins)
+              {activeB2BPartner ? (
+                <>Partner ID: <strong className="text-white">{activeB2BPartner.partnerId}</strong> ({activeB2BPartner.name})</>
+              ) : (
+                <>Agent ID: <strong className="text-white">AGT-9041</strong> (Agent)</>
+              )}
             </span>
           </div>
         )}
@@ -112,13 +133,13 @@ export const PortalSwitcherBar: React.FC = () => {
           </div>
         )}
 
-        {/* Note on Agent Architecture Preservation */}
+        {/* Note on Architecture */}
         <div
           className="hidden xl:flex items-center gap-1 text-[10px] text-slate-400 bg-slate-950 px-2 py-1 rounded border border-slate-800"
-          title="Architecture Note: Agent login type preserved separately from Partner/B2B for future extension."
+          title="Dakshinvedha Unified Platform"
         >
           <Layers className="w-2.5 h-2.5 text-slate-500" />
-          <span>Agent Role Modular</span>
+          <span>Dakshinvedha Portal</span>
         </div>
       </div>
     </div>

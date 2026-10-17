@@ -467,5 +467,96 @@ export interface EligibilityResult {
   disclaimer: string;
 }
 
-export type PortalRole = "student" | "partner" | "admin";
+export type PortalRole = "student" | "partner" | "agent" | "admin";
+
+// ==========================================
+// B2B / PARTNER PROFILE
+// ==========================================
+export type B2BVerificationStatus = "Pending" | "Under Review" | "Verified" | "Rejected";
+
+export interface B2BTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: "Team Member";
+  status: "Active" | "Suspended";
+  createdAt: string;
+  lastLogin?: string;
+}
+
+export interface B2BPartnerProfile {
+  id: string;
+  partnerId: string;
+  // Basic Details
+  name: string;
+  phone: string;
+  email: string;
+  password?: string;
+  accountStatus: "Active" | "Pending Profile" | "Under Verification" | "Suspended";
+  profileCompleted: boolean;
+  verificationStatus: B2BVerificationStatus;
+  createdByAdmin: string; // admin who created this account
+  createdDate: string;
+  lastLogin: string;
+
+  // Organization Details
+  organizationName: string;
+  organizationEmail: string;
+  organizationPhone: string;
+  incorporationNumber: string;
+  registrationNumber: string; // Registration / Proprietorship Number
+
+  // Personal Documents
+  personalDocuments: {
+    aadhaarNumber: string;
+    aadhaarFile?: string;
+    aadhaarStatus: B2BVerificationStatus;
+    panNumber: string;
+    panFile?: string;
+    panStatus: B2BVerificationStatus;
+  };
+
+  // Organization Documents
+  organizationDocuments: {
+    orgPanNumber: string;
+    orgPanFile?: string;
+    orgPanStatus: B2BVerificationStatus;
+    orgCertificateFile?: string;
+    orgCertificateStatus: B2BVerificationStatus;
+    gstNumber: string;
+    gstCertificateFile?: string;
+    gstCertificateStatus: B2BVerificationStatus;
+  };
+
+  // Bank Details
+  bankDetails: {
+    ifsc: string;
+    bankName: string;
+    accountNumber: string;
+    swiftCode: string;
+    accountHolderName: string;
+    status: "Pending" | "Verified" | "Action Required";
+  };
+
+  // Dashboard Metrics (computed/assigned by admin)
+  metrics: {
+    totalApplications: number;
+    processingApplications: number;
+    completedApplications: number;
+    rejectedApplications: number;
+    intakeStudents: {
+      january: number;
+      may: number;
+      september: number;
+      december: number;
+    };
+    commissionAmount: string;
+    commissionPending: string;
+    commissionPaid: string;
+  };
+
+  // Team Members (up to 5)
+  teamMembers?: B2BTeamMember[];
+}
 

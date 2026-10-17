@@ -14,7 +14,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   Megaphone,
+  LogOut,
 } from "lucide-react";
+import { performLogout } from "@/utils/auth";
 
 export type AdminTabKey =
   | "overview"
@@ -22,6 +24,7 @@ export type AdminTabKey =
   | "applications"
   | "courses"
   | "documents"
+  | "partners"
   | "notices";
 
 interface AdminHeaderProps {
@@ -37,7 +40,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
   }, 0);
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-[37px] z-40 shadow-md">
+    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-40 shadow-md">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand */}
         <div className="flex items-center gap-6">
@@ -50,10 +53,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
             </div>
             <div>
               <span className="text-sm font-black text-white tracking-tight leading-none block">
-                DevGrate Admin
+                Dakshinvedha Admin
               </span>
               <span className="text-[10px] font-bold text-purple-400 tracking-wider uppercase block">
-                Super Admin Engine
+                Abroad Solutions
               </span>
             </div>
           </div>
@@ -66,6 +69,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
               { key: "applications", label: "Applications", count: applications.length, icon: FileText },
               { key: "courses", label: "Course Requirements", icon: BookOpen },
               { key: "documents", label: "Doc Queue", count: pendingDocsCount, badgeColor: "bg-amber-500", icon: CheckCircle2 },
+              { key: "partners", label: "B2B Partners", icon: Building2 },
               { key: "notices", label: "Announcements", icon: Megaphone },
             ].map((t) => {
               const isSelected = currentTab === t.key;
@@ -97,7 +101,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
           </nav>
         </div>
 
-        {/* Right: Admin User Profile */}
+        {/* Right: Admin User Profile & Logout */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
             <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-[10px]">
@@ -108,6 +112,14 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
               <span className="text-[10px] text-purple-400 block font-mono">ROOT_LEVEL_ACCESS</span>
             </div>
           </div>
+          <button
+            onClick={() => performLogout()}
+            title="Sign Out"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-800 text-rose-400 hover:bg-rose-950/40 hover:border-rose-900 transition-colors text-xs font-semibold cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
       </div>
 
@@ -119,6 +131,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
           { key: "applications", label: "Applications" },
           { key: "courses", label: "Requirements" },
           { key: "documents", label: "Doc Queue" },
+          { key: "partners", label: "B2B Partners" },
           { key: "notices", label: "Notices" },
         ].map((t) => (
           <button

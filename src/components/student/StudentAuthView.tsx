@@ -351,7 +351,7 @@ export const StudentAuthView: React.FC = () => {
                   </button>
 
                   <p className="text-[11px] text-slate-400 text-center">
-                    By continuing, you agree to DevGrate admissions terms & privacy compliance.
+                    By continuing, you agree to Dakshinvedha admissions terms & privacy compliance.
                   </p>
                 </form>
               ) : (

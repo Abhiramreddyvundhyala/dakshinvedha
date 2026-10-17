@@ -41,10 +41,12 @@ export const StudentProfileView: React.FC = () => {
   // Add Qualification submodal state
   const [showAddEdu, setShowAddEdu] = useState(false);
   const [eduLevel, setEduLevel] = useState<EducationLevelType>("Bachelor");
+  const [degreeName, setDegreeName] = useState("");
   const [institution, setInstitution] = useState("");
   const [board, setBoard] = useState("");
   const [stream, setStream] = useState("MPC");
-  const [score, setScore] = useState("8.3");
+  const [score, setScore] = useState("");
+  const [startYear, setStartYear] = useState("2021");
   const [passYear, setPassYear] = useState("2025");
   const [engMarks, setEngMarks] = useState("82");
   const [maxEngMarks, setMaxEngMarks] = useState("100");
@@ -57,14 +59,23 @@ export const StudentProfileView: React.FC = () => {
     e.preventDefault();
     addEducation({
       level: eduLevel,
-      institutionName: institution || "Sample Institution",
-      boardOrUniversity: board || "State Board / University",
+      degree: degreeName || (eduLevel === "Bachelor" ? "Bachelor's Degree" : eduLevel === "Master" ? "Master's Degree" : eduLevel),
+      institutionName: institution.trim(),
+      boardOrUniversity: board.trim(),
       stream: eduLevel === "12th" ? stream : undefined,
-      percentageOrCgpa: score,
-      passOutYear: passYear,
+      percentageOrCgpa: score.trim(),
+      startYear: startYear.trim(),
+      passOutYear: passYear.trim(),
       englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? engMarks : undefined,
       maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? maxEngMarks : undefined,
     });
+    // Reset form
+    setDegreeName("");
+    setInstitution("");
+    setBoard("");
+    setScore("");
+    setStartYear("2021");
+    setPassYear("2025");
     setShowAddEdu(false);
   };
 
@@ -95,42 +106,43 @@ export const StudentProfileView: React.FC = () => {
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
       {/* Title & Profile Header */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-xl border border-[#E7E5E0] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-slate-900 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
+          <div className="w-16 h-16 rounded-xl bg-[#0B5D3B] text-white font-bold text-2xl flex items-center justify-center shrink-0 shadow-xs">
             {activeStudent.firstName.charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900">
+              <h1 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {activeStudent.name}
               </h1>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-[#EAF5EF] text-[#0B5D3B]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D3B]" />
                 {activeStudent.accountStatus}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Student ID: <strong>{activeStudent.studentId}</strong> • Registered on {activeStudent.registrationDate}
+            <p className="text-xs text-slate-500 mt-1">
+              Student ID: <strong className="text-slate-700">{activeStudent.studentId}</strong> • Registered on {activeStudent.registrationDate}
             </p>
           </div>
         </div>
 
         {/* Profile Completion Indicator */}
-        <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center gap-3">
-          <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div className="bg-[#FAFAF8] p-3.5 rounded-xl border border-[#E7E5E0] flex items-center gap-3">
+          <div className="w-20 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-orange-500 to-amber-500"
+              className="h-full bg-[#0B5D3B] rounded-full transition-all duration-500"
               style={{ width: `${activeStudent.profileCompletion}%` }}
             />
           </div>
-          <span className="text-xs font-black text-slate-900">
+          <span className="text-xs font-bold text-slate-900">
             {activeStudent.profileCompletion}% Complete
           </span>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 overflow-x-auto gap-2 text-xs font-bold pb-1">
+      <div className="flex border-b border-[#E7E5E0] overflow-x-auto gap-2 text-xs font-semibold pb-1">
         {[
           { key: "documents", label: "Documents & Files", icon: FileText },
           { key: "education", label: "Education Qualifications", icon: GraduationCap },
@@ -144,10 +156,10 @@ export const StudentProfileView: React.FC = () => {
             <button
               key={tab.key}
               onClick={() => setProfileTab(tab.key as any)}
-              className={`py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              className={`py-2 px-3.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 isSelected
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  ? "bg-[#0B5D3B] text-white shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-[#F4F3EF] font-medium"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -183,44 +195,53 @@ export const StudentProfileView: React.FC = () => {
               return (
                 <div
                   key={cat}
-                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
+                  className={`p-5 sm:p-6 rounded-xl border transition-all flex flex-col justify-between space-y-4 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] ${
                     isRejected
-                      ? "bg-rose-50/70 border-rose-200"
+                      ? "bg-rose-50/50 border-rose-200"
                       : isReupload
-                      ? "bg-amber-50/70 border-amber-200"
-                      : isVerified
-                      ? "bg-emerald-50/40 border-emerald-200"
-                      : "bg-white border-slate-200"
+                      ? "bg-amber-50/50 border-amber-200"
+                      : "bg-white border-[#E7E5E0]"
                   }`}
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-extrabold text-slate-900 text-xs">{cat}</span>
+                      <span className="font-bold text-slate-900 text-sm tracking-tight">{cat}</span>
                       <span
-                        className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                           isVerified
-                            ? "bg-emerald-100 text-emerald-800"
+                            ? "bg-[#EAF5EF] text-[#0B5D3B]"
                             : isRejected
-                            ? "bg-rose-100 text-rose-800"
+                            ? "bg-rose-50 text-rose-700 border border-rose-200/60"
                             : isReupload
-                            ? "bg-amber-100 text-amber-800 animate-pulse"
+                            ? "bg-amber-50 text-amber-800 border border-amber-200/60 animate-pulse"
                             : existingDoc
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-slate-100 text-slate-500"
+                            ? "bg-[#EAF5EF] text-[#0B5D3B]"
+                            : "bg-slate-100 text-slate-600"
                         }`}
                       >
-                        {existingDoc?.status || "Not Uploaded"}
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isVerified || existingDoc
+                              ? "bg-[#0B5D3B]"
+                              : isRejected
+                              ? "bg-rose-500"
+                              : isReupload
+                              ? "bg-amber-500"
+                              : "bg-slate-400"
+                          }`}
+                        />
+                        <span>{existingDoc?.status || "Not Uploaded"}</span>
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-xs text-slate-500 font-medium">
                       {existingDoc ? `${existingDoc.fileName} • ${existingDoc.fileSize || "1.5 MB"}` : "No file uploaded yet"}
                     </p>
 
                     {/* Rejection / Action Required Reason from Super Admin */}
                     {(isRejected || isReupload) && existingDoc?.rejectionReason && (
-                      <div className="p-2.5 bg-rose-100/70 border border-rose-300 rounded-xl text-[11px] text-rose-900 font-semibold space-y-0.5 mt-2">
-                        <span className="text-[10px] uppercase font-bold text-rose-700 block">
+                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-900 font-medium space-y-0.5 mt-2">
+                        <span className="text-[11px] uppercase font-bold text-rose-700 block tracking-wide">
                           Admissions Compliance Note:
                         </span>
                         <p>&quot;{existingDoc.rejectionReason}&quot;</p>
@@ -228,8 +249,8 @@ export const StudentProfileView: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Actions: Upload, Replace, Delete */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                  {/* Actions: Upload, Replace, Delete (Refined 40px Secondary Button) */}
+                  <div className="flex items-center gap-2 pt-3 border-t border-[#F0EEE9]">
                     <button
                       onClick={() =>
                         uploadDocument({
@@ -238,17 +259,17 @@ export const StudentProfileView: React.FC = () => {
                           fileName: `${cat.replace(/[\s/]+/g, "_")}_${activeStudent.firstName}.pdf`,
                         })
                       }
-                      className="flex-1 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer text-center"
+                      className="flex-1 h-10 px-4 bg-white hover:bg-slate-50 border border-[#E7E5E0] hover:border-slate-300 rounded-lg text-xs font-semibold text-slate-700 transition-all duration-150 cursor-pointer text-center active:scale-[0.98] shadow-xs flex items-center justify-center"
                     >
                       {existingDoc ? "REPLACE" : "UPLOAD"}
                     </button>
                     {existingDoc && (
                       <button
                         onClick={() => deleteDocument(existingDoc.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
+                        className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer shrink-0"
                         title="Delete Document"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
@@ -270,7 +291,7 @@ export const StudentProfileView: React.FC = () => {
             </h2>
             <button
               onClick={() => setShowAddEdu(true)}
-              className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer"
+              className="h-10 px-4 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Qualification</span>
@@ -295,17 +316,18 @@ export const StudentProfileView: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <p className="text-slate-600 mt-0.5">
+                  <p className="text-slate-600 mt-0.5 font-medium">
                     {q.institutionName} • {q.boardOrUniversity}
                   </p>
-                  <p className="text-slate-400 text-[11px] mt-0.5">
-                    Year Completed: {q.passOutYear} • Score: <strong>{q.percentageOrCgpa}</strong>
+                  <p className="text-slate-500 text-[11px] mt-0.5">
+                    Years: <strong className="text-slate-700">{q.startYear ? `${q.startYear} – ${q.passOutYear}` : q.passOutYear}</strong> • Score: <strong className="text-slate-700">{q.percentageOrCgpa}</strong>
                     {q.englishMarks && ` • English Marks: ${q.englishMarks}/${q.maxEnglishMarks || 100}`}
                   </p>
                 </div>
                 <button
                   onClick={() => deleteEducation(q.id)}
-                  className="p-2 text-slate-400 hover:text-rose-600 self-end sm:self-center"
+                  className="p-2 text-slate-400 hover:text-rose-600 self-end sm:self-center cursor-pointer"
+                  title="Remove Qualification"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -434,7 +456,7 @@ export const StudentProfileView: React.FC = () => {
               <span className="text-slate-400 block text-[10px] font-bold">INTAKE</span>
               <strong className="text-slate-800">
                 {activeStudent.studyPreferences.preferredIntake}
-              </span>
+              </strong>
             </div>
             <div>
               <span className="text-slate-400 block text-[10px] font-bold">SCHOLARSHIP REQUIRED</span>
@@ -464,55 +486,93 @@ export const StudentProfileView: React.FC = () => {
               </button>
             </div>
 
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">Level</label>
-              <select
-                value={eduLevel}
-                onChange={(e) => setEduLevel(e.target.value as EducationLevelType)}
-                className="w-full p-2 border rounded-xl"
-              >
-                <option value="10th">Secondary / 10th</option>
-                <option value="12th">Intermediate / 12th</option>
-                <option value="Diploma">Diploma</option>
-                <option value="Bachelor">Bachelor&apos;s / Undergraduate</option>
-                <option value="Master">Master&apos;s / Postgraduate</option>
-                <option value="Other">Other</option>
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Level</label>
+                <select
+                  value={eduLevel}
+                  onChange={(e) => setEduLevel(e.target.value as EducationLevelType)}
+                  className="w-full p-2.5 border border-slate-300 rounded-xl bg-white text-slate-800"
+                >
+                  <option value="10th">Secondary / 10th</option>
+                  <option value="12th">Intermediate / 12th</option>
+                  <option value="Diploma">Diploma</option>
+                  <option value="Bachelor">Bachelor&apos;s / Undergraduate</option>
+                  <option value="Master">Master&apos;s / Postgraduate</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Degree / Specialization</label>
+                <input
+                  type="text"
+                  value={degreeName}
+                  onChange={(e) => setDegreeName(e.target.value)}
+                  placeholder="e.g. B.Tech Computer Science"
+                  className="w-full p-2.5 border border-slate-300 rounded-xl"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Institution Name</label>
+              <label className="font-bold text-slate-700 block mb-1">Institution Name *</label>
               <input
                 type="text"
                 required
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
-                placeholder="e.g. University of Mumbai / DPS"
-                className="w-full p-2 border rounded-xl"
+                placeholder="e.g. SVKM / Mithibai College / IIT"
+                className="w-full p-2.5 border border-slate-300 rounded-xl"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Board / University *</label>
+              <input
+                type="text"
+                required
+                value={board}
+                onChange={(e) => setBoard(e.target.value)}
+                placeholder="e.g. University of Mumbai / CBSE"
+                className="w-full p-2.5 border border-slate-300 rounded-xl"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Board / University</label>
+                <label className="font-bold text-slate-700 block mb-1">Start Year *</label>
                 <input
                   type="text"
                   required
-                  value={board}
-                  onChange={(e) => setBoard(e.target.value)}
-                  placeholder="e.g. CBSE / State Board"
-                  className="w-full p-2 border rounded-xl"
+                  value={startYear}
+                  onChange={(e) => setStartYear(e.target.value)}
+                  placeholder="e.g. 2020"
+                  className="w-full p-2.5 border border-slate-300 rounded-xl font-mono"
                 />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Percentage / CGPA</label>
+                <label className="font-bold text-slate-700 block mb-1">Completion Year *</label>
+                <input
+                  type="text"
+                  required
+                  value={passYear}
+                  onChange={(e) => setPassYear(e.target.value)}
+                  placeholder="e.g. 2024"
+                  className="w-full p-2.5 border border-slate-300 rounded-xl font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Grade / CGPA *</label>
                 <input
                   type="text"
                   required
                   value={score}
                   onChange={(e) => setScore(e.target.value)}
-                  placeholder="e.g. 8.3 / 10 or 84.5%"
-                  className="w-full p-2 border rounded-xl"
+                  placeholder="e.g. 8.5 / 85%"
+                  className="w-full p-2.5 border border-slate-300 rounded-xl font-mono"
                 />
               </div>
             </div>
@@ -524,7 +584,7 @@ export const StudentProfileView: React.FC = () => {
                   <select
                     value={stream}
                     onChange={(e) => setStream(e.target.value)}
-                    className="w-full p-2 border rounded-xl"
+                    className="w-full p-2.5 border border-slate-300 rounded-xl"
                   >
                     <option>MPC</option>
                     <option>BiPC</option>
@@ -541,7 +601,7 @@ export const StudentProfileView: React.FC = () => {
                     type="number"
                     value={engMarks}
                     onChange={(e) => setEngMarks(e.target.value)}
-                    className="w-full p-2 border rounded-xl"
+                    className="w-full p-2.5 border border-slate-300 rounded-xl"
                   />
                 </div>
                 <div>
@@ -550,23 +610,23 @@ export const StudentProfileView: React.FC = () => {
                     type="number"
                     value={maxEngMarks}
                     onChange={(e) => setMaxEngMarks(e.target.value)}
-                    className="w-full p-2 border rounded-xl"
+                    className="w-full p-2.5 border border-slate-300 rounded-xl"
                   />
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
+            <div className="flex justify-end gap-2 pt-3 border-t">
               <button
                 type="button"
                 onClick={() => setShowAddEdu(false)}
-                className="px-4 py-2 border rounded-xl font-bold text-slate-600"
+                className="h-10 px-4 border border-[#E7E5E0] hover:bg-slate-50 rounded-lg font-semibold text-xs text-slate-700 cursor-pointer transition-all"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold rounded-xl"
+                className="h-10 px-5 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer active:scale-[0.98] transition-all"
               >
                 Save Qualification
               </button>

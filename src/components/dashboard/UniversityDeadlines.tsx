@@ -14,7 +14,7 @@ export const UniversityDeadlines: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-600">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0B5D3B]">
             <CalendarClock className="w-4 h-4" />
           </div>
           <div>
@@ -29,7 +29,7 @@ export const UniversityDeadlines: React.FC = () => {
 
         <button
           onClick={() => setViewAll(!viewAll)}
-          className="group flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 tracking-wide transition-colors"
+          className="group flex items-center gap-1 text-xs font-bold text-[#0B5D3B] hover:text-[#08482D] tracking-wide transition-colors"
         >
           <span>{viewAll ? "SHOW LESS" : "VIEW ALL"}</span>
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -50,12 +50,12 @@ export const UniversityDeadlines: React.FC = () => {
             {displayedDeadlines.map((dl) => (
               <tr
                 key={dl.id}
-                className="hover:bg-orange-50/40 transition-colors group"
+                className="hover:bg-slate-50 transition-colors group"
               >
                 {/* University */}
                 <td className="py-3 pr-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors">
+                    <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold group-hover:bg-emerald-100 group-hover:text-[#0B5D3B] transition-colors">
                       <Building className="w-3.5 h-3.5" />
                     </div>
                     <div>

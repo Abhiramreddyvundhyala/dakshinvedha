@@ -247,16 +247,16 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
       <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header / Greeting */}
-        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white p-5 sm:p-6 relative">
+        <div className="bg-emerald-950 border-b border-emerald-900 text-white p-5 sm:p-6 relative">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <span className="text-[11px] font-bold tracking-wider uppercase text-orange-200 bg-orange-700/40 px-2.5 py-0.5 rounded-full inline-block mb-1">
+              <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-300 bg-emerald-900/80 border border-emerald-700/60 px-2.5 py-0.5 rounded-full inline-block mb-1">
                 Student Onboarding Wizard
               </span>
-              <h1 className="text-xl sm:text-2xl font-black">
+              <h1 className="text-xl sm:text-2xl font-black text-white">
                 Welcome, {activeStudent?.firstName || "Student"}!
               </h1>
-              <p className="text-xs sm:text-sm text-orange-100 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-emerald-200/80 mt-1 max-w-2xl">
                 Let&apos;s set up your profile so we can find the right universities and courses for you.
               </p>
             </div>
@@ -841,7 +841,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                           doc.status === "Verified"
                             ? "bg-emerald-100 text-emerald-700"
                             : doc.status === "Uploaded"
-                            ? "bg-blue-100 text-blue-700"
+                            ? "bg-emerald-100 text-emerald-700"
                             : "bg-slate-200 text-slate-600"
                         }`}
                       >
@@ -884,13 +884,13 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
 
               <div className="inline-flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl">
                 <div className="w-24 h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-orange-500 to-emerald-500 w-[78%]" />
+                  <div className="h-full bg-emerald-600 w-[78%]" />
                 </div>
                 <span className="text-sm font-extrabold text-slate-900">78% Complete</span>
               </div>
 
-              <div className="p-4 bg-orange-50/80 border border-orange-200/80 rounded-2xl text-left max-w-lg mx-auto text-xs space-y-1.5">
-                <p className="font-bold text-orange-950">Next Recommended Steps:</p>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-left max-w-lg mx-auto text-xs space-y-1.5">
+                <p className="font-bold text-slate-900">Next Recommended Steps:</p>
                 <ul className="list-disc list-inside text-slate-700 space-y-1 text-[11px]">
                   <li>Explore top matched universities in UK & Australia</li>
                   <li>Check live admission eligibility badges on programs</li>
@@ -926,7 +926,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
             <button
               type="button"
               onClick={handleStepContinue}
-              className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
+              className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
             >
               <span>{currentStep === 6 ? "GO TO DASHBOARD" : "SAVE & CONTINUE"}</span>
               <ChevronRight className="w-3.5 h-3.5" />

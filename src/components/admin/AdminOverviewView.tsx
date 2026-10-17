@@ -43,7 +43,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
             Central Platform Governance
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-2xl">
-            Live reactive overview of all students, partners, applications, and university requirements across DevGrate.
+            Live reactive overview of all students, partners, applications, and university requirements across Dakshinvedha Abroad Solutions.
           </p>
         </div>
       </div>
