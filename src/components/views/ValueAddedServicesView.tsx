@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePlatform } from "@/context/PlatformContext";
+import { submitVasRequest } from "@/lib/portalDb";
 import {
   Sparkles,
   Building,
@@ -34,9 +36,10 @@ interface ServiceItem {
 }
 
 export const ValueAddedServicesView: React.FC = () => {
+  const { applications } = usePlatform();
   const [selectedDetails, setSelectedDetails] = useState<ServiceItem | null>(null);
   const [applyingService, setApplyingService] = useState<ServiceItem | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState("Aarav Sharma (CAMS-98421)");
+  const [selectedCamsId, setSelectedCamsId] = useState("");
   const [notes, setNotes] = useState("");
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
@@ -164,12 +167,22 @@ export const ValueAddedServicesView: React.FC = () => {
     },
   ];
 
-  const handleApplySubmit = (e: React.FormEvent) => {
+  const handleApplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!applyingService) return;
-    setSuccessToast(
-      `Service application submitted for ${applyingService.name}! Coordinator assigned to ${selectedStudent}.`
-    );
+    const linked = applications.find((application) => application.camsId === selectedCamsId);
+    const result = await submitVasRequest({
+      serviceId: applyingService.id,
+      notes,
+      camsId: linked?.camsId,
+      studentProfileId: linked?.studentProfileId,
+    });
+    if ("error" in result) {
+      setSuccessToast(result.error);
+      setTimeout(() => setSuccessToast(null), 4000);
+      return;
+    }
+    setSuccessToast(`Service request saved for ${applyingService.name}${linked ? ` on ${linked.camsId}` : ""}.`);
     setApplyingService(null);
     setNotes("");
     setTimeout(() => setSuccessToast(null), 4000);
@@ -180,7 +193,7 @@ export const ValueAddedServicesView: React.FC = () => {
       {/* Toast */}
       {successToast && (
         <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-fade-in">
-          <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <p className="text-xs font-semibold">{successToast}</p>
@@ -191,7 +204,7 @@ export const ValueAddedServicesView: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#0B5D3B]" />
+            <Sparkles className="w-5 h-5 text-[#ea580c]" />
             Value Added Services (VAS)
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -199,7 +212,7 @@ export const ValueAddedServicesView: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-[#0B5D3B] rounded-xl text-xs font-bold">
+          <span className="px-3 py-1.5 bg-orange-50 border border-orange-200 text-[#ea580c] rounded-xl text-xs font-bold">
             8 Ancillary Categories
           </span>
         </div>
@@ -212,20 +225,20 @@ export const ValueAddedServicesView: React.FC = () => {
           return (
             <div
               key={item.id}
-              className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4 hover:border-emerald-300 group"
+              className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4 hover:border-orange-300 group"
             >
               <div className="space-y-3.5">
                 <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0B5D3B] group-hover:bg-[#0B5D3B] group-hover:text-white transition-colors">
+                  <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#ea580c] group-hover:bg-[#ea580c] group-hover:text-white transition-colors">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="px-2.5 py-0.5 bg-emerald-100 text-[#0B5D3B] text-[10px] font-bold rounded-full">
+                  <span className="px-2.5 py-0.5 bg-orange-100 text-[#ea580c] text-[10px] font-bold rounded-full">
                     {item.badge}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-[#0B5D3B] transition-colors">
+                  <h3 className="text-base font-bold text-slate-900 group-hover:text-[#ea580c] transition-colors">
                     {item.name}
                   </h3>
                   <p className="text-xs text-slate-600 mt-2 leading-relaxed line-clamp-3">
@@ -235,7 +248,7 @@ export const ValueAddedServicesView: React.FC = () => {
 
                 <div className="p-2.5 bg-slate-50 rounded-xl text-xs flex justify-between items-center border border-slate-100">
                   <span className="text-slate-500 text-[11px]">Commission:</span>
-                  <span className="font-bold text-[#0B5D3B] font-mono text-[11px]">
+                  <span className="font-bold text-[#ea580c] font-mono text-[11px]">
                     {item.commission}
                   </span>
                 </div>
@@ -255,7 +268,7 @@ export const ValueAddedServicesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setApplyingService(item)}
-                  className="w-full py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer active:scale-98"
+                  className="w-full py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer active:scale-98"
                 >
                   <span>APPLY</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -276,12 +289,12 @@ export const ValueAddedServicesView: React.FC = () => {
             {/* Modal Header */}
             <div className="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">
                   {React.createElement(selectedDetails.icon, { className: "w-5 h-5" })}
                 </div>
                 <div>
                   <h3 className="text-base font-bold">{selectedDetails.name}</h3>
-                  <span className="text-xs text-emerald-400 font-semibold font-mono">
+                  <span className="text-xs text-orange-400 font-semibold font-mono">
                     Partner Earning: {selectedDetails.commission}
                   </span>
                 </div>
@@ -320,7 +333,7 @@ export const ValueAddedServicesView: React.FC = () => {
                 <ul className="space-y-1.5">
                   {selectedDetails.details.requirements.map((req, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-slate-700">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" />
                       <span>{req}</span>
                     </li>
                   ))}
@@ -342,7 +355,7 @@ export const ValueAddedServicesView: React.FC = () => {
                   setSelectedDetails(null);
                   setApplyingService(s);
                 }}
-                className="px-5 py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                className="px-5 py-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <span>APPLY NOW</span>
                 <ArrowRight className="w-4 h-4" />
@@ -361,7 +374,7 @@ export const ValueAddedServicesView: React.FC = () => {
           >
             <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center">
                   {React.createElement(applyingService.icon, { className: "w-5 h-5" })}
                 </div>
                 <div>
@@ -383,15 +396,16 @@ export const ValueAddedServicesView: React.FC = () => {
                   Select Enrolled Student / CAMS File:
                 </label>
                 <select
-                  value={selectedStudent}
-                  onChange={(e) => setSelectedStudent(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B]"
+                  value={selectedCamsId}
+                  onChange={(e) => setSelectedCamsId(e.target.value)}
+                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c]"
                 >
-                  <option value="Aarav Sharma (CAMS-98421)">Aarav Sharma (CAMS-98421) - UK</option>
-                  <option value="Fatima Al-Zahra (CAMS-98420)">Fatima Al-Zahra (CAMS-98420) - Canada</option>
-                  <option value="Samuel Osei (CAMS-98419)">Samuel Osei (CAMS-98419) - Australia</option>
-                  <option value="Maria Chen (CAMS-98418)">Maria Chen (CAMS-98418) - Australia</option>
-                  <option value="Kavya Patel (CAMS-98412)">Kavya Patel (CAMS-98412) - UK</option>
+                  <option value="">No linked application</option>
+                  {applications.map((application) => (
+                    <option key={application.camsId} value={application.camsId}>
+                      {application.student.name} ({application.camsId})
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -404,13 +418,13 @@ export const ValueAddedServicesView: React.FC = () => {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder={`Details for ${applyingService.name}... e.g. dates, preferred budget, room type, or travel timing.`}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl resize-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B]"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl resize-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c]"
                   required
                 />
               </div>
 
-              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center gap-2 text-emerald-950 text-[11px]">
-                <ShieldCheck className="w-4 h-4 text-[#0B5D3B] shrink-0" />
+              <div className="p-3 bg-orange-50/70 border border-orange-200 rounded-xl flex items-center gap-2 text-orange-950 text-[11px]">
+                <ShieldCheck className="w-4 h-4 text-[#ea580c] shrink-0" />
                 <span>
                   Expected commission for this service: <strong>{applyingService.commission}</strong>
                 </span>
@@ -426,7 +440,7 @@ export const ValueAddedServicesView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer"
+                  className="px-5 py-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   SUBMIT APPLICATION
                 </button>

@@ -76,11 +76,11 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
 
         <div
           onClick={() => onNavigateTab("applications")}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-orange-200 transition-all cursor-pointer group"
         >
           <span className="text-xs font-bold text-slate-500">Offers Issued</span>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-600 mt-2">{offersCount}</p>
-          <p className="text-[11px] text-emerald-700 font-bold mt-1 flex items-center gap-1">
+          <p className="text-2xl sm:text-3xl font-black text-orange-600 mt-2">{offersCount}</p>
+          <p className="text-[11px] text-orange-700 font-bold mt-1 flex items-center gap-1">
             <span>Scholarship grants</span>
             <ArrowRight className="w-3 h-3" />
           </p>
@@ -131,7 +131,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                   app.primaryStatus.includes("Offer")
-                    ? "bg-emerald-100 text-emerald-800"
+                    ? "bg-orange-100 text-orange-800"
                     : "bg-blue-100 text-blue-800"
                 }`}
               >

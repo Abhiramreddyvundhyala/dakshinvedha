@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MessageSquare,
   Send,
@@ -12,73 +12,70 @@ import {
   Headphones,
   User,
 } from "lucide-react";
-import { MOCK_CONVERSATIONS } from "@/data/mockData";
-import { ChatConversation, ChatMessage } from "@/types";
+import { ChatConversation } from "@/types";
+import { loadConversations, sendChatMessage, startConversation } from "@/lib/portalDb";
+import { readSessionValue } from "@/utils/accounts";
 
 export const ChatView: React.FC = () => {
-  const [conversations, setConversations] = useState<ChatConversation[]>(MOCK_CONVERSATIONS);
-  const [activeConvId, setActiveConvId] = useState<string>(MOCK_CONVERSATIONS[0].id);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string>("");
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
 
   const activeConv = conversations.find((c) => c.id === activeConvId);
+  const senderName = readSessionValue("dakshin_user_name") || "Portal user";
+  const speakerRole = readSessionValue("dakshin_portal_role") === "agent" ? "agent" : "support";
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  useEffect(() => {
+    void loadConversations().then((result) => {
+      if (result.error) setChatError(result.error);
+      setConversations(result.conversations);
+      if (result.conversations[0]) setActiveConvId(result.conversations[0].id);
+    });
+  }, []);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || !activeConv) return;
-
-    const newMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      senderId: "agent-1",
-      senderName: "Sarah Jenkins",
-      role: "agent",
-      text: inputMessage.trim(),
-      timestamp: "Just now",
-    };
-
-    const updatedMessages = [...activeConv.messages, newMsg];
-
+    const text = inputMessage.trim();
+    if (!text) return;
+    setChatError(null);
+    if (!activeConv) {
+      const started = await startConversation({
+        participantName: "Admissions support",
+        participantRole: "support",
+        organization: "Dakshinvedha",
+        text,
+        senderName,
+        speakerRole,
+      });
+      if ("error" in started) {
+        setChatError(started.error);
+        return;
+      }
+      setConversations((prev) => [started.conversation, ...prev]);
+      setActiveConvId(started.conversation.id);
+      setInputMessage("");
+      return;
+    }
+    const sent = await sendChatMessage({
+      conversationId: activeConv.id,
+      text,
+      senderName,
+      speakerRole,
+    });
+    if ("error" in sent) {
+      setChatError(sent.error);
+      return;
+    }
     setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeConvId
-          ? {
-              ...c,
-              messages: updatedMessages,
-              lastMessage: newMsg.text,
-              lastMessageTime: "Just now",
-            }
-          : c
+      prev.map((conversation) =>
+        conversation.id === activeConv.id
+          ? { ...conversation, messages: [...conversation.messages, sent.message], lastMessage: text, lastMessageTime: "Just now" }
+          : conversation
       )
     );
-
     setInputMessage("");
-
-    // Simulate typing response
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const replyMsg: ChatMessage = {
-        id: `msg-${Date.now() + 1}`,
-        senderId: activeConv.id,
-        senderName: activeConv.participantName,
-        role: "university",
-        text: `Thank you for the update. Our admissions desk has noted this on the candidate's portal record.`,
-        timestamp: "Just now",
-      };
-
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === activeConvId
-            ? {
-                ...c,
-                messages: [...c.messages, replyMsg],
-                lastMessage: replyMsg.text,
-                lastMessageTime: "Just now",
-              }
-            : c
-        )
-      );
-    }, 1800);
   };
 
   return (
@@ -140,7 +137,7 @@ export const ChatView: React.FC = () => {
                       {c.avatar}
                     </div>
                     {c.isOnline && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white absolute bottom-0 right-0" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white absolute bottom-0 right-0" />
                     )}
                   </div>
 
@@ -184,7 +181,7 @@ export const ChatView: React.FC = () => {
                       {activeConv.avatar}
                     </div>
                     {activeConv.isOnline && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white absolute bottom-0 right-0" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white absolute bottom-0 right-0" />
                     )}
                   </div>
                   <div>
@@ -197,8 +194,8 @@ export const ChatView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div className="flex items-center gap-1.5 text-xs text-orange-600 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
                   <span>Active Session</span>
                 </div>
               </div>
@@ -206,7 +203,7 @@ export const ChatView: React.FC = () => {
               {/* Message Bubbles Area */}
               <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-slate-50/30">
                 {activeConv.messages.map((m) => {
-                  const isAgent = m.role === "agent";
+                  const isAgent = m.senderId === readSessionValue("dakshin_account_id") || m.senderName === senderName;
                   return (
                     <div
                       key={m.id}
@@ -219,7 +216,7 @@ export const ChatView: React.FC = () => {
                           isAgent ? "bg-orange-500 text-white" : "bg-slate-800 text-white"
                         }`}
                       >
-                        {isAgent ? "SJ" : activeConv.avatar}
+                        {(m.senderName || "DV").slice(0, 2).toUpperCase()}
                       </div>
 
                       <div>
@@ -287,9 +284,19 @@ export const ChatView: React.FC = () => {
               </form>
             </>
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-400 text-xs">
-              Select a conversation to begin messaging.
-            </div>
+            <form onSubmit={handleSendMessage} className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+              <p className="text-xs text-slate-400">No conversation yet. Send a message to open one with admissions support.</p>
+              {chatError && <p className="text-xs font-semibold text-rose-700">{chatError}</p>}
+              <div className="flex w-full max-w-md gap-2">
+                <input
+                  value={inputMessage}
+                  onChange={(event) => setInputMessage(event.target.value)}
+                  placeholder="Write the first message"
+                  className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                />
+                <button type="submit" className="rounded-xl bg-orange-500 px-4 py-2 text-xs font-bold text-white">Send</button>
+              </div>
+            </form>
           )}
         </div>
       </div>

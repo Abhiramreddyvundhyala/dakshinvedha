@@ -43,10 +43,10 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
-        <div className="p-6 bg-emerald-950 border-b border-emerald-900 text-white flex items-start justify-between gap-4">
+        <div className="p-6 bg-orange-950 border-b border-orange-900 text-white flex items-start justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-700 text-white">
+              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-orange-700 text-white">
                 {course.studyLevel}
               </span>
               <span className="text-xs text-slate-300 font-bold">
@@ -93,7 +93,7 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
           <div
             className={`p-5 rounded-2xl border ${
               eligibility.status === "Likely Eligible"
-                ? "bg-emerald-50/90 border-emerald-300 text-emerald-900"
+                ? "bg-orange-50/90 border-orange-300 text-orange-900"
                 : eligibility.status === "Requirements Need Review"
                 ? "bg-amber-50/90 border-amber-300 text-amber-900"
                 : "bg-sky-50/90 border-sky-300 text-sky-900"
@@ -196,12 +196,12 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
 
           {/* Scholarships Info */}
           {course.scholarshipsInfo && (
-            <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1">
-              <span className="font-bold text-emerald-900 flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-emerald-600" />
+            <div className="p-4 bg-orange-50/70 border border-orange-200 rounded-2xl space-y-1">
+              <span className="font-bold text-orange-900 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-orange-600" />
                 <span>Scholarship Details</span>
               </span>
-              <p className="text-xs text-emerald-800">{course.scholarshipsInfo}</p>
+              <p className="text-xs text-orange-800">{course.scholarshipsInfo}</p>
             </div>
           )}
         </div>
@@ -219,7 +219,7 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
               onClose();
               onApplyNow(course);
             }}
-            className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+            className="px-6 py-2.5 bg-orange-700 hover:bg-orange-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
           >
             <span>APPLY NOW FOR THIS COURSE</span>
             <ArrowRight className="w-4 h-4" />

@@ -23,6 +23,7 @@ import {
   initialFilterState,
 } from "@/components/modals/ApplicationFilterDrawer";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
+import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 
 interface ApplicationHistoryViewProps {
   applications: ApplicationRecord[];
@@ -106,7 +107,7 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
   };
 
   const downloadAllData = () => {
-    const headers = "CAMS ID,Student Name,Passport No,Student ID,University Name,URM Name,URM Contact,Course Name,Intake,Primary Status,Secondary Status,Date Added,Date Modified\n";
+    const headers = "Tracking ID,Student Name,Passport No,Student ID,University Name,URM Name,URM Contact,Course Name,Intake,Primary Status,Secondary Status,Date Added,Date Modified\n";
     const rows = sortedApps
       .map(
         (a) =>
@@ -123,7 +124,7 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
 
   // Active filter chips detection
   const activeChips: { key: keyof ApplicationFilterState; label: string }[] = [];
-  if (filters.camsId) activeChips.push({ key: "camsId", label: `CAMS: ${filters.camsId}` });
+  if (filters.camsId) activeChips.push({ key: "camsId", label: `ID: ${filters.camsId}` });
   if (filters.studentName) activeChips.push({ key: "studentName", label: `Name: ${filters.studentName}` });
   if (filters.passportNumber) activeChips.push({ key: "passportNumber", label: `Passport: ${filters.passportNumber}` });
   if (filters.universityCountry !== "all") activeChips.push({ key: "universityCountry", label: `Country: ${filters.universityCountry}` });
@@ -139,7 +140,7 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
   const getPrimaryStatusBadge = (status: string) => {
     switch (status) {
       case "Offer Issued":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "bg-orange-50 text-orange-700 border-orange-200";
       case "Payment Done":
         return "bg-blue-50 text-blue-700 border-blue-200";
       case "CAS Processing":
@@ -236,11 +237,12 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
-                <th className="py-3 px-3">CAMS ID</th>
+                <th className="py-3 px-3">Tracking ID</th>
                 <th className="py-3 px-3">Student Name</th>
                 <th className="py-3 px-3">University Name</th>
                 <th className="py-3 px-3">Course Name</th>
                 <th className="py-3 px-3">Status</th>
+                <th className="py-3 px-3">Tracker</th>
                 <th className="py-3 px-3">Date Added</th>
                 <th className="py-3 px-3">
                   <button
@@ -262,7 +264,7 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
                     key={app.camsId}
                     className="hover:bg-orange-50/40 transition-colors group"
                   >
-                    {/* CAMS ID */}
+                    {/* Tracking ID */}
                     <td className="py-3 px-3 whitespace-nowrap">
                       <button
                         onClick={() => onSelectApplication(app)}
@@ -342,6 +344,10 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
                           {app.secondaryStatus}
                         </p>
                       </div>
+                    </td>
+
+                    <td className="py-3 px-3">
+                      <ApplicationTracker application={app} compact />
                     </td>
 
                     {/* Date Added */}

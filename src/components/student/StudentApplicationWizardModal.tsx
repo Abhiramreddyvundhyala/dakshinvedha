@@ -170,24 +170,24 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
       setFirstName(activeStudent.firstName || activeStudent.name.split(" ")[0] || "Student");
       setMiddleName(activeStudent.middleName || "");
       setLastName(activeStudent.lastName || activeStudent.name.split(" ").slice(1).join(" ") || "");
-      setDob(activeStudent.personal.dob || "2003-05-14");
-      setGender(activeStudent.personal.gender || "Male");
+      setDob(activeStudent.personal.dob || "");
+      setGender(activeStudent.personal.gender || "");
       setEmail(activeStudent.email || "");
       setMobile(activeStudent.mobile || "");
       setAltMobile(activeStudent.alternateMobile || "");
       setNationality(activeStudent.personal.nationality || "Indian");
       setCountryOfResidence(activeStudent.personal.countryOfResidence || "India");
       setStreetAddress(activeStudent.personal.address.street || "");
-      setCity(activeStudent.personal.address.city || "Mumbai");
-      setStateName(activeStudent.personal.address.state || "Maharashtra");
-      setPostalCode(activeStudent.personal.address.postalCode || "400001");
+      setCity(activeStudent.personal.address.city || "");
+      setStateName(activeStudent.personal.address.state || "");
+      setPostalCode(activeStudent.personal.address.postalCode || "");
 
-      setHasPassport(activeStudent.passport.hasPassport || "YES");
-      setPassportNumber(activeStudent.passport.passportNumber || "Z6182904");
-      setPassportCountry(activeStudent.passport.passportCountry || "India");
-      setDateOfIssue(activeStudent.passport.dateOfIssue || "2022-04-10");
-      setExpiryDate(activeStudent.passport.expiryDate || "2032-04-09");
-      setPlaceOfIssue(activeStudent.passport.placeOfIssue || "Mumbai");
+      setHasPassport(activeStudent.passport.hasPassport || "NO");
+      setPassportNumber(activeStudent.passport.passportNumber || "");
+      setPassportCountry(activeStudent.passport.passportCountry || "");
+      setDateOfIssue(activeStudent.passport.dateOfIssue || "");
+      setExpiryDate(activeStudent.passport.expiryDate || "");
+      setPlaceOfIssue(activeStudent.passport.placeOfIssue || "");
 
       setQualificationsList(activeStudent.education || []);
 
@@ -245,6 +245,9 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // Frontend Eligibility check
   const eligibility = useMemo(() => {
+    if (!currentCourse) {
+      return evaluateFrontendEligibility(activeStudent, null);
+    }
     return evaluateFrontendEligibility(activeStudent, currentCourse);
   }, [activeStudent, currentCourse]);
 
@@ -288,12 +291,14 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // Submit Application
   const handleSubmitApplication = () => {
+    if (!currentUniv || !currentCourse) return;
     const newApp = submitStudentApplication({
       universityId: currentUniv.id,
       courseId: currentCourse.id,
       intake: selectedIntake,
       notes: applicationNotes || `Student application for ${currentCourse.courseName} at ${currentUniv.name}.`,
     });
+    if (!newApp) return;
 
     setSubmittedApp(newApp);
     setCurrentStep(8);
@@ -301,6 +306,17 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
   };
 
   if (!isOpen) return null;
+  if (!currentUniv || !currentCourse) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl p-6 max-w-md text-sm text-slate-700 space-y-3">
+          <p className="font-bold text-slate-900">No courses are available yet.</p>
+          <p>An admin needs to add an institution and at least one course before a student can apply.</p>
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-orange-500 text-white rounded-xl font-bold">Close</button>
+        </div>
+      </div>
+    );
+  }
 
   const stepTitles = [
     "Personal Details",
@@ -316,8 +332,8 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-[#E7E5E0] overflow-hidden flex flex-col my-auto h-[90vh] max-h-[820px]">
-        {/* SOLID BRAND COLOR TOP BAR — FLAT #0B5D3B (ZERO GRADIENT) */}
-        <div className="bg-[#0B5D3B] text-white px-6 sm:px-8 py-3.5 border-b border-[#08482D] flex items-center justify-between gap-4 shrink-0 shadow-xs">
+        {/* SOLID BRAND COLOR TOP BAR — FLAT #ea580c (ZERO GRADIENT) */}
+        <div className="bg-[#ea580c] text-white px-6 sm:px-8 py-3.5 border-b border-[#c2410c] flex items-center justify-between gap-4 shrink-0 shadow-xs">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-white shrink-0">
               <GraduationCap className="w-5 h-5 text-[#A3E5C3]" />
@@ -379,7 +395,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   <button
                     type="button"
                     onClick={() => setCurrentStep(5)}
-                    className="text-[11px] font-semibold text-[#0B5D3B] hover:text-[#08482D] hover:underline pt-1 inline-block cursor-pointer"
+                    className="text-[11px] font-semibold text-[#ea580c] hover:text-[#c2410c] hover:underline pt-1 inline-block cursor-pointer"
                   >
                     Change Course →
                   </button>
@@ -404,7 +420,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all text-xs ${
                         isCurrent
-                          ? "bg-white text-[#0B5D3B] font-semibold shadow-xs border border-[#E7E5E0]"
+                          ? "bg-white text-[#ea580c] font-semibold shadow-xs border border-[#E7E5E0]"
                           : isDone
                           ? "text-slate-700 hover:bg-white/60 cursor-pointer font-medium"
                           : "text-slate-400 cursor-default"
@@ -414,9 +430,9 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                         <span
                           className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
                             isCurrent
-                              ? "bg-[#0B5D3B] text-white"
+                              ? "bg-[#ea580c] text-white"
                               : isDone
-                              ? "bg-[#EAF5EF] text-[#0B5D3B]"
+                              ? "bg-[#fff7ed] text-[#ea580c]"
                               : "bg-slate-100 text-slate-400 border border-[#E7E5E0]"
                           }`}
                         >
@@ -425,7 +441,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                         <span className="truncate">{title}</span>
                       </div>
                       {isCurrent && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D3B] shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c] shrink-0" />
                       )}
                     </button>
                   );
@@ -441,7 +457,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               </div>
               <div className="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#0B5D3B] transition-all duration-300 rounded-full"
+                  className="h-full bg-[#ea580c] transition-all duration-300 rounded-full"
                   style={{ width: `${(currentStep / 8) * 100}%` }}
                 />
               </div>
@@ -458,7 +474,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 <span className="text-slate-400 font-medium">Section {currentStep} of 8:</span>
                 <span className="font-semibold text-slate-800">{stepTitles[currentStep - 1]}</span>
               </div>
-              <span className="text-[11px] font-medium text-[#0B5D3B] bg-[#EAF5EF] px-2.5 py-0.5 rounded-full border border-[#0B5D3B]/15">
+              <span className="text-[11px] font-medium text-[#ea580c] bg-[#fff7ed] px-2.5 py-0.5 rounded-full border border-[#ea580c]/15">
                 {Math.round((currentStep / 8) * 100)}% Complete
               </span>
             </div>
@@ -472,7 +488,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             <div className="space-y-5 animate-fade-in">
               <div className="border-b border-[#E7E5E0] pb-3">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <User className="w-4 h-4 text-[#0B5D3B]" />
+                  <User className="w-4 h-4 text-[#ea580c]" />
                   <span>Step 1 — Personal & Contact Details</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
@@ -488,7 +504,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -497,7 +513,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="text"
                     value={middleName}
                     onChange={(e) => setMiddleName(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -507,7 +523,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
               </div>
@@ -520,7 +536,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={dob}
                     onChange={(e) => setDob(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -528,7 +544,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] bg-white transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] bg-white transition-all"
                   >
                     <option>Male</option>
                     <option>Female</option>
@@ -541,7 +557,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="text"
                     value={nationality}
                     onChange={(e) => setNationality(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
               </div>
@@ -554,7 +570,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -564,7 +580,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -573,7 +589,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="tel"
                     value={altMobile}
                     onChange={(e) => setAltMobile(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
               </div>
@@ -585,7 +601,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="text"
                     value={streetAddress}
                     onChange={(e) => setStreetAddress(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -595,7 +611,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
                 <div>
@@ -605,7 +621,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     required
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
-                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                    className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                   />
                 </div>
               </div>
@@ -619,7 +635,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             <div className="space-y-5 animate-fade-in">
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#0B5D3B]" />
+                  <ShieldCheck className="w-4 h-4 text-[#ea580c]" />
                   <span>Step 2 — Passport Details</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
@@ -641,7 +657,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                       onClick={() => setHasPassport("YES")}
                       className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                         hasPassport === "YES"
-                          ? "bg-[#0B5D3B] text-white shadow-xs"
+                          ? "bg-[#ea580c] text-white shadow-xs"
                           : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
@@ -671,7 +687,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           required
                           value={passportNumber}
                           onChange={(e) => setPassportNumber(e.target.value)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm font-mono uppercase text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm font-mono uppercase text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         />
                       </div>
                       <div>
@@ -680,7 +696,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           type="text"
                           value={passportCountry}
                           onChange={(e) => setPassportCountry(e.target.value)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         />
                       </div>
                       <div>
@@ -689,7 +705,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           type="text"
                           value={placeOfIssue}
                           onChange={(e) => setPlaceOfIssue(e.target.value)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         />
                       </div>
                     </div>
@@ -701,7 +717,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           type="date"
                           value={dateOfIssue}
                           onChange={(e) => setDateOfIssue(e.target.value)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         />
                       </div>
                       <div>
@@ -710,7 +726,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           type="date"
                           value={expiryDate}
                           onChange={(e) => setExpiryDate(e.target.value)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         />
                       </div>
                     </div>
@@ -735,7 +751,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
                   <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4 text-[#0B5D3B]" />
+                    <GraduationCap className="w-4 h-4 text-[#ea580c]" />
                     <span>Step 3 — Academic Background & Qualifications</span>
                   </h2>
                   <p className="text-slate-500 text-[11px] mt-0.5">
@@ -745,7 +761,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 <button
                   type="button"
                   onClick={() => setShowAddEduModal(true)}
-                  className="px-3.5 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
+                  className="px-3.5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
                 >
                   <Plus className="w-4 h-4" />
                   <span>ADD QUALIFICATION</span>
@@ -764,7 +780,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   qualificationsList.map((q) => (
                     <div
                       key={q.id}
-                      className="p-4 bg-white border border-[#E7E5E0] rounded-xl flex items-center justify-between gap-3 shadow-xs hover:border-[#C8E5D5] transition-colors"
+                      className="p-4 bg-white border border-[#E7E5E0] rounded-xl flex items-center justify-between gap-3 shadow-xs hover:border-[#fed7aa] transition-colors"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -819,7 +835,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             <div className="space-y-5 animate-fade-in">
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Languages className="w-4 h-4 text-[#0B5D3B]" />
+                  <Languages className="w-4 h-4 text-[#ea580c]" />
                   <span>Step 4 — English Proficiency & Standardized Tests</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
@@ -828,12 +844,12 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               </div>
 
               {/* Section A: Academic English */}
-              <div className="p-4 bg-[#EAF5EF] border border-[#C8E5D5] rounded-xl space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B5D3B]">
+              <div className="p-4 bg-[#fff7ed] border border-[#fed7aa] rounded-xl space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ea580c]">
                   A. Academic English Score
                 </span>
                 <p className="font-bold text-slate-900 text-xs">
-                  Intermediate / 12th English Marks: <span className="text-[#0B5D3B]">{academicEnglishMarks}</span>
+                  Intermediate / 12th English Marks: <span className="text-[#ea580c]">{academicEnglishMarks}</span>
                 </p>
                 <p className="text-slate-600 text-[11px]">
                   Automatically evaluated from your senior secondary qualifications for university MOI / English waivers.
@@ -874,7 +890,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                         <select
                           value={selectedTestType}
                           onChange={(e) => setSelectedTestType(e.target.value as any)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         >
                           <option>IELTS</option>
                           <option>TOEFL</option>
@@ -890,7 +906,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           type="text"
                           value={testScoreOverall}
                           onChange={(e) => setTestScoreOverall(e.target.value)}
-                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                          className="w-full mt-1 h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                         />
                       </div>
                     </div>
@@ -903,7 +919,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={testSubL}
                             onChange={(e) => setTestSubL(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                         <div>
@@ -912,7 +928,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={testSubR}
                             onChange={(e) => setTestSubR(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                         <div>
@@ -921,7 +937,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={testSubW}
                             onChange={(e) => setTestSubW(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                         <div>
@@ -930,7 +946,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={testSubS}
                             onChange={(e) => setTestSubS(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                       </div>
@@ -942,7 +958,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={greVerbal}
                             onChange={(e) => setGreVerbal(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                         <div>
@@ -951,7 +967,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={greQuant}
                             onChange={(e) => setGreQuant(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                         <div>
@@ -960,7 +976,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             type="text"
                             value={greAwa}
                             onChange={(e) => setGreAwa(e.target.value)}
-                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                            className="w-full mt-1 h-10 px-3 rounded-[8px] border border-[#E7E5E0] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                           />
                         </div>
                       </div>
@@ -987,7 +1003,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             <div className="space-y-5 animate-fade-in">
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-[#0B5D3B]" />
+                  <Compass className="w-4 h-4 text-[#ea580c]" />
                   <span>Step 5 — Target University & Course Selection</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
@@ -1014,7 +1030,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           setSelectedIntake(univCourses[0].activeIntake || "September / October 2026");
                         }
                       }}
-                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
                       {universities.map((u) => (
                         <option key={u.id} value={u.id}>
@@ -1039,7 +1055,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           setSelectedIntake(foundCourse.activeIntake);
                         }
                       }}
-                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
                       {availableCoursesForUniv.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -1059,7 +1075,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     <select
                       value={selectedIntake}
                       onChange={(e) => setSelectedIntake(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
                       <option value="September / October 2026">September / October 2026</option>
                       <option value="January / February 2027">January / February 2027</option>
@@ -1075,7 +1091,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     <select
                       value={scholarshipRequired}
                       onChange={(e) => setScholarshipRequired(e.target.value as any)}
-                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                      className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
                       <option value="YES">Yes — Consider for institutional merit grant</option>
                       <option value="NO">No — Self-funded / private sponsorship</option>
@@ -1088,7 +1104,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               <div className="p-4 bg-[#FAFAF8] border border-[#E7E5E0] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold text-[#0B5D3B] bg-[#EAF5EF] px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-semibold text-[#ea580c] bg-[#fff7ed] px-2.5 py-0.5 rounded-full">
                       {currentCourse.studyLevel}
                     </span>
                     <span className="text-[11px] text-slate-500 font-medium">
@@ -1106,7 +1122,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 </div>
                 <div className="text-left sm:text-right shrink-0 bg-white p-3 rounded-lg border border-[#E7E5E0]">
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block">Tuition Fee</span>
-                  <span className="font-bold text-slate-900 text-base block text-[#0B5D3B]">
+                  <span className="font-bold text-slate-900 text-base block text-[#ea580c]">
                     {currentCourse.tuitionFee}
                   </span>
                   <span className="text-slate-500 text-[11px] block mt-0.5">App Fee Waiver: Included</span>
@@ -1117,7 +1133,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               <div
                 className={`p-4 rounded-xl border space-y-2 ${
                   eligibility.status === "Likely Eligible"
-                    ? "bg-[#EAF5EF]/80 border-[#C8E5D5] text-[#0B5D3B]"
+                    ? "bg-[#fff7ed]/80 border-[#fed7aa] text-[#ea580c]"
                     : eligibility.status === "Requirements Need Review"
                     ? "bg-amber-50/80 border-amber-200 text-amber-900"
                     : "bg-[#FAFAF8] border-[#E7E5E0] text-slate-800"
@@ -1154,7 +1170,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="Optional brief notes or career objective for the Dakshinvedha admissions desk..."
                   value={applicationNotes}
                   onChange={(e) => setApplicationNotes(e.target.value)}
-                  className="w-full p-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full p-3.5 rounded-[10px] border border-[#E7E5E0] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
             </div>
@@ -1167,7 +1183,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             <div className="space-y-5 animate-fade-in">
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#0B5D3B]" />
+                  <FileText className="w-4 h-4 text-[#ea580c]" />
                   <span>Step 6 — Supporting Documents</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
@@ -1205,7 +1221,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     return (
                       <div
                         key={idx}
-                        className="p-3.5 bg-white border border-[#E7E5E0] rounded-xl flex items-center justify-between gap-3 text-xs shadow-xs hover:border-[#C8E5D5] transition-colors"
+                        className="p-3.5 bg-white border border-[#E7E5E0] rounded-xl flex items-center justify-between gap-3 text-xs shadow-xs hover:border-[#fed7aa] transition-colors"
                       >
                         <div>
                           <p className="font-bold text-slate-900">{item.name}</p>
@@ -1217,7 +1233,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
                               existing?.status === "Verified"
-                                ? "bg-[#EAF5EF] text-[#0B5D3B] border-[#C8E5D5]"
+                                ? "bg-[#fff7ed] text-[#ea580c] border-[#fed7aa]"
                                 : existing
                                 ? "bg-amber-50 text-amber-700 border-amber-200"
                                 : "bg-slate-100 text-slate-600 border-slate-200"
@@ -1226,7 +1242,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             <span
                               className={`w-1.5 h-1.5 rounded-full ${
                                 existing?.status === "Verified"
-                                  ? "bg-[#0B5D3B]"
+                                  ? "bg-[#ea580c]"
                                   : existing
                                   ? "bg-amber-500"
                                   : "bg-slate-400"
@@ -1272,7 +1288,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             <div className="space-y-5 animate-fade-in">
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0B5D3B]" />
+                  <CheckCircle2 className="w-4 h-4 text-[#ea580c]" />
                   <span>Step 7 — Review Application Dossier</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
@@ -1297,7 +1313,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   </div>
                   <button
                     onClick={() => setCurrentStep(5)}
-                    className="px-2.5 py-1 text-[#0B5D3B] font-semibold hover:bg-[#EAF5EF] rounded-lg text-xs cursor-pointer transition-colors"
+                    className="px-2.5 py-1 text-[#ea580c] font-semibold hover:bg-[#fff7ed] rounded-lg text-xs cursor-pointer transition-colors"
                   >
                     [ EDIT ]
                   </button>
@@ -1318,7 +1334,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   </div>
                   <button
                     onClick={() => setCurrentStep(1)}
-                    className="px-2.5 py-1 text-[#0B5D3B] font-semibold hover:bg-[#EAF5EF] rounded-lg text-xs cursor-pointer transition-colors"
+                    className="px-2.5 py-1 text-[#ea580c] font-semibold hover:bg-[#fff7ed] rounded-lg text-xs cursor-pointer transition-colors"
                   >
                     [ EDIT ]
                   </button>
@@ -1336,7 +1352,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   </div>
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="px-2.5 py-1 text-[#0B5D3B] font-semibold hover:bg-[#EAF5EF] rounded-lg text-xs cursor-pointer transition-colors"
+                    className="px-2.5 py-1 text-[#ea580c] font-semibold hover:bg-[#fff7ed] rounded-lg text-xs cursor-pointer transition-colors"
                   >
                     [ EDIT ]
                   </button>
@@ -1353,7 +1369,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   </div>
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="px-2.5 py-1 text-[#0B5D3B] font-semibold hover:bg-[#EAF5EF] rounded-lg text-xs cursor-pointer transition-colors"
+                    className="px-2.5 py-1 text-[#ea580c] font-semibold hover:bg-[#fff7ed] rounded-lg text-xs cursor-pointer transition-colors"
                   >
                     [ EDIT ]
                   </button>
@@ -1372,7 +1388,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   </div>
                   <button
                     onClick={() => setCurrentStep(4)}
-                    className="px-2.5 py-1 text-[#0B5D3B] font-semibold hover:bg-[#EAF5EF] rounded-lg text-xs cursor-pointer transition-colors"
+                    className="px-2.5 py-1 text-[#ea580c] font-semibold hover:bg-[#fff7ed] rounded-lg text-xs cursor-pointer transition-colors"
                   >
                     [ EDIT ]
                   </button>
@@ -1386,7 +1402,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="checkbox"
                     checked={declarationAccepted}
                     onChange={(e) => setDeclarationAccepted(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded text-[#0B5D3B] focus:ring-[#0B5D3B] cursor-pointer"
+                    className="mt-0.5 w-4 h-4 rounded text-[#ea580c] focus:ring-[#ea580c] cursor-pointer"
                   />
                   <span className="text-xs font-bold text-slate-900">
                     &quot;I confirm that the information provided in this application is accurate and true to the best of my knowledge.&quot;
@@ -1404,12 +1420,12 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
           {/* ======================================================== */}
           {currentStep === 8 && (
             <div className="py-6 text-center space-y-5 animate-fade-in">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+              <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle2 className="w-9 h-9" />
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                <span className="text-xs font-bold text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
                   Dossier Successfully Transmitted
                 </span>
                 <h2 className="text-2xl font-black text-slate-900 mt-2">
@@ -1424,8 +1440,8 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               <div className="p-5 bg-white border border-slate-200 shadow-sm rounded-2xl max-w-lg mx-auto text-left space-y-2.5 text-xs">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                   <span className="text-slate-500 font-medium">Application ID:</span>
-                  <span className="font-mono font-bold text-[#0B5D3B] text-sm">
-                    {submittedApp?.camsId || "APP-2026-89410"}
+                  <span className="font-mono font-bold text-[#ea580c] text-sm">
+                    {submittedApp?.camsId || "DV-APP-2026-89410"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -1466,7 +1482,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     onClose();
                     if (submittedApp) onApplicationCompleted(submittedApp);
                   }}
-                  className="h-11 px-6 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold text-xs rounded-[10px] shadow-sm transition-all cursor-pointer active:scale-[0.98]"
+                  className="h-11 px-6 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-[10px] shadow-sm transition-all cursor-pointer active:scale-[0.98]"
                 >
                   VIEW APPLICATION IN TRACKER
                 </button>
@@ -1502,7 +1518,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(currentStep + 1)}
-                  className="h-11 px-6 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold text-xs rounded-[10px] shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
+                  className="h-11 px-6 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-[10px] shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
                 >
                   <span>Continue</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1516,7 +1532,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   onClick={handleSubmitApplication}
                   className={`h-11 px-6 font-semibold text-xs text-white rounded-[10px] shadow-sm transition-all flex items-center gap-2 cursor-pointer ${
                     declarationAccepted
-                      ? "bg-[#0B5D3B] hover:bg-[#08482D] active:scale-[0.98]"
+                      ? "bg-[#ea580c] hover:bg-[#c2410c] active:scale-[0.98]"
                       : "bg-slate-300 cursor-not-allowed opacity-60"
                   }`}
                 >
@@ -1569,7 +1585,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     setEduDegree("Master of Science");
                   }
                 }}
-                className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
               >
                 <option value="10th">Secondary / 10th Standard</option>
                 <option value="12th">Intermediate / 12th Standard</option>
@@ -1588,7 +1604,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 placeholder="e.g. Bachelor of Technology, B.Com, High School"
                 value={eduDegree}
                 onChange={(e) => setEduDegree(e.target.value)}
-                className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
               />
             </div>
 
@@ -1601,7 +1617,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="e.g. SVKM NMIMS, Delhi Public School"
                   value={eduInstitution}
                   onChange={(e) => setEduInstitution(e.target.value)}
-                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
               <div>
@@ -1612,7 +1628,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="e.g. Mumbai University, CBSE"
                   value={eduBoard}
                   onChange={(e) => setEduBoard(e.target.value)}
-                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
             </div>
@@ -1629,7 +1645,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="e.g. 2021"
                   value={eduStartYear}
                   onChange={(e) => setEduStartYear(e.target.value)}
-                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
               <div>
@@ -1642,7 +1658,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="e.g. 2025"
                   value={eduPassYear}
                   onChange={(e) => setEduPassYear(e.target.value)}
-                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
             </div>
@@ -1656,7 +1672,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="e.g. 8.5 or 85%"
                   value={eduScore}
                   onChange={(e) => setEduScore(e.target.value)}
-                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
               <div>
@@ -1666,7 +1682,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   placeholder="e.g. Computer Science, Science"
                   value={eduSpecialization}
                   onChange={(e) => setEduSpecialization(e.target.value)}
-                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B] transition-all"
+                  className="w-full mt-1 h-11 px-3.5 border border-[#E7E5E0] rounded-[10px] text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                 />
               </div>
             </div>
@@ -1678,7 +1694,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   <select
                     value={eduStream}
                     onChange={(e) => setEduStream(e.target.value)}
-                    className="w-full mt-1 h-10 px-3 border border-[#E7E5E0] rounded-lg bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B]"
+                    className="w-full mt-1 h-10 px-3 border border-[#E7E5E0] rounded-lg bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c]"
                   >
                     <option>MPC</option>
                     <option>BiPC</option>
@@ -1695,7 +1711,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="number"
                     value={eduEnglishMarks}
                     onChange={(e) => setEduEnglishMarks(e.target.value)}
-                    className="w-full mt-1 h-10 px-3 border border-[#E7E5E0] rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B]"
+                    className="w-full mt-1 h-10 px-3 border border-[#E7E5E0] rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c]"
                   />
                 </div>
                 <div>
@@ -1704,7 +1720,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     type="number"
                     value={eduMaxEnglishMarks}
                     onChange={(e) => setEduMaxEnglishMarks(e.target.value)}
-                    className="w-full mt-1 h-10 px-3 border border-[#E7E5E0] rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 focus:border-[#0B5D3B]"
+                    className="w-full mt-1 h-10 px-3 border border-[#E7E5E0] rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c]"
                   />
                 </div>
               </div>
@@ -1720,7 +1736,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               </button>
               <button
                 type="submit"
-                className="h-10 px-5 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-lg font-semibold text-xs shadow-xs cursor-pointer active:scale-[0.98] transition-all"
+                className="h-10 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg font-semibold text-xs shadow-xs cursor-pointer active:scale-[0.98] transition-all"
               >
                 Save Qualification
               </button>

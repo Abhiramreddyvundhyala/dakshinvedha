@@ -200,7 +200,7 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                 <div className="flex flex-col items-center gap-1.5">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                     isCompleted
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+                      ? "text-white shadow-sm"
                       : isCurrent
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-110"
                       : "bg-slate-800 text-slate-500"
@@ -208,12 +208,12 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                     {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                   </div>
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                    isCurrent ? "text-blue-400" : isCompleted ? "text-emerald-400" : "text-slate-600"
+                    isCurrent ? "text-blue-400" : isCompleted ? "text-orange-500" : "text-slate-600"
                   }`}>{s.label}</span>
                 </div>
                 {idx < STEPS.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-2 rounded ${
-                    step > s.id ? "bg-emerald-500" : "bg-slate-800"
+                    step > s.id ? "bg-orange-500" : "bg-slate-800"
                   }`} />
                 )}
               </React.Fragment>

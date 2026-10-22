@@ -2,19 +2,36 @@
 
 import React, { useState } from "react";
 import { CalendarClock, ArrowRight, AlertTriangle, Building, Globe } from "lucide-react";
-import { MOCK_DEADLINES } from "@/data/mockData";
+import { usePlatform } from "@/context/PlatformContext";
 
 export const UniversityDeadlines: React.FC = () => {
+  const { courses } = usePlatform();
   const [viewAll, setViewAll] = useState(false);
 
-  const displayedDeadlines = viewAll ? MOCK_DEADLINES : MOCK_DEADLINES.slice(0, 4);
+  const deadlines = courses
+    .filter((course) => course.applicationDeadline)
+    .map((course) => {
+      const parsed = Date.parse(course.applicationDeadline);
+      const daysRemaining = Number.isNaN(parsed) ? null : Math.ceil((parsed - Date.now()) / 86400000);
+      return {
+        id: course.id,
+        university: course.universityName,
+        country: course.country,
+        courseType: course.studyLevel === "Undergraduate" ? "Undergraduate" as const : "Postgraduate" as const,
+        applicationDeadline: course.applicationDeadline,
+        intake: course.activeIntake,
+        daysRemaining: daysRemaining ?? 0,
+        isUrgent: daysRemaining !== null && daysRemaining >= 0 && daysRemaining <= 21,
+      };
+    });
+  const displayedDeadlines = viewAll ? deadlines : deadlines.slice(0, 4);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-5 flex flex-col justify-between h-full">
       {/* Header */}
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0B5D3B]">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f97316]">
             <CalendarClock className="w-4 h-4" />
           </div>
           <div>
@@ -29,7 +46,7 @@ export const UniversityDeadlines: React.FC = () => {
 
         <button
           onClick={() => setViewAll(!viewAll)}
-          className="group flex items-center gap-1 text-xs font-bold text-[#0B5D3B] hover:text-[#08482D] tracking-wide transition-colors"
+          className="group flex items-center gap-1 text-xs font-bold text-[#f97316] hover:text-[#ea580c] tracking-wide transition-colors"
         >
           <span>{viewAll ? "SHOW LESS" : "VIEW ALL"}</span>
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -47,6 +64,11 @@ export const UniversityDeadlines: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
+            {displayedDeadlines.length === 0 && (
+              <tr>
+                <td colSpan={3} className="py-6 text-slate-400">No course deadlines yet. They appear when an admin adds a course deadline.</td>
+              </tr>
+            )}
             {displayedDeadlines.map((dl) => (
               <tr
                 key={dl.id}
@@ -55,7 +77,7 @@ export const UniversityDeadlines: React.FC = () => {
                 {/* University */}
                 <td className="py-3 pr-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold group-hover:bg-emerald-100 group-hover:text-[#0B5D3B] transition-colors">
+                    <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">
                       <Building className="w-3.5 h-3.5" />
                     </div>
                     <div>

@@ -3,33 +3,36 @@
 import React, { useState, useRef, useEffect } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import {
-  GraduationCap,
   Bell,
   User,
   LogOut,
   ChevronDown,
-  CheckCircle2,
-  AlertCircle,
   FileText,
-  Search,
-  BookOpen,
   Building2,
-  Clock,
-  ExternalLink,
+  Menu,
 } from "lucide-react";
 
 export type StudentNavTab = "dashboard" | "universities" | "applications" | "profile";
+
+const TAB_LABELS: Record<StudentNavTab, string> = {
+  dashboard: "Dashboard",
+  universities: "Universities & Courses",
+  applications: "My Applications",
+  profile: "Profile & Documents",
+};
 
 interface StudentHeaderProps {
   currentTab: StudentNavTab;
   onSelectTab: (tab: StudentNavTab) => void;
   onOpenCompleteProfile: () => void;
+  onOpenMenu: () => void;
 }
 
 export const StudentHeader: React.FC<StudentHeaderProps> = ({
   currentTab,
   onSelectTab,
   onOpenCompleteProfile,
+  onOpenMenu,
 }) => {
   const { activeStudent, logoutStudent, studentNotifications, markNotificationAsRead, clearNotifications } =
     usePlatform();
@@ -55,79 +58,28 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
   }, []);
 
   return (
-    <header className="bg-white border-b border-[#E7E5E0] sticky top-0 z-40 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Left: Brand & Navigation */}
-        <div className="flex items-center gap-6">
-          <div
-            onClick={() => onSelectTab("dashboard")}
-            className="flex items-center gap-2.5 cursor-pointer group"
+    <header className="sticky top-0 z-30 bg-white border-b border-[#E7E5E0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="px-3 sm:px-6 h-14 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            className="lg:hidden p-2 rounded-lg cursor-pointer bg-[#FAFAF8] border border-[#E7E5E0]"
+            aria-label="Open menu"
           >
-            <div className="w-9 h-9 rounded-xl bg-[#0B5D3B] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-slate-900 tracking-tight leading-none block">
-                Dakshinvedha
-              </span>
-              <span className="text-[10px] font-semibold text-[#0B5D3B] tracking-wider uppercase block">
-                Abroad Solutions
-              </span>
-            </div>
+            <Menu className="w-4 h-4 text-slate-500" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-sm font-bold text-slate-900 truncate">{TAB_LABELS[currentTab]}</h1>
+            <p className="text-[10px] text-slate-400">Student Portal</p>
           </div>
-
-          {/* Student Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-[#F4F3EF] p-1 rounded-full border border-[#E7E5E0]/70">
-            <button
-              onClick={() => onSelectTab("dashboard")}
-              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                currentTab === "dashboard"
-                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
-                  : "text-slate-600 hover:text-slate-900 font-medium"
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => onSelectTab("universities")}
-              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                currentTab === "universities"
-                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
-                  : "text-slate-600 hover:text-slate-900 font-medium"
-              }`}
-            >
-              Universities & Courses
-            </button>
-            <button
-              onClick={() => onSelectTab("applications")}
-              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                currentTab === "applications"
-                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
-                  : "text-slate-600 hover:text-slate-900 font-medium"
-              }`}
-            >
-              My Applications
-            </button>
-            <button
-              onClick={() => onSelectTab("profile")}
-              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                currentTab === "profile"
-                  ? "bg-white text-[#0B5D3B] shadow-xs font-semibold"
-                  : "text-slate-600 hover:text-slate-900 font-medium"
-              }`}
-            >
-              Profile & Documents
-            </button>
-          </nav>
         </div>
 
-        {/* Right: Profile completion pill, Notifications & User menu */}
         <div className="flex items-center gap-3">
-          {/* Profile Completion Widget Pill */}
           <div className="hidden lg:flex items-center gap-2.5 bg-white border border-[#E7E5E0] px-3.5 py-1.5 rounded-full shadow-xs">
             <div className="w-16 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#0B5D3B] rounded-full transition-all duration-500"
+                className="h-full bg-[#ea580c] rounded-full transition-all duration-500"
                 style={{ width: `${activeStudent?.profileCompletion || 72}%` }}
               />
             </div>
@@ -135,16 +87,17 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               {activeStudent?.profileCompletion || 72}%
             </span>
             <button
+              type="button"
               onClick={onOpenCompleteProfile}
-              className="text-[11px] font-semibold text-[#0B5D3B] hover:text-[#08482D] bg-[#EAF5EF] hover:bg-[#DCEFE3] border border-[#C8E5D5]/80 px-2.5 py-1 rounded-full transition-all cursor-pointer"
+              className="text-[11px] font-semibold text-[#ea580c] hover:text-[#c2410c] bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa]/80 px-2.5 py-1 rounded-full transition-all cursor-pointer"
             >
               COMPLETE PROFILE
             </button>
           </div>
 
-          {/* Notifications Dropdown */}
           <div className="relative" ref={notifRef}>
             <button
+              type="button"
               onClick={() => setIsNotifOpen(!isNotifOpen)}
               className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors relative cursor-pointer"
               title="Student Notifications"
@@ -163,6 +116,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                   </span>
                   {unreadNotifs.length > 0 && (
                     <button
+                      type="button"
                       onClick={clearNotifications}
                       className="text-[11px] text-orange-600 font-bold hover:underline"
                     >
@@ -198,13 +152,13 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             )}
           </div>
 
-          {/* Student Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
+              type="button"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 p-1.5 pl-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-full bg-[#0B5D3B] text-white font-bold text-xs flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-[#ea580c] text-white font-bold text-xs flex items-center justify-center">
                 {activeStudent?.firstName?.charAt(0) || "S"}
               </div>
               <div className="hidden sm:flex flex-col text-left">
@@ -212,7 +166,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                   {activeStudent?.name || "Student"}
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">
-                  ID: {activeStudent?.studentId || "STU-2026-101"}
+                  ID: {activeStudent?.studentId || "DV-STU-2026-00101"}
                 </span>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -223,12 +177,13 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                 <div className="px-3 py-2 border-b border-slate-100 mb-1">
                   <p className="font-bold text-slate-900">{activeStudent?.name}</p>
                   <p className="text-[11px] text-slate-400">{activeStudent?.email}</p>
-                  <p className="text-[10px] text-[#0B5D3B] font-bold mt-1">
+                  <p className="text-[10px] text-[#ea580c] font-bold mt-1">
                     Student ID: {activeStudent?.studentId}
                   </p>
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setIsProfileOpen(false);
                     onSelectTab("profile");
@@ -240,6 +195,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setIsProfileOpen(false);
                     onSelectTab("universities");
@@ -251,6 +207,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setIsProfileOpen(false);
                     onOpenCompleteProfile();
@@ -264,6 +221,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                 <div className="my-1 border-t border-slate-100" />
 
                 <button
+                  type="button"
                   onClick={() => {
                     setIsProfileOpen(false);
                     logoutStudent();
@@ -277,42 +235,6 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             )}
           </div>
         </div>
-      </div>
-
-      {/* Mobile Nav Bar */}
-      <div className="md:hidden flex border-t border-slate-100 px-2 py-1.5 gap-1 bg-slate-50 overflow-x-auto">
-        <button
-          onClick={() => onSelectTab("dashboard")}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg whitespace-nowrap px-2.5 ${
-            currentTab === "dashboard" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
-          }`}
-        >
-          Dashboard
-        </button>
-        <button
-          onClick={() => onSelectTab("universities")}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg whitespace-nowrap px-2.5 ${
-            currentTab === "universities" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
-          }`}
-        >
-          Universities
-        </button>
-        <button
-          onClick={() => onSelectTab("applications")}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg whitespace-nowrap px-2.5 ${
-            currentTab === "applications" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
-          }`}
-        >
-          Applications
-        </button>
-        <button
-          onClick={() => onSelectTab("profile")}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg whitespace-nowrap px-2.5 ${
-            currentTab === "profile" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
-          }`}
-        >
-          Profile
-        </button>
       </div>
     </header>
   );

@@ -35,7 +35,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
       >
         <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">
               <CreditCard className="w-4 h-4" />
             </div>
             <div>
@@ -63,7 +63,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
               onChange={(e) =>
                 setFormData({ ...formData, businessAccountName: e.target.value })
               }
-              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
             />
           </div>
 
@@ -79,7 +79,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, accountNumber: e.target.value })
                 }
-                className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B] font-mono"
+                className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c] font-mono"
               />
             </div>
             <div>
@@ -93,7 +93,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, bankName: e.target.value })
                 }
-                className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+                className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
               />
             </div>
           </div>
@@ -109,7 +109,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
               onChange={(e) =>
                 setFormData({ ...formData, branch: e.target.value })
               }
-              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
             />
           </div>
 
@@ -184,7 +184,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-lg text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
+              className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
             >
               <Check className="w-4 h-4" />
               <span>SAVE CHANGES</span>

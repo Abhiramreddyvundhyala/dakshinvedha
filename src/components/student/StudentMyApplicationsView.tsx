@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Plus,
 } from "lucide-react";
+import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 
 interface StudentMyApplicationsViewProps {
   onSelectApplication: (app: ApplicationRecord) => void;
@@ -98,7 +99,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
 
         <button
           onClick={onOpenApplyWizard}
-          className="h-10 px-4 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold text-xs rounded-[10px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto active:scale-[0.98]"
+          className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-[10px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           <span>Apply to New Course</span>
@@ -115,7 +116,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
               onClick={() => setActiveTab(tab)}
               className={`py-1.5 px-3 rounded-lg transition-all whitespace-nowrap cursor-pointer text-xs ${
                 isSelected
-                  ? "bg-white text-[#0B5D3B] font-semibold shadow-xs"
+                  ? "bg-white text-[#ea580c] font-semibold shadow-xs"
                   : "text-slate-600 hover:text-slate-900 font-medium"
               }`}
             >
@@ -137,7 +138,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
           </p>
           <button
             onClick={onOpenApplyWizard}
-            className="h-10 px-4 bg-[#0B5D3B] hover:bg-[#08482D] text-white text-xs font-semibold rounded-[10px] cursor-pointer active:scale-[0.98]"
+            className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-semibold rounded-[10px] cursor-pointer active:scale-[0.98]"
           >
             Start an Application
           </button>
@@ -145,7 +146,6 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredApplications.map((app) => {
-            const completedStages = app.timeline.filter((t) => t.state === "completed").length;
             const isOfferReady =
               app.primaryStatus.includes("Offer") ||
               app.secondaryStatus.includes("Offer") ||
@@ -154,7 +154,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
             return (
               <div
                 key={app.camsId}
-                className="bg-white rounded-xl p-5 sm:p-6 border border-[#E7E5E0] shadow-xs hover:border-[#C8E5D5] transition-all flex flex-col justify-between space-y-4 group"
+                className="bg-white rounded-xl p-5 sm:p-6 border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all flex flex-col justify-between space-y-4 group"
               >
                 <div className="space-y-3">
                   {/* Top Bar: ID & Current Status */}
@@ -165,7 +165,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
                     <span
                       className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
                         app.primaryStatus.includes("Offer")
-                          ? "bg-[#EAF5EF] text-[#0B5D3B] border-[#C8E5D5]"
+                          ? "bg-[#fff7ed] text-[#ea580c] border-[#fed7aa]"
                           : app.primaryStatus === "Closed"
                           ? "bg-rose-50 text-rose-700 border-rose-200"
                           : "bg-slate-50 text-slate-700 border-[#E7E5E0]"
@@ -174,7 +174,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
                           app.primaryStatus.includes("Offer")
-                            ? "bg-[#0B5D3B]"
+                            ? "bg-[#ea580c]"
                             : app.primaryStatus === "Closed"
                             ? "bg-rose-500"
                             : "bg-slate-400"
@@ -186,7 +186,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
 
                   {/* Course & University */}
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-[#0B5D3B] transition-colors">
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-[#ea580c] transition-colors">
                       {app.course.courseName}
                     </h3>
                     <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -210,31 +210,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
                     </div>
                   </div>
 
-                  {/* Progress Indicator */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] text-slate-500">
-                      <span>Progress Stage:</span>
-                      <span className="font-semibold text-slate-800">
-                        {completedStages} / 11 Completed
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex border border-[#E7E5E0]">
-                      {app.timeline.map((st, i) => (
-                        <div
-                          key={i}
-                          className={`h-full flex-1 border-r border-white/50 ${
-                            st.state === "completed"
-                              ? "bg-[#0B5D3B]"
-                              : st.state === "current"
-                              ? "bg-[#0B5D3B] animate-pulse"
-                              : st.state === "not_applicable"
-                              ? "bg-slate-300"
-                              : "bg-slate-200"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  <ApplicationTracker application={app} compact />
                 </div>
 
                 {/* Card Actions depending on state */}
@@ -249,7 +225,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
                   {app.primaryStatus === "Draft" && (
                     <button
                       onClick={onOpenApplyWizard}
-                      className="flex-1 h-10 text-xs font-semibold text-white bg-[#0B5D3B] hover:bg-[#08482D] rounded-[10px] transition-colors cursor-pointer text-center active:scale-[0.98]"
+                      className="flex-1 h-10 text-xs font-semibold text-white bg-[#ea580c] hover:bg-[#c2410c] rounded-[10px] transition-colors cursor-pointer text-center active:scale-[0.98]"
                     >
                       CONTINUE APPLICATION
                     </button>
@@ -258,7 +234,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
                   {isOfferReady && (
                     <button
                       onClick={() => onSelectApplication(app)}
-                      className="flex-1 h-10 text-xs font-semibold text-white bg-[#0B5D3B] hover:bg-[#08482D] rounded-[10px] shadow-xs transition-colors cursor-pointer text-center flex items-center justify-center gap-1 active:scale-[0.98]"
+                      className="flex-1 h-10 text-xs font-semibold text-white bg-[#ea580c] hover:bg-[#c2410c] rounded-[10px] shadow-xs transition-colors cursor-pointer text-center flex items-center justify-center gap-1 active:scale-[0.98]"
                     >
                       <Award className="w-3.5 h-3.5" />
                       <span>VIEW OFFER</span>
@@ -267,7 +243,7 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
 
                   <button
                     onClick={onOpenDocumentsProfile}
-                    className="h-10 px-3 text-slate-500 hover:text-[#0B5D3B] hover:bg-[#EAF5EF] border border-[#E7E5E0] rounded-[10px] transition-colors cursor-pointer"
+                    className="h-10 px-3 text-slate-500 hover:text-[#ea580c] hover:bg-[#fff7ed] border border-[#E7E5E0] rounded-[10px] transition-colors cursor-pointer"
                     title="Upload additional documents"
                   >
                     <Upload className="w-4 h-4" />

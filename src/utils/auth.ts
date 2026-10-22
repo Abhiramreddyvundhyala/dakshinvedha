@@ -1,43 +1,52 @@
+import { getSupabase } from "@/lib/supabase";
+
 /**
- * Unified logout utility
- * Completely clears all session and local storage authentication flags
- * and redirects safely to the login screen.
+ * Clears the Supabase session and the portal session keys, then returns to the login screen.
  */
 export function performLogout() {
-  try {
-    if (typeof window !== "undefined") {
-      // Clear session storage completely
-      sessionStorage.clear();
-
-      // Clear all authentication & user keys in localStorage
-      const keysToRemove = [
-        "dakshin_authenticated",
-        "dakshin_portal_role",
-        "dakshin_user_email",
-        "dakshin_user_name",
-        "dakshin_student_auth",
-        "dakshin_student_new_registration",
-        "dakshin_new_student_name",
-        "dakshin_new_student_mobile",
-        "dakshin_new_student_email",
-        "devgrate_authenticated",
-        "devgrate_portal_role",
-        "devgrate_user_email",
-        "devgrate_user_name",
-        "devgrate_student_auth",
-        "devgrate_student_new_registration",
-        "devgrate_new_student_name",
-        "devgrate_new_student_mobile",
-        "devgrate_new_student_email",
-      ];
-
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
+  const finish = () => {
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.clear();
+        const keysToRemove = [
+          "dakshin_authenticated",
+          "dakshin_portal_role",
+          "dakshin_user_email",
+          "dakshin_user_name",
+          "dakshin_account_id",
+          "dakshin_partner_id",
+          "dakshin_member_kind",
+          "dakshin_tracking_id",
+          "dakshin_student_auth",
+          "dakshin_student_new_registration",
+          "dakshin_new_student_name",
+          "dakshin_new_student_mobile",
+          "dakshin_new_student_email",
+          "dakshin_new_student_password",
+          "devgrate_authenticated",
+          "devgrate_portal_role",
+          "devgrate_user_email",
+          "devgrate_user_name",
+          "devgrate_student_auth",
+          "devgrate_student_new_registration",
+          "devgrate_new_student_name",
+          "devgrate_new_student_mobile",
+          "devgrate_new_student_email",
+        ];
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
+      }
+    } catch (err) {
+      console.error("Failed to clear authentication storage", err);
     }
-  } catch (err) {
-    console.error("Failed to clear authentication storage", err);
-  }
+    if (typeof window !== "undefined") {
+      window.location.href = "/?logout=true";
+    }
+  };
 
-  if (typeof window !== "undefined") {
-    window.location.href = "/?logout=true";
+  const supabase = getSupabase();
+  if (!supabase) {
+    finish();
+    return;
   }
+  void supabase.auth.signOut().finally(finish);
 }

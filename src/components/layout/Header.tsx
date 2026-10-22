@@ -5,8 +5,6 @@ import {
   Search,
   Building2,
   Bell,
-  User,
-  CheckCircle2,
   ChevronDown,
   Sparkles,
   ExternalLink,
@@ -17,9 +15,10 @@ import {
   DollarSign,
   Headphones,
 } from "lucide-react";
-import { MOCK_NOTIFICATIONS, MOCK_APPLICATIONS } from "@/data/mockData";
 import { ApplicationRecord } from "@/types";
 import { performLogout } from "@/utils/auth";
+import { readSessionValue } from "@/utils/accounts";
+import { usePlatform } from "@/context/PlatformContext";
 
 interface HeaderProps {
   onToggleSidebarMobile: () => void;
@@ -42,18 +41,22 @@ export const Header: React.FC<HeaderProps> = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isBranchOpen, setIsBranchOpen] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState("GlobalEdu South Asia HQ");
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const { applications, notifications: platformNotifications, activeB2BPartner } = usePlatform();
+  const [notifications, setNotifications] = useState(platformNotifications);
+  const viewerName = readSessionValue("dakshin_user_name") || activeB2BPartner?.name || "Partner";
+  const viewerEmail = readSessionValue("dakshin_user_email") || activeB2BPartner?.email || "";
+  const memberKind = readSessionValue("dakshin_member_kind");
+  const initials = viewerName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "DV";
+  const orgLabel = activeB2BPartner?.organizationName || activeB2BPartner?.name || "B2B Partner";
+  const roleLabel = memberKind === "team" ? "Team member" : "B2B owner";
 
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const branchRef = useRef<HTMLDivElement>(null);
 
   // Filter applications live based on query
   const searchResults = searchQuery.trim()
-    ? MOCK_APPLICATIONS.filter((app) => {
+    ? applications.filter((app) => {
         const q = searchQuery.toLowerCase();
         return (
           app.camsId.toLowerCase().includes(q) ||
@@ -84,9 +87,6 @@ export const Header: React.FC<HeaderProps> = ({
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setIsProfileOpen(false);
       }
-      if (branchRef.current && !branchRef.current.contains(e.target as Node)) {
-        setIsBranchOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -106,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Company Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-[#0B5D3B] flex items-center justify-center text-white shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-[#f97316] flex items-center justify-center text-white shadow-xs">
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-extrabold text-base tracking-tight text-slate-900">
                 DAKSHINVEDHA ABROAD
               </span>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-[#0B5D3B] border border-emerald-200 rounded">
+              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-orange-50 text-[#f97316] border border-orange-200 rounded">
                 SOLUTIONS
               </span>
             </div>
@@ -140,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               onFocus={() => setIsSearchOpen(true)}
               placeholder="Enter CAMS / Name / Passport..."
-              className="w-44 sm:w-64 md:w-72 pl-9 pr-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#0B5D3B] rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B5D3B]/20 transition-all"
+              className="w-44 sm:w-64 md:w-72 pl-9 pr-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#f97316] rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 transition-all"
             />
             {searchQuery && (
               <button
@@ -171,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({
                       className="p-3 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-[#0B5D3B]">
+                        <span className="text-xs font-bold text-[#f97316]">
                           {app.camsId}
                         </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
@@ -201,62 +201,21 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Organization / Partner Branch Dropdown */}
-        <div className="relative" ref={branchRef}>
-          <button
-            onClick={() => setIsBranchOpen(!isBranchOpen)}
-            className="hidden lg:flex items-center gap-1.5 p-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
-            title="Agency Branch"
-          >
-            <Building2 className="w-4 h-4 text-[#0B5D3B]" />
-            <span className="font-medium max-w-[130px] truncate">{selectedBranch}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </button>
-
-          {isBranchOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 animate-fade-in text-xs">
-              <div className="px-2 py-1.5 text-[11px] font-bold uppercase text-slate-400 tracking-wider">
-                Partner Branches
-              </div>
-              {[
-                "GlobalEdu South Asia HQ",
-                "Delhi Regional Branch (AGT-9041)",
-                "Mumbai West Hub (AGT-9042)",
-                "Dubai Operations Desk (AGT-9099)",
-                "London Liaison Office (AGT-9104)",
-              ].map((branch) => (
-                <button
-                  key={branch}
-                  onClick={() => {
-                    setSelectedBranch(branch);
-                    setIsBranchOpen(false);
-                  }}
-                  className={`w-full text-left px-2.5 py-2 rounded-lg transition-colors flex items-center justify-between ${
-                    selectedBranch === branch
-                      ? "bg-emerald-50 text-[#0B5D3B] font-semibold"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span>{branch}</span>
-                  {selectedBranch === branch && (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0B5D3B]" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-lg max-w-[180px]">
+          <Building2 className="w-4 h-4 text-[#f97316] shrink-0" />
+          <span className="font-medium truncate">{orgLabel}</span>
         </div>
 
         {/* Notifications Dropdown */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setIsNotifOpen(!isNotifOpen)}
-            className="p-2 text-slate-600 hover:text-[#0B5D3B] hover:bg-emerald-50/60 rounded-lg transition-colors relative"
+            className="p-2 text-slate-600 hover:text-[#f97316] hover:bg-orange-50 rounded-lg transition-colors relative"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#0B5D3B] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#f97316] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
                 {unreadCount}
               </span>
             )}
@@ -268,7 +227,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-900">Notifications</span>
                   {unreadCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-emerald-100 text-[#0B5D3B] text-[10px] font-bold rounded-full">
+                    <span className="px-1.5 py-0.5 bg-orange-50 text-[#f97316] text-[10px] font-bold rounded-full">
                       {unreadCount} new
                     </span>
                   )}
@@ -276,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-[11px] text-[#0B5D3B] hover:text-[#08482D] font-semibold hover:underline"
+                    className="text-[11px] text-[#f97316] hover:text-[#ea580c] font-semibold hover:underline"
                   >
                     Mark all as read
                   </button>
@@ -289,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
                     key={item.id}
                     onClick={() => {
                       if (item.camsId) {
-                        const app = MOCK_APPLICATIONS.find(
+                        const app = applications.find(
                           (a) => a.camsId === item.camsId
                         );
                         if (app) onSelectApplication(app);
@@ -297,12 +256,12 @@ export const Header: React.FC<HeaderProps> = ({
                       setIsNotifOpen(false);
                     }}
                     className={`p-3 text-xs transition-colors cursor-pointer hover:bg-slate-50 flex gap-3 ${
-                      !item.isRead ? "bg-emerald-50/40" : ""
+                      !item.isRead ? "bg-orange-50" : ""
                     }`}
                   >
                     <div className="mt-0.5">
                       {item.type === "offer" && (
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 text-[#0B5D3B] flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center">
                           <Sparkles className="w-3 h-3" />
                         </div>
                       )}
@@ -312,7 +271,7 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       )}
                       {item.type === "finance" && (
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 text-[#0B5D3B] flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center">
                           <DollarSign className="w-3 h-3" />
                         </div>
                       )}
@@ -331,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
                         {item.message}
                       </p>
                       {item.camsId && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#0B5D3B] mt-1 hover:underline">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#f97316] mt-1 hover:underline">
                           View {item.camsId} <ExternalLink className="w-2.5 h-2.5" />
                         </span>
                       )}
@@ -350,17 +309,17 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 p-1 pl-1.5 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <div className="relative">
-              <div className="w-8 h-8 rounded-full bg-[#0B5D3B] text-white flex items-center justify-center font-bold text-xs">
-                SJ
+              <div className="w-8 h-8 rounded-full bg-[#f97316] text-white flex items-center justify-center font-bold text-xs">
+                {initials}
               </div>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-orange-500 border-2 border-white rounded-full"></span>
             </div>
             <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-900 leading-tight">
-                Sarah Jenkins
+                {viewerName}
               </span>
               <span className="text-[10px] text-slate-500 font-medium">
-                Senior Counselor
+                {roleLabel}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden xl:block" />
@@ -369,28 +328,16 @@ export const Header: React.FC<HeaderProps> = ({
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 animate-fade-in text-xs">
               <div className="px-3 py-2 border-b border-slate-100 mb-1">
-                <p className="font-bold text-slate-900">Sarah Jenkins</p>
-                <p className="text-[11px] text-slate-500">sarah.j@globaledu.com</p>
+                <p className="font-bold text-slate-900">{viewerName}</p>
+                <p className="text-[11px] text-slate-500 truncate">{viewerEmail}</p>
                 <div className="mt-1 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  <span className="text-[10px] text-emerald-700 font-semibold">Active Agent #AGT-9041</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                  <span className="text-[10px] text-orange-700 font-semibold">
+                    {activeB2BPartner ? `${roleLabel} · ${activeB2BPartner.partnerId}` : roleLabel}
+                  </span>
                 </div>
               </div>
 
-              <button
-                onClick={() => setIsProfileOpen(false)}
-                className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <User className="w-3.5 h-3.5 text-slate-400" />
-                <span>Profile</span>
-              </button>
-              <button
-                onClick={() => setIsProfileOpen(false)}
-                className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                <span>Settings</span>
-              </button>
               {onOpenSupportModal && (
                 <button
                   onClick={() => {

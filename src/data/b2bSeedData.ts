@@ -3,7 +3,7 @@ import { B2BPartnerProfile } from "@/types";
 export const SEED_B2B_PARTNERS: B2BPartnerProfile[] = [
   {
     id: "b2b-001",
-    partnerId: "PTR-2026-001",
+    partnerId: "DV-B2B-2026-00001",
     name: "Sarah Jenkins",
     phone: "+91 99887 76655",
     email: "partner@dakshinvedha.com",
@@ -60,13 +60,26 @@ export const SEED_B2B_PARTNERS: B2BPartnerProfile[] = [
       commissionPending: "₹3,75,000",
       commissionPaid: "₹20,75,000",
     },
+    teamMembers: [
+      {
+        id: "mem-seed-anita",
+        name: "Anita Rao",
+        email: "team@dakshinvedha.com",
+        password: "password123",
+        role: "Team Member",
+        status: "Active",
+        createdAt: "2026-02-01",
+        lastLogin: "2026-10-04 11:20",
+        trackingId: "DV-TEM-2026-10001",
+      },
+    ],
   },
   {
     id: "b2b-002",
-    partnerId: "PTR-2026-002",
+    partnerId: "DV-B2B-2026-00002",
     name: "Rajesh Kumar",
     phone: "+91 98765 11223",
-    email: "agent@dakshinvedha.com",
+    email: "rajesh@globaledu.example",
     password: "password123",
     accountStatus: "Pending Profile",
     profileCompleted: false,

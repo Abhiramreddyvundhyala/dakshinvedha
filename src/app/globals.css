@@ -2,11 +2,11 @@
 
 @layer base {
   :root {
-    /* Brand Tokens - Deep Handcrafted Emerald */
-    --brand-emerald: #0B5D3B;
-    --brand-emerald-hover: #08482D;
-    --brand-emerald-light: #EAF5EF;
-    --brand-emerald-border: #C8E5D5;
+    /* Brand tokens - orange */
+    --brand-orange: #ea580c;
+    --brand-orange-hover: #c2410c;
+    --brand-orange-light: #fff7ed;
+    --brand-orange-border: #fed7aa;
     
     /* Warm Canvas & Card Tokens */
     --background: #FAFAF8;
@@ -69,6 +69,18 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.6);
+}
+
+/* Centered dialogs stay on screen and scroll when the form is taller than the viewport. */
+.fixed.inset-0.flex.items-center.justify-center {
+  overflow-y: auto;
+  align-items: flex-start;
+  overscroll-behavior: contain;
+}
+
+.fixed.inset-0.flex.items-center.justify-center > * {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 /* Micro animations */

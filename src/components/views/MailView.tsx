@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Mail,
   Send,
@@ -18,15 +18,16 @@ import {
   FileText,
   MailOpen,
 } from "lucide-react";
-import { MOCK_MAILS } from "@/data/mockData";
 import { MailItem } from "@/types";
+import { loadMails, saveMail, updateMail } from "@/lib/portalDb";
+import { readSessionValue } from "@/utils/accounts";
 
 export const MailView: React.FC = () => {
-  const [mails, setMails] = useState<MailItem[]>(MOCK_MAILS);
+  const [mails, setMails] = useState<MailItem[]>([]);
   const [activeFolder, setActiveFolder] = useState<
     "inbox" | "sent" | "draft" | "important" | "archived"
   >("inbox");
-  const [selectedMailId, setSelectedMailId] = useState<string>(MOCK_MAILS[0].id);
+  const [selectedMailId, setSelectedMailId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Compose Modal State
@@ -35,6 +36,14 @@ export const MailView: React.FC = () => {
   const [composeSubject, setComposeSubject] = useState("");
   const [composeMessage, setComposeMessage] = useState("");
   const [composeAttachment, setComposeAttachment] = useState<string | null>(null);
+  const [mailError, setMailError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void loadMails().then((result) => {
+      if (result.error) setMailError(result.error);
+      setMails(result.mails);
+    });
+  }, []);
 
   const filteredMails = mails.filter((m) => {
     if (m.folder !== activeFolder) return false;
@@ -53,26 +62,26 @@ export const MailView: React.FC = () => {
 
   const toggleStar = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMails((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, isStarred: !m.isStarred } : m))
-    );
+    const next = !mails.find((mail) => mail.id === id)?.isStarred;
+    setMails((prev) => prev.map((m) => (m.id === id ? { ...m, isStarred: next } : m)));
+    void updateMail(id, { isStarred: next });
   };
 
   const toggleRead = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMails((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, isRead: !m.isRead } : m))
-    );
+    const next = !mails.find((mail) => mail.id === id)?.isRead;
+    setMails((prev) => prev.map((m) => (m.id === id ? { ...m, isRead: next } : m)));
+    void updateMail(id, { isRead: next });
   };
 
-  const handleSendCompose = (e: React.FormEvent) => {
+  const handleSendCompose = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!composeTo || !composeSubject) return;
 
     const newMail: MailItem = {
-      id: `mail-${Date.now()}`,
-      sender: "Me (Sarah Jenkins)",
-      email: "sarah.j@globaledu.com",
+      id: crypto.randomUUID(),
+      sender: readSessionValue("dakshin_user_name") || "Portal user",
+      email: composeTo.trim(),
       subject: composeSubject,
       snippet: composeMessage.slice(0, 70),
       body: composeMessage,
@@ -80,20 +89,24 @@ export const MailView: React.FC = () => {
       folder: "sent",
       isRead: true,
       isStarred: false,
-      attachment: composeAttachment ? { name: composeAttachment, size: "1.4 MB" } : undefined,
+      attachment: composeAttachment ? { name: composeAttachment, size: "" } : undefined,
     };
-
+    const failure = await saveMail(newMail);
+    if (failure) {
+      setMailError(failure);
+      return;
+    }
     setMails([newMail, ...mails]);
     setIsComposeOpen(false);
     setComposeTo("");
     setComposeSubject("");
     setComposeMessage("");
     setComposeAttachment(null);
-    alert("Admissions message sent successfully.");
   };
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {mailError && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800">{mailError}</p>}
       {/* Header */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-3">

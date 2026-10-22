@@ -127,7 +127,7 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           s.passport.hasPassport === "YES"
-                            ? "bg-emerald-100 text-emerald-800"
+                            ? "bg-orange-100 text-orange-800"
                             : "bg-amber-100 text-amber-800"
                         }`}
                       >
@@ -175,7 +175,7 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                     </td>
 
                     <td className="p-4">
-                      <span className="px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-emerald-100 text-emerald-800">
+                      <span className="px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-orange-100 text-orange-800">
                         {s.accountStatus}
                       </span>
                     </td>

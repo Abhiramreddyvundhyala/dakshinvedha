@@ -109,7 +109,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 {university.logo}
               </div>
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-300">
+                <div className="flex items-center gap-2 text-xs font-bold text-orange-300">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{university.city}, {university.country}</span>
                 </div>
@@ -130,7 +130,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             onClick={() => setActiveTab("details")}
             className={`py-3.5 text-xs sm:text-sm font-extrabold border-b-2 transition-all cursor-pointer ${
               activeTab === "details"
-                ? "border-emerald-700 text-emerald-800"
+                ? "border-orange-700 text-orange-800"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -140,12 +140,12 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             onClick={() => setActiveTab("courses")}
             className={`py-3.5 text-xs sm:text-sm font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "courses"
-                ? "border-emerald-700 text-emerald-800"
+                ? "border-orange-700 text-orange-800"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
             <span>Available Courses</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-100 text-orange-800">
               {univCourses.length}
             </span>
           </button>
@@ -162,7 +162,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             {/* About University */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
               <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-emerald-600" />
+                <Building2 className="w-4 h-4 text-orange-600" />
                 <span>About {university.name}</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -189,16 +189,16 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             {/* Scholarships & Funding */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
               <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Award className="w-4 h-4 text-emerald-600" />
+                <Award className="w-4 h-4 text-orange-600" />
                 <span>Scholarships & Financial Aid</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-1">
-                  <span className="font-extrabold text-emerald-900 block">
+                <div className="p-4 bg-orange-50/70 border border-orange-200/80 rounded-2xl space-y-1">
+                  <span className="font-extrabold text-orange-900 block">
                     Vice-Chancellor Merit Grant
                   </span>
-                  <p className="text-emerald-800 font-bold">Up to £3,000 / $5,000 off tuition</p>
-                  <p className="text-[11px] text-emerald-700">
+                  <p className="text-orange-800 font-bold">Up to £3,000 / $5,000 off tuition</p>
+                  <p className="text-[11px] text-orange-700">
                     Awarded automatically to students demonstrating 75%+ or equivalent in preceding degree.
                   </p>
                 </div>
@@ -206,7 +206,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                   <span className="font-extrabold text-slate-900 block">
                     Early Bird Acceptance Bursary
                   </span>
-                  <p className="text-emerald-700 font-bold">£1,000 deduction on deposit payment</p>
+                  <p className="text-orange-700 font-bold">£1,000 deduction on deposit payment</p>
                   <p className="text-[11px] text-slate-600">
                     Applicable when tuition acceptance deposit is cleared within 21 days of offer issuance.
                   </p>
@@ -217,7 +217,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             {/* Entry Requirements & English Requirements */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
               <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <ShieldCheck className="w-4 h-4 text-orange-600" />
                 <span>Entry & English Requirements</span>
               </h2>
 
@@ -256,7 +256,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                   </div>
 
                   <div className="pt-2 border-t border-slate-200">
-                    <span className="font-bold text-emerald-700 block text-[11px]">
+                    <span className="font-bold text-orange-700 block text-[11px]">
                       English Waiver Criteria:
                     </span>
                     <p className="text-[11px] text-slate-600">
@@ -273,7 +273,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             {/* Available Intakes Card */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-3 text-xs">
               <h3 className="font-extrabold text-slate-900 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-emerald-600" />
+                <Calendar className="w-4 h-4 text-orange-600" />
                 <span>Available Intakes</span>
               </h3>
               <div className="space-y-2">
@@ -283,7 +283,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                     className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
                   >
                     <span className="font-bold text-slate-800">{intake}</span>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
                       Open
                     </span>
                   </div>
@@ -294,7 +294,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             {/* University Representative Contact */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-3 text-xs">
               <h3 className="font-extrabold text-slate-900 flex items-center gap-1.5">
-                <Mail className="w-4 h-4 text-emerald-600" />
+                <Mail className="w-4 h-4 text-orange-600" />
                 <span>Admissions Liaison Office</span>
               </h3>
               <div className="p-3 bg-slate-50 rounded-2xl space-y-2 text-slate-700">
@@ -324,7 +324,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
             {/* CTA to view courses */}
             <button
               onClick={() => setActiveTab("courses")}
-              className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 bg-orange-700 hover:bg-orange-800 text-white font-extrabold text-xs rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Explore All {univCourses.length} Courses</span>
               <ChevronRight className="w-4 h-4" />
@@ -342,7 +342,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
-                <Filter className="w-3.5 h-3.5 text-emerald-600" />
+                <Filter className="w-3.5 h-3.5 text-orange-600" />
                 <span>Filter Courses at {university.name}</span>
               </span>
               <span className="text-xs text-slate-500 font-medium">
@@ -442,7 +442,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                   setDurationFilter("all");
                   setTuitionFilter("all");
                 }}
-                className="text-xs text-emerald-700 font-bold hover:underline cursor-pointer"
+                className="text-xs text-orange-700 font-bold hover:underline cursor-pointer"
               >
                 Reset filters
               </button>
@@ -454,7 +454,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 return (
                   <div
                     key={course.id}
-                    className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-2xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between space-y-4 group"
+                    className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all flex flex-col justify-between space-y-4 group"
                   >
                     <div className="space-y-3">
                       {/* Badges row: Scholarship, No App Fee, Applications Open */}
@@ -463,11 +463,11 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                           {course.studyLevel}
                         </span>
                         {course.badges.scholarship && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
                             Scholarship Available
                           </span>
                         )}
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
                           Applications Open
                         </span>
                         {course.badges.noAppFee && (
@@ -479,7 +479,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
 
                       {/* Course Name & University */}
                       <div>
-                        <h3 className="text-base font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                        <h3 className="text-base font-extrabold text-slate-900 group-hover:text-orange-700 transition-colors">
                           {course.courseName}
                         </h3>
                         <p className="text-xs text-slate-500 mt-0.5">
@@ -511,7 +511,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                         <span
                           className={`font-extrabold px-2 py-0.5 rounded-md ${
                             eligibility.status === "Likely Eligible"
-                              ? "bg-emerald-100 text-emerald-800"
+                              ? "bg-orange-100 text-orange-800"
                               : eligibility.status === "Requirements Need Review"
                               ? "bg-amber-100 text-amber-800"
                               : "bg-sky-100 text-sky-800"
@@ -532,7 +532,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                       </button>
                       <button
                         onClick={() => onApplyCourse(course)}
-                        className="flex-1 py-2 text-xs font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1 active:scale-98"
+                        className="flex-1 py-2 text-xs font-black text-white bg-orange-700 hover:bg-orange-800 rounded-xl shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1 active:scale-98"
                       >
                         <span>APPLY NOW</span>
                         <ChevronRight className="w-3.5 h-3.5" />

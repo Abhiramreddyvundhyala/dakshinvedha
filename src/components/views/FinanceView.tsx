@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DollarSign,
   CreditCard,
@@ -14,13 +14,10 @@ import {
   ArrowRight,
   TrendingUp,
 } from "lucide-react";
-import {
-  MOCK_BANK_DETAILS,
-  MOCK_COMMISSION_LEDGER,
-  MOCK_APPLICATIONS,
-} from "@/data/mockData";
-import { BankAccountDetails } from "@/types";
+import { usePlatform } from "@/context/PlatformContext";
+import { BankAccountDetails, CommissionLedgerItem } from "@/types";
 import { BankDetailsModal } from "@/components/modals/BankDetailsModal";
+import { loadLedger } from "@/lib/portalDb";
 
 interface FinanceViewProps {
   subTab?:
@@ -32,9 +29,24 @@ interface FinanceViewProps {
     | "promotional-deals";
 }
 
+const EMPTY_BANK: BankAccountDetails = {
+  businessAccountName: "",
+  accountNumber: "",
+  bankName: "",
+  branch: "",
+  swift: "",
+  ifscSortCode: "",
+  ibanBic: "",
+  vatNumber: "",
+  status: "Pending Verification",
+};
+
 export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) => {
-  const [bankDetails, setBankDetails] = useState<BankAccountDetails>(MOCK_BANK_DETAILS);
+  const { applications, activeB2BPartner, updateB2BProfile, claimCommission } = usePlatform();
+  const [bankDetails, setBankDetails] = useState<BankAccountDetails>(EMPTY_BANK);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [ledger, setLedger] = useState<CommissionLedgerItem[]>([]);
+  const [ledgerError, setLedgerError] = useState<string | null>(null);
 
   // Commission Sub-tabs
   const [commissionTab, setCommissionTab] = useState<
@@ -44,48 +56,53 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
   // Local state for claim status simulation
   const [claimedIds, setClaimedIds] = useState<string[]>([]);
 
+  useEffect(() => {
+    void loadLedger().then((result) => {
+      if (result.error) setLedgerError(result.error);
+      setLedger(result.entries);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!activeB2BPartner) return;
+    if (activeB2BPartner.financeAccount) {
+      setBankDetails(activeB2BPartner.financeAccount);
+      return;
+    }
+    const bank = activeB2BPartner.bankDetails;
+    setBankDetails({
+      businessAccountName: bank.accountHolderName,
+      accountNumber: bank.accountNumber,
+      bankName: bank.bankName,
+      branch: "",
+      swift: bank.swiftCode,
+      ifscSortCode: bank.ifsc,
+      ibanBic: "",
+      vatNumber: "",
+      status: bank.status === "Verified" ? "Approved" : bank.status === "Action Required" ? "Action Required" : "Pending Verification",
+    });
+  }, [activeB2BPartner]);
+
   const handleClaim = (camsId: string) => {
     setClaimedIds((prev) => [...prev, camsId]);
-    alert(`Commission Claim Submitted for ${camsId}. Verification request forwarded to university admissions accounts.`);
+    claimCommission(camsId);
   };
 
   // 1. Commission In Process Data
-  const inProcessApps = MOCK_APPLICATIONS.filter(
+  const inProcessApps = applications.filter(
     (a) => a.primaryStatus !== "Completed" && a.primaryStatus !== "Closed"
   );
 
   // 2. Claim Commission Data (Offer Issued / Tuition paid students eligible)
-  const claimableApps = MOCK_APPLICATIONS.filter(
+  const claimableApps = applications.filter(
     (a) => a.primaryStatus === "Offer Issued" || a.primaryStatus === "Payment Done"
   );
 
   // 3. Ready For Payment Data
-  const readyForPaymentItems = [
-    {
-      student: "Maria Chen",
-      invoice: "INV-2026-DKN-8812",
-      amount: "AUD $5,880.00",
-      approvedDate: "20 Sep 2026",
-      paymentStatus: "Scheduled for Next Batch",
-    },
-    {
-      student: "Priyanshu Varma",
-      invoice: "INV-2026-GRE-8819",
-      amount: "£2,625.00",
-      approvedDate: "22 Sep 2026",
-      paymentStatus: "Approved by Registrar",
-    },
-    {
-      student: "Chiamaka Eze",
-      invoice: "INV-2026-COV-8822",
-      amount: "£2,970.00",
-      approvedDate: "24 Sep 2026",
-      paymentStatus: "Approved by Registrar",
-    },
-  ];
+  const readyForPaymentItems: { student: string; invoice: string; amount: string; approvedDate: string; paymentStatus: string }[] = [];
 
   // 4. Paid Students Data
-  const paidStudents = MOCK_APPLICATIONS.filter(
+  const paidStudents = applications.filter(
     (a) => a.secondaryStatus === "Commission Paid" || a.commission.status === "Paid"
   );
 
@@ -173,7 +190,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                   {bankDetails.vatNumber}
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 border border-orange-300">
                     {bankDetails.status}
                   </span>
                 </td>
@@ -226,7 +243,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
               <thead>
                 <tr className="bg-slate-50 border-y border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Student</th>
-                  <th className="py-3 px-3">CAMS ID</th>
+                  <th className="py-3 px-3">Tracking ID</th>
                   <th className="py-3 px-3">University</th>
                   <th className="py-3 px-3">Course</th>
                   <th className="py-3 px-3 font-mono">Expected Commission</th>
@@ -260,7 +277,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
               <thead>
                 <tr className="bg-slate-50 border-y border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Student</th>
-                  <th className="py-3 px-3">CAMS ID</th>
+                  <th className="py-3 px-3">Tracking ID</th>
                   <th className="py-3 px-3 font-mono">Commission Amount</th>
                   <th className="py-3 px-3 font-mono">Eligible Amount</th>
                   <th className="py-3 px-3 text-center">Action</th>
@@ -268,20 +285,20 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {claimableApps.map((a) => {
-                  const isClaimed = claimedIds.includes(a.camsId);
+                  const isClaimed = claimedIds.includes(a.camsId) || a.commission.status === "Claimed" || a.commission.status === "Approved" || a.commission.status === "Paid";
                   return (
                     <tr key={a.camsId} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3 px-3 font-bold text-slate-900">{a.student.name}</td>
                       <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.camsId}</td>
                       <td className="py-3 px-3 font-mono font-bold text-slate-900">{a.commission.amount}</td>
-                      <td className="py-3 px-3 font-mono font-bold text-emerald-600">{a.commission.eligibleAmount}</td>
+                      <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.commission.eligibleAmount}</td>
                       <td className="py-3 px-3 text-center">
                         <button
                           disabled={isClaimed}
                           onClick={() => handleClaim(a.camsId)}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                             isClaimed
-                              ? "bg-emerald-100 text-emerald-800 cursor-not-allowed"
+                              ? "bg-orange-100 text-orange-800 cursor-not-allowed"
                               : "bg-orange-500 hover:bg-orange-600 text-white shadow-xs cursor-pointer active:scale-98"
                           }`}
                         >
@@ -335,7 +352,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
               <thead>
                 <tr className="bg-slate-50 border-y border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Student</th>
-                  <th className="py-3 px-3">CAMS ID</th>
+                  <th className="py-3 px-3">Tracking ID</th>
                   <th className="py-3 px-3">University</th>
                   <th className="py-3 px-3 font-mono">Commission</th>
                   <th className="py-3 px-3">Paid Date</th>
@@ -348,9 +365,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                     <td className="py-3 px-3 font-bold text-slate-900">{a.student.name}</td>
                     <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.camsId}</td>
                     <td className="py-3 px-3 font-medium text-slate-800">{a.university.name}</td>
-                    <td className="py-3 px-3 font-mono font-bold text-emerald-600">{a.commission.amount}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.commission.amount}</td>
                     <td className="py-3 px-3 text-slate-600">{a.commission.paidDate || a.dateModified}</td>
-                    <td className="py-3 px-3 font-mono text-slate-700">{a.commission.referenceNumber || "TXN-2026-9041"}</td>
+                    <td className="py-3 px-3 font-mono text-slate-700">{a.commission.referenceNumber || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -367,20 +384,25 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                   <th className="py-3 px-3">Transaction ID</th>
                   <th className="py-3 px-3">Date</th>
                   <th className="py-3 px-3">Description</th>
-                  <th className="py-3 px-3 font-mono text-emerald-700">Credit</th>
+                  <th className="py-3 px-3 font-mono text-orange-700">Credit</th>
                   <th className="py-3 px-3 font-mono text-rose-700">Debit</th>
                   <th className="py-3 px-3 font-mono font-bold">Balance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {MOCK_COMMISSION_LEDGER.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3 font-mono font-bold text-slate-800">{tx.transactionId}</td>
-                    <td className="py-3 px-3 text-slate-500">{tx.date}</td>
-                    <td className="py-3 px-3 text-slate-700 max-w-[280px]">{tx.description}</td>
-                    <td className="py-3 px-3 font-mono font-semibold text-emerald-700">{tx.credit}</td>
-                    <td className="py-3 px-3 font-mono font-semibold text-rose-700">{tx.debit}</td>
-                    <td className="py-3 px-3 font-mono font-black text-slate-900">{tx.balance}</td>
+                {ledger.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-6 px-3 text-slate-400">{ledgerError || "No commission ledger entries yet."}</td>
+                  </tr>
+                )}
+                {ledger.map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="py-3 px-3 font-mono font-bold text-orange-700">{entry.transactionId}</td>
+                    <td className="py-3 px-3 text-slate-600">{entry.date}</td>
+                    <td className="py-3 px-3 text-slate-800">{entry.description}</td>
+                    <td className="py-3 px-3 font-mono text-orange-700">{entry.credit}</td>
+                    <td className="py-3 px-3 font-mono text-rose-700">{entry.debit}</td>
+                    <td className="py-3 px-3 font-mono font-bold">{entry.balance}</td>
                   </tr>
                 ))}
               </tbody>
@@ -396,7 +418,20 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
         bankDetails={bankDetails}
         onSave={(updated) => {
           setBankDetails(updated);
-          alert("Bank Account coordinates successfully updated and verified.");
+          if (activeB2BPartner) {
+            updateB2BProfile(activeB2BPartner.id, {
+              financeAccount: updated,
+              bankDetails: {
+                ...activeB2BPartner.bankDetails,
+                accountHolderName: updated.businessAccountName,
+                accountNumber: updated.accountNumber,
+                bankName: updated.bankName,
+                swiftCode: updated.swift,
+                ifsc: updated.ifscSortCode,
+                status: updated.status === "Approved" ? "Verified" : updated.status === "Action Required" ? "Action Required" : "Pending",
+              },
+            });
+          }
         }}
       />
     </div>

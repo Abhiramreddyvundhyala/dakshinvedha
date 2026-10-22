@@ -12,6 +12,7 @@ import {
   Sparkles,
   ChevronRight,
 } from "lucide-react";
+import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 
 interface StudentDashboardViewProps {
   onNavigateToUniversities: () => void;
@@ -31,6 +32,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const {
     activeStudent,
     studentApplications,
+    courses,
   } = usePlatform();
 
   // Compute greeting based on time of day
@@ -54,7 +56,14 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     ).length;
   }, [activeStudent]);
 
-  const urgentDeadlinesCount = 3;
+  const urgentDeadlinesCount = useMemo(() => {
+    return courses.filter((course) => {
+      const time = Date.parse(course.applicationDeadline);
+      if (Number.isNaN(time)) return false;
+      const days = (time - Date.now()) / 86400000;
+      return days >= 0 && days <= 45;
+    }).length;
+  }, [courses]);
 
   // Urgent rejected or action required documents alert
   const flaggedDocuments = useMemo(() => {
@@ -70,8 +79,8 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
       <div className="bg-[#FAFAF8] border border-[#E7E5E0] p-6 sm:p-7 rounded-2xl shadow-xs relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF5EF] text-[#0B5D3B] text-xs font-semibold border border-[#C8E5D5]">
-              <Sparkles className="w-3.5 h-3.5 text-[#0B5D3B]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fff7ed] text-[#ea580c] text-xs font-semibold border border-[#fed7aa]">
+              <Sparkles className="w-3.5 h-3.5 text-[#ea580c]" />
               <span>Intake 2026/2027 Admissions Live</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-heading">
@@ -89,13 +98,13 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 Profile Completion
               </span>
               <div className="flex items-center gap-2.5 mt-1">
-                <span className="text-2xl font-bold text-[#0B5D3B]">
-                  {activeStudent?.profileCompletion || 72}%
+                <span className="text-2xl font-bold text-[#ea580c]">
+                  {activeStudent?.profileCompletion || 0}%
                 </span>
                 <div className="w-24 h-2 bg-slate-100 border border-[#E7E5E0] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#0B5D3B] rounded-full"
-                    style={{ width: `${activeStudent?.profileCompletion || 72}%` }}
+                    className="h-full bg-[#ea580c] rounded-full"
+                    style={{ width: `${activeStudent?.profileCompletion || 0}%` }}
                   />
                 </div>
               </div>
@@ -103,7 +112,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
 
             <button
               onClick={onOpenCompleteProfile}
-              className="h-10 px-4 bg-[#0B5D3B] hover:bg-[#08482D] text-white text-xs font-semibold rounded-[10px] shadow-xs transition-colors cursor-pointer whitespace-nowrap active:scale-[0.98]"
+              className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-semibold rounded-[10px] shadow-xs transition-colors cursor-pointer whitespace-nowrap active:scale-[0.98]"
             >
               COMPLETE PROFILE
             </button>
@@ -139,7 +148,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* KPI 1: Applications */}
         <div
           onClick={onNavigateToApplications}
-          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#C8E5D5] transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">My Applications</span>
@@ -159,20 +168,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* KPI 2: Offers */}
         <div
           onClick={onNavigateToApplications}
-          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#C8E5D5] transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Offers Received</span>
-            <div className="w-9 h-9 rounded-lg bg-[#EAF5EF] text-[#0B5D3B] flex items-center justify-center border border-[#C8E5D5] group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-lg bg-[#fff7ed] text-[#ea580c] flex items-center justify-center border border-[#fed7aa] group-hover:scale-105 transition-transform">
               <Award className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-[#0B5D3B] mt-2 font-heading">
+          <p className="text-2xl sm:text-3xl font-bold text-[#ea580c] mt-2 font-heading">
             {offersCount}
           </p>
-          <p className="text-[11px] text-[#0B5D3B] font-medium mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-[#ea580c] font-medium mt-1 flex items-center gap-1">
             <span>Conditional & Full Grants</span>
-            <ChevronRight className="w-3 h-3 text-[#0B5D3B]" />
+            <ChevronRight className="w-3 h-3 text-[#ea580c]" />
           </p>
         </div>
 
@@ -199,20 +208,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* KPI 4: Deadlines */}
         <div
           onClick={onNavigateToUniversities}
-          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#C8E5D5] transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Upcoming Deadlines</span>
             <div className="w-9 h-9 rounded-lg bg-[#FAFAF8] text-slate-700 flex items-center justify-center border border-[#E7E5E0] group-hover:scale-105 transition-transform">
-              <Clock className="w-4 h-4 text-[#0B5D3B]" />
+              <Clock className="w-4 h-4 text-[#ea580c]" />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 font-heading">
             {urgentDeadlinesCount}
           </p>
-          <p className="text-[11px] text-[#0B5D3B] font-medium mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-[#ea580c] font-medium mt-1 flex items-center gap-1">
             <span>Sept 2026 intake cutoffs</span>
-            <ChevronRight className="w-3 h-3 text-[#0B5D3B]" />
+            <ChevronRight className="w-3 h-3 text-[#ea580c]" />
           </p>
         </div>
       </div>
@@ -231,7 +240,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             </div>
             <button
               onClick={onNavigateToApplications}
-              className="text-xs font-semibold text-[#0B5D3B] hover:text-[#08482D] flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-xs font-semibold text-[#ea580c] hover:text-[#c2410c] flex items-center gap-1 cursor-pointer transition-colors"
             >
               <span>View All Applications ({studentApplications.length})</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -245,7 +254,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <div className="p-4 sm:p-5 rounded-xl bg-[#FAFAF8] border border-[#E7E5E0] space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] font-semibold text-[#0B5D3B] bg-[#EAF5EF] px-2.5 py-0.5 rounded border border-[#C8E5D5]">
+                    <span className="text-[10px] font-semibold text-[#ea580c] bg-[#fff7ed] px-2.5 py-0.5 rounded border border-[#fed7aa]">
                       ID: {topApp.camsId}
                     </span>
                     <h3 className="text-sm font-bold text-slate-900 mt-1.5">
@@ -256,7 +265,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                     </p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <span className="inline-block px-3 py-1 bg-[#EAF5EF] text-[#0B5D3B] text-xs font-semibold rounded-full border border-[#C8E5D5]">
+                    <span className="inline-block px-3 py-1 bg-[#fff7ed] text-[#ea580c] text-xs font-semibold rounded-full border border-[#fed7aa]">
                       {topApp.primaryStatus}
                     </span>
                     <p className="text-[11px] text-slate-400 mt-1">
@@ -265,32 +274,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="pt-2">
-                  <div className="flex justify-between text-[11px] text-slate-500 mb-1 font-medium">
-                    <span>Application Flow Progress</span>
-                    <span className="font-semibold text-slate-800">
-                      Stage {topApp.timeline.filter((t) => t.state === "completed").length} of 11
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden flex">
-                    {topApp.timeline.map((step, idx) => (
-                      <div
-                        key={idx}
-                        className={`h-full flex-1 border-r border-white/40 ${
-                          step.state === "completed"
-                            ? "bg-[#0B5D3B]"
-                            : step.state === "current"
-                            ? "bg-[#0B5D3B] animate-pulse"
-                            : step.state === "not_applicable"
-                            ? "bg-slate-300"
-                            : "bg-slate-200"
-                        }`}
-                        title={`${step.status} (${step.state})`}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <ApplicationTracker application={topApp} compact />
               </div>
             );
           })()}

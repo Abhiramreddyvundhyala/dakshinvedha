@@ -54,6 +54,7 @@ interface SidebarProps {
   onOpenAddNewModal: () => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
+  showTeam?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -64,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenAddNewModal,
   isMobileOpen,
   onCloseMobile,
+  showTeam = true,
 }) => {
   // Expandable sections state
   const [isVoucherExpanded, setIsVoucherExpanded] = useState(
@@ -104,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Circular Sidebar Collapse Control on Right Edge */}
         <button
           onClick={onToggleCollapse}
-          className="hidden lg:flex absolute -right-3.5 top-5 w-7 h-7 rounded-full bg-[#0B5D3B] hover:bg-[#08482D] text-white border-2 border-white items-center justify-center shadow-md transition-transform hover:scale-110 z-50 focus:outline-none cursor-pointer"
+          className="hidden lg:flex absolute -right-3.5 top-5 w-7 h-7 rounded-full bg-[#f97316] hover:bg-[#ea580c] text-white border-2 border-white items-center justify-center shadow-md transition-transform hover:scale-110 z-50 focus:outline-none cursor-pointer"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           aria-label="Toggle Sidebar"
         >
@@ -115,11 +117,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </button>
 
-        {/* Top Prominent Button: "+ Add New Application" (Brand Emerald) */}
+        {/* Top Prominent Button: "+ Add New Application" */}
         <div className="p-3.5 border-b border-[#E7E5E0]">
           <button
             onClick={onOpenAddNewModal}
-            className={`w-full bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold rounded-xl shadow-xs active:scale-98 transition-all flex items-center justify-center gap-2.5 py-3 cursor-pointer ${
+            className={`w-full bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl shadow-xs active:scale-98 transition-all flex items-center justify-center gap-2.5 py-3 cursor-pointer ${
               isCollapsed ? "px-2" : "px-4"
             }`}
             title="Add New Application"
@@ -140,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("dashboard")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "dashboard"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Dashboard" : undefined}
@@ -148,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <LayoutDashboard
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "dashboard"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
@@ -160,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("application-history")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "application-history"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Application History" : undefined}
@@ -168,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <History
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "application-history"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
@@ -180,7 +182,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("mail")}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "mail"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Mail" : undefined}
@@ -189,14 +191,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Mail
                 className={`w-4 h-4 shrink-0 transition-colors ${
                   currentTab === "mail"
-                    ? "text-[#0B5D3B]"
+                    ? "text-[#f97316]"
                     : "text-slate-400 group-hover:text-slate-700"
                 }`}
               />
               {!isCollapsed && <span className="truncate">Mail</span>}
             </div>
             {!isCollapsed && (
-              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#0B5D3B]/10 text-[#0B5D3B] rounded-full">
+              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-50 text-[#f97316] rounded-full">
                 3
               </span>
             )}
@@ -207,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("apply-enquiry")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "apply-enquiry"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Apply Enquiry" : undefined}
@@ -215,7 +217,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Send
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "apply-enquiry"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
@@ -227,7 +229,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("search-program")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "search-program"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Search Program" : undefined}
@@ -235,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Search
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "search-program"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
@@ -247,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("urm-contact")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "urm-contact"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "URM Contact Number" : undefined}
@@ -255,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <PhoneCall
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "urm-contact"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
@@ -267,7 +269,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("vas")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "vas"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Value Added Services" : undefined}
@@ -275,7 +277,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Sparkles
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "vas"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
@@ -293,7 +295,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
                 isVoucherActive
-                  ? "text-[#0B5D3B] bg-[#EAF5EF] font-semibold"
+                  ? "text-[#f97316] bg-[#fff4ed] font-semibold"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
               title={isCollapsed ? "Voucher" : undefined}
@@ -302,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Ticket
                   className={`w-4 h-4 shrink-0 transition-colors ${
                     isVoucherActive
-                      ? "text-[#0B5D3B]"
+                      ? "text-[#f97316]"
                       : "text-slate-400 group-hover:text-slate-700"
                   }`}
                 />
@@ -324,7 +326,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("voucher-buy")}
                   className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "voucher-buy"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -335,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("voucher-manage")}
                   className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "voucher-manage"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -355,7 +357,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
                 isFinanceActive
-                  ? "text-[#0B5D3B] bg-[#EAF5EF] font-semibold"
+                  ? "text-[#f97316] bg-[#fff4ed] font-semibold"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
               title={isCollapsed ? "Finance" : undefined}
@@ -364,7 +366,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <DollarSign
                   className={`w-4 h-4 shrink-0 transition-colors ${
                     isFinanceActive
-                      ? "text-[#0B5D3B]"
+                      ? "text-[#f97316]"
                       : "text-slate-400 group-hover:text-slate-700"
                   }`}
                 />
@@ -386,7 +388,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("finance-account")}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-account"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -397,7 +399,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("finance-commission")}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-commission"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -408,7 +410,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("finance-promotional-commission")}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-promotional-commission"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -419,7 +421,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("finance-accommodation-commission")}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-accommodation-commission"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -430,7 +432,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("finance-loan-commission")}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-loan-commission"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -441,7 +443,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick("finance-promotional-deals")}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                     currentTab === "finance-promotional-deals"
-                      ? "text-[#0B5D3B] font-semibold bg-[#EAF5EF]"
+                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -457,7 +459,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => handleNavClick("chat")}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "chat"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Chat" : undefined}
@@ -466,7 +468,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <MessageSquare
                 className={`w-4 h-4 shrink-0 transition-colors ${
                   currentTab === "chat"
-                    ? "text-[#0B5D3B]"
+                    ? "text-[#f97316]"
                     : "text-slate-400 group-hover:text-slate-700"
                 }`}
               />
@@ -474,18 +476,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             {!isCollapsed && (
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
               </span>
             )}
           </button>
 
-          {/* Team Management */}
+          {showTeam && (
           <button
             onClick={() => handleNavClick("team")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "team"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Team Management" : undefined}
@@ -493,19 +495,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Users
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "team"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />
             {!isCollapsed && <span className="truncate">Team Management</span>}
           </button>
+          )}
 
           {/* Other */}
           <button
             onClick={() => handleNavClick("other")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
               currentTab === "other"
-                ? "bg-[#EAF5EF] text-[#0B5D3B] border-l-4 border-[#0B5D3B] font-semibold"
+                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
             }`}
             title={isCollapsed ? "Other" : undefined}
@@ -513,7 +516,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MoreHorizontal
               className={`w-4 h-4 shrink-0 transition-colors ${
                 currentTab === "other"
-                  ? "text-[#0B5D3B]"
+                  ? "text-[#f97316]"
                   : "text-slate-400 group-hover:text-slate-700"
               }`}
             />

@@ -2,43 +2,47 @@
 
 import React from "react";
 import { FileText, CheckCircle2, ShieldCheck, FolderX, ArrowUpRight, TrendingUp } from "lucide-react";
-import { KPI_DATA } from "@/data/mockData";
+import { usePlatform } from "@/context/PlatformContext";
 
 interface KPICardsProps {
   onCardClick?: (filterType: string) => void;
 }
 
 export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
+  const { applications } = usePlatform();
+  const processed = applications.filter((app) => !["Draft", "Application Submitted"].includes(app.primaryStatus)).length;
+  const withCas = applications.filter((app) => app.primaryStatus === "CAS Processing" || app.primaryStatus === "CAS Issued").length;
+  const closed = applications.filter((app) => app.primaryStatus === "Closed" || app.primaryStatus === "Completed").length;
   const cards = [
     {
       id: "total",
-      label: KPI_DATA.totalApplications.label,
-      value: KPI_DATA.totalApplications.value,
-      subtext: KPI_DATA.totalApplications.change,
+      label: "Total Applications",
+      value: String(applications.length),
+      subtext: "Live application records",
       icon: FileText,
-      badgeColor: "text-emerald-700 bg-emerald-50",
+      badgeColor: "text-orange-700 bg-orange-50",
     },
     {
       id: "processed",
-      label: KPI_DATA.applicationsProcessed.label,
-      value: KPI_DATA.applicationsProcessed.value,
-      subtext: KPI_DATA.applicationsProcessed.change,
+      label: "Applications Processed",
+      value: String(processed),
+      subtext: "Past the submitted stage",
       icon: CheckCircle2,
       badgeColor: "text-blue-700 bg-blue-50",
     },
     {
       id: "cas",
-      label: KPI_DATA.withCasTeam.label,
-      value: KPI_DATA.withCasTeam.value,
-      subtext: KPI_DATA.withCasTeam.change,
+      label: "With CAS Team",
+      value: String(withCas),
+      subtext: "CAS processing or issued",
       icon: ShieldCheck,
-      badgeColor: "text-emerald-700 bg-emerald-50",
+      badgeColor: "text-orange-700 bg-orange-50",
     },
     {
       id: "closed",
-      label: KPI_DATA.caseClosed.label,
-      value: KPI_DATA.caseClosed.value,
-      subtext: KPI_DATA.caseClosed.change,
+      label: "Case Closed",
+      value: String(closed),
+      subtext: "Completed or closed",
       icon: FolderX,
       badgeColor: "text-slate-600 bg-slate-100",
     },
@@ -52,11 +56,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
           <div
             key={card.id}
             onClick={() => onCardClick && onCardClick(card.id)}
-            className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-emerald-300"
+            className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-orange-200"
           >
             <div className="flex items-start justify-between">
-              {/* Large circular icon container with emerald line icon */}
-              <div className="w-14 h-14 rounded-full bg-emerald-50/80 border border-emerald-100 flex items-center justify-center text-[#0B5D3B] group-hover:bg-[#0B5D3B] group-hover:text-white transition-colors duration-200 shadow-xs">
+              {/* Large circular icon container with orange line icon */}
+              <div className="w-14 h-14 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f97316] group-hover:bg-[#f97316] group-hover:text-white transition-colors duration-200 shadow-xs">
                 <IconComponent className="w-7 h-7 stroke-[1.75]" />
               </div>
 
@@ -66,7 +70,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
                   <TrendingUp className="w-3 h-3" />
                   Active
                 </span>
-                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-[#0B5D3B] transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-orange-600 transition-colors" />
               </div>
             </div>
 
@@ -85,7 +89,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
 
               {/* Auxiliary metric detail */}
               <p className="text-[11px] text-slate-500 mt-1 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                 {card.subtext}
               </p>
             </div>

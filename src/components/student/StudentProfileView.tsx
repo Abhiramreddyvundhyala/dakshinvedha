@@ -103,12 +103,16 @@ export const StudentProfileView: React.FC = () => {
     "Other Documents",
   ];
 
+  if (!activeStudent) {
+    return <p className="text-sm text-slate-500">Sign in as a student to view this profile.</p>;
+  }
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
       {/* Title & Profile Header */}
       <div className="bg-white p-6 rounded-xl border border-[#E7E5E0] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-xl bg-[#0B5D3B] text-white font-bold text-2xl flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-16 h-16 rounded-xl bg-[#ea580c] text-white font-bold text-2xl flex items-center justify-center shrink-0 shadow-xs">
             {activeStudent.firstName.charAt(0)}
           </div>
           <div>
@@ -116,8 +120,8 @@ export const StudentProfileView: React.FC = () => {
               <h1 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {activeStudent.name}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-[#EAF5EF] text-[#0B5D3B]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D3B]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-[#fff7ed] text-[#ea580c]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
                 {activeStudent.accountStatus}
               </span>
             </div>
@@ -131,7 +135,7 @@ export const StudentProfileView: React.FC = () => {
         <div className="bg-[#FAFAF8] p-3.5 rounded-xl border border-[#E7E5E0] flex items-center gap-3">
           <div className="w-20 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#0B5D3B] rounded-full transition-all duration-500"
+              className="h-full bg-[#ea580c] rounded-full transition-all duration-500"
               style={{ width: `${activeStudent.profileCompletion}%` }}
             />
           </div>
@@ -158,7 +162,7 @@ export const StudentProfileView: React.FC = () => {
               onClick={() => setProfileTab(tab.key as any)}
               className={`py-2 px-3.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 isSelected
-                  ? "bg-[#0B5D3B] text-white shadow-xs font-semibold"
+                  ? "bg-[#ea580c] text-white shadow-xs font-semibold"
                   : "text-slate-600 hover:text-slate-900 hover:bg-[#F4F3EF] font-medium"
               }`}
             >
@@ -209,20 +213,20 @@ export const StudentProfileView: React.FC = () => {
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                           isVerified
-                            ? "bg-[#EAF5EF] text-[#0B5D3B]"
+                            ? "bg-[#fff7ed] text-[#ea580c]"
                             : isRejected
                             ? "bg-rose-50 text-rose-700 border border-rose-200/60"
                             : isReupload
                             ? "bg-amber-50 text-amber-800 border border-amber-200/60 animate-pulse"
                             : existingDoc
-                            ? "bg-[#EAF5EF] text-[#0B5D3B]"
+                            ? "bg-[#fff7ed] text-[#ea580c]"
                             : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
                             isVerified || existingDoc
-                              ? "bg-[#0B5D3B]"
+                              ? "bg-[#ea580c]"
                               : isRejected
                               ? "bg-rose-500"
                               : isReupload
@@ -291,7 +295,7 @@ export const StudentProfileView: React.FC = () => {
             </h2>
             <button
               onClick={() => setShowAddEdu(true)}
-              className="h-10 px-4 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
+              className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Qualification</span>
@@ -311,7 +315,7 @@ export const StudentProfileView: React.FC = () => {
                       {q.level}
                     </span>
                     {q.verificationStatus === "Verified" && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">
                         Admin Verified
                       </span>
                     )}
@@ -423,7 +427,7 @@ export const StudentProfileView: React.FC = () => {
                         .join(" • ")}
                     </p>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 font-bold text-[10px]">
                     {t.status}
                   </span>
                 </div>
@@ -626,7 +630,7 @@ export const StudentProfileView: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="h-10 px-5 bg-[#0B5D3B] hover:bg-[#08482D] text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer active:scale-[0.98] transition-all"
+                className="h-10 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer active:scale-[0.98] transition-all"
               >
                 Save Qualification
               </button>

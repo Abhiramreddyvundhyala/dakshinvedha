@@ -1,8 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import { ApplicationRecord, PrimaryStatusType, SecondaryStatusType } from "@/types";
+import { listDirectory } from "@/lib/portalDb";
+import type { DirectoryAccount } from "@/lib/records";
+import { APPLICATION_STAGES, resolveTimeline } from "@/utils/tracking";
+import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 import {
   FileText,
   Search,
@@ -32,6 +36,13 @@ export const AdminApplicationsView: React.FC = () => {
   const [secondaryStatus, setSecondaryStatus] = useState<SecondaryStatusType>("Documents Pending");
   const [timelineAdvanceStage, setTimelineAdvanceStage] = useState<string>("");
   const [naStages, setNaStages] = useState<string[]>([]);
+  const [agentTrackingId, setAgentTrackingId] = useState("");
+  const [agents, setAgents] = useState<DirectoryAccount[]>([]);
+  useEffect(() => {
+    void listDirectory().then((result) => {
+      setAgents(result.accounts.filter((account) => account.role === "agent" && account.status === "Active"));
+    });
+  }, []);
 
   const filteredApps = applications.filter((app) => {
     if (search.trim()) {
@@ -54,7 +65,8 @@ export const AdminApplicationsView: React.FC = () => {
     setPrimaryStatus(app.primaryStatus);
     setSecondaryStatus(app.secondaryStatus);
     setTimelineAdvanceStage(app.primaryStatus);
-    const existingNA = app.timeline
+    setAgentTrackingId(app.agentTrackingId || "");
+    const existingNA = resolveTimeline(app)
       .filter((t) => t.state === "not_applicable")
       .map((t) => t.status);
     setNaStages(existingNA);
@@ -70,12 +82,14 @@ export const AdminApplicationsView: React.FC = () => {
     e.preventDefault();
     if (!selectedApp) return;
 
+    const chosen = agents.find((agent) => agent.trackingId === agentTrackingId);
     updateApplicationStatus(
       selectedApp.camsId,
       primaryStatus,
       secondaryStatus,
       timelineAdvanceStage,
-      naStages
+      naStages,
+      agentTrackingId ? { trackingId: agentTrackingId, name: chosen?.name || "Agent" } : null
     );
 
     setSelectedApp(null);
@@ -139,12 +153,14 @@ export const AdminApplicationsView: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredApps.map((app) => {
-                const completedCount = app.timeline.filter((t) => t.state === "completed").length;
                 const isStudentSelf = app.counselorName?.includes("Student");
 
                 return (
                   <tr key={app.camsId} className="hover:bg-purple-50/40 transition-colors">
-                    <td className="p-4 font-mono font-bold text-purple-700">{app.camsId}</td>
+                    <td className="p-4">
+                      <div className="font-mono font-bold text-orange-700">{app.camsId}</div>
+                      <div className="text-[10px] text-slate-400">{app.agentTrackingId ? app.counselorName : "No agent"}</div>
+                    </td>
                     <td className="p-4">
                       <strong className="text-slate-900 block">{app.student.name}</strong>
                       <span className="text-slate-400 text-[11px] font-mono">{app.student.studentId}</span>
@@ -169,7 +185,7 @@ export const AdminApplicationsView: React.FC = () => {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
                           app.primaryStatus.includes("Offer")
-                            ? "bg-emerald-100 text-emerald-800"
+                            ? "bg-orange-100 text-orange-800"
                             : "bg-slate-100 text-slate-800"
                         }`}
                       >
@@ -177,27 +193,7 @@ export const AdminApplicationsView: React.FC = () => {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-slate-700 text-[11px]">
-                          {completedCount} / 11
-                        </span>
-                        <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden flex">
-                          {app.timeline.map((t, idx) => (
-                            <div
-                              key={idx}
-                              className={`h-full flex-1 ${
-                                t.state === "completed"
-                                  ? "bg-emerald-500"
-                                  : t.state === "current"
-                                  ? "bg-purple-600 animate-pulse"
-                                  : t.state === "not_applicable"
-                                  ? "bg-slate-300"
-                                  : "bg-slate-200"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
+                      <ApplicationTracker application={app} compact />
                     </td>
                     <td className="p-4 text-right">
                       <button
@@ -277,6 +273,23 @@ export const AdminApplicationsView: React.FC = () => {
               </div>
             </div>
 
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Assigned agent</label>
+              <select
+                value={agentTrackingId}
+                onChange={(e) => setAgentTrackingId(e.target.value)}
+                className="w-full p-2 rounded-xl border border-slate-300 text-xs"
+              >
+                <option value="">Unassigned</option>
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.trackingId || agent.id}>
+                    {agent.name} ({agent.trackingId})
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[10px] text-slate-400">Agents sign in separately. This does not add them to a B2B team.</p>
+            </div>
+
             {/* Advance Timeline Stage */}
             <div>
               <label className="font-bold text-slate-700 block mb-1">
@@ -287,9 +300,9 @@ export const AdminApplicationsView: React.FC = () => {
                 onChange={(e) => setTimelineAdvanceStage(e.target.value)}
                 className="w-full p-2 rounded-xl border border-slate-300 text-xs"
               >
-                {selectedApp.timeline.map((t, idx) => (
-                  <option key={idx} value={t.status}>
-                    {idx + 1}. {t.status}
+                {APPLICATION_STAGES.map((status, idx) => (
+                  <option key={status} value={status}>
+                    {idx + 1}. {status}
                   </option>
                 ))}
               </select>
@@ -305,21 +318,21 @@ export const AdminApplicationsView: React.FC = () => {
               </p>
 
               <div className="grid grid-cols-2 gap-2 pt-1">
-                {selectedApp.timeline.map((t, idx) => {
-                  const isChecked = naStages.includes(t.status);
+                {APPLICATION_STAGES.map((status) => {
+                  const isChecked = naStages.includes(status);
                   return (
                     <label
-                      key={idx}
+                      key={status}
                       className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer text-[11px]"
                     >
                       <input
                         type="checkbox"
                         checked={isChecked}
-                        onChange={() => handleToggleNA(t.status)}
-                        className="rounded text-purple-600 focus:ring-purple-500 w-3.5 h-3.5"
+                        onChange={() => handleToggleNA(status)}
+                        className="rounded text-orange-600 focus:ring-orange-500 w-3.5 h-3.5"
                       />
                       <span className={isChecked ? "line-through text-slate-400 font-medium" : "text-slate-700 font-bold"}>
-                        {t.status}
+                        {status}
                       </span>
                     </label>
                   );

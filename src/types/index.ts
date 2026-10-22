@@ -54,6 +54,8 @@ export interface UniversityInfo {
   city: string;
   logo: string;
   image: string;
+  website?: string;
+  about?: string;
   availableCoursesCount: number;
   availableIntakes: string[];
   urmRepresentative: {
@@ -154,6 +156,16 @@ export interface ApplicationRecord {
   englishProficiency: EnglishProficiency;
   documents: DocumentUploadItem[];
   timeline: TimelineEntry[];
+  /** Auth user id of the student, when this application belongs to a student login. */
+  studentProfileId?: string;
+  /** Dakshinvedha counselor assigned to this application. Agents are not B2B team members. */
+  agentTrackingId?: string;
+  /** Auth user id of the assigned agent. */
+  agentProfileId?: string;
+  /** B2B organization that owns this application. */
+  partnerTrackingId?: string;
+  /** partners.id for the owning B2B organization. */
+  partnerRecordId?: string;
   payment: {
     grossTuition: string;
     scholarship: string;
@@ -462,12 +474,39 @@ export interface EligibilityResult {
     | "Requirements Need Review"
     | "Missing English Test"
     | "Missing Academic Information";
-  color: "emerald" | "amber" | "sky" | "slate";
+  color: "orange" | "amber" | "sky" | "slate";
   reasons: string[];
   disclaimer: string;
 }
 
-export type PortalRole = "student" | "partner" | "agent" | "admin";
+export type PortalRole = "student" | "partner" | "team" | "agent" | "admin";
+
+export type AccountMemberKind = "owner" | "team";
+
+export interface PortalAccount {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  role: PortalRole;
+  phone?: string;
+  status: "Active" | "Suspended";
+  partnerId?: string;
+  memberKind?: AccountMemberKind;
+  trackingId?: string;
+}
+
+export interface B2BAccessRequest {
+  id: string;
+  organizationName: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  message: string;
+  status: "Pending" | "Approved" | "Rejected";
+  createdAt: string;
+  partnerId?: string;
+}
 
 // ==========================================
 // B2B / PARTNER PROFILE
@@ -483,11 +522,16 @@ export interface B2BTeamMember {
   status: "Active" | "Suspended";
   createdAt: string;
   lastLogin?: string;
+  trackingId?: string;
 }
 
 export interface B2BPartnerProfile {
   id: string;
   partnerId: string;
+  /** auth user id of the B2B owner. */
+  ownerProfileId?: string;
+  /** Bank form used by the finance screen. The main fields also live on bankDetails. */
+  financeAccount?: BankAccountDetails;
   // Basic Details
   name: string;
   phone: string;

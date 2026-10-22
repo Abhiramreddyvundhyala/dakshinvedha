@@ -47,7 +47,8 @@ export const AdminNoticesView: React.FC = () => {
 
         <button
           onClick={() => setShowAddNotice(true)}
-          className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+          style={{ background: "#f97316", color: "#ffffff" }}
+          className="px-4 py-2.5 font-extrabold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer self-start sm:self-auto border-0"
         >
           <Plus className="w-4 h-4" />
           <span>Publish New Notice</span>
@@ -58,7 +59,7 @@ export const AdminNoticesView: React.FC = () => {
         {notices.map((n) => (
           <div key={n.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fff4ed", color: "#ea580c" }}>
                 {n.category}
               </span>
               <span className="text-slate-400 text-[11px]">{n.dateAdded}</span>
@@ -156,7 +157,8 @@ export const AdminNoticesView: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl"
+                style={{ background: "#f97316", color: "#ffffff" }}
+                className="px-5 py-2 font-extrabold rounded-xl border-0 cursor-pointer"
               >
                 Publish Notice
               </button>

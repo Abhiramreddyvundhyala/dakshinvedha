@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { X, SlidersHorizontal, RotateCcw, Check } from "lucide-react";
-import { MOCK_UNIVERSITIES } from "@/data/mockData";
+import { usePlatform } from "@/context/PlatformContext";
 
 export interface ApplicationFilterState {
   camsId: string;
@@ -55,6 +55,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
   onApplyFilters,
   onResetFilters,
 }) => {
+  const { universities } = usePlatform();
   const [localFilters, setLocalFilters] = useState<ApplicationFilterState>(filters);
 
   if (!isOpen) return null;
@@ -79,7 +80,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
         {/* Header */}
         <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
+            <SlidersHorizontal className="w-4 h-4 text-orange-400" />
             <h3 className="text-sm font-bold">ALL APPLICATION FILTERS</h3>
           </div>
           <button
@@ -92,10 +93,10 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
 
         {/* Filter Inputs Body */}
         <div className="p-5 overflow-y-auto flex-1 space-y-4 text-xs">
-          {/* CAMS ID */}
+          {/* Tracking ID */}
           <div>
             <label className="block text-slate-700 font-semibold mb-1">
-              CAMS ID
+              Tracking ID
             </label>
             <input
               type="text"
@@ -103,8 +104,8 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
               onChange={(e) =>
                 setLocalFilters({ ...localFilters, camsId: e.target.value })
               }
-              placeholder="e.g. CAMS-98421"
-              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B] font-mono"
+              placeholder="e.g. DV-APP-2026-98421"
+              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c] font-mono"
             />
           </div>
 
@@ -120,7 +121,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
                 setLocalFilters({ ...localFilters, studentName: e.target.value })
               }
               placeholder="Filter by student name..."
-              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0B5D3B]"
+              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
             />
           </div>
 
@@ -153,7 +154,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
                 onChange={(e) =>
                   setLocalFilters({ ...localFilters, studentId: e.target.value })
                 }
-                placeholder="STU-2026-891"
+                placeholder="DV-STU-2026-00891"
                 className="w-full p-2 border border-slate-200 rounded-lg font-mono"
               />
             </div>
@@ -214,7 +215,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
               className="w-full p-2 border border-slate-200 rounded-lg"
             >
               <option value="all">All Universities</option>
-              {MOCK_UNIVERSITIES.map((u) => (
+              {universities.map((u) => (
                 <option key={u.id} value={u.name}>
                   {u.name}
                 </option>
@@ -393,7 +394,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
           <button
             type="button"
             onClick={handleApply}
-            className="px-5 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Check className="w-4 h-4" />
             <span>APPLY FILTERS</span>

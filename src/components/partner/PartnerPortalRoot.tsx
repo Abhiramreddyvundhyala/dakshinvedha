@@ -24,11 +24,13 @@ import { B2BProfileWizard } from "./B2BProfileWizard";
 import { B2BDashboardView } from "./B2BDashboardView";
 import { usePlatform } from "@/context/PlatformContext";
 import { ApplicationRecord, CourseInfo } from "@/types";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Building2 } from "lucide-react";
 import { TeamManagementView } from "@/components/views/TeamManagementView";
+import { readSessionValue } from "@/utils/accounts";
+import { saveApplicationDraft } from "@/lib/portalDb";
 
 export const PartnerPortalRoot: React.FC = () => {
-  const { applications, updateApplicationStatus, universities, activeB2BPartner, portalRole } = usePlatform();
+  const { applications, updateApplicationStatus, universities, activeB2BPartner, portalRole, recordApplication } = usePlatform();
 
   // Profile completion state (once wizard is submitted in session, show dashboard)
   const [profileJustCompleted, setProfileJustCompleted] = useState(false);
@@ -84,18 +86,18 @@ export const PartnerPortalRoot: React.FC = () => {
 
   // Handler: When the wizard submits the application
   const handleApplicationSubmitted = (newApp: ApplicationRecord) => {
+    recordApplication({
+      ...newApp,
+      partnerTrackingId: activeB2BPartner?.partnerId,
+      partnerRecordId: activeB2BPartner?.id,
+    });
     setSuccessToast(`Application ${newApp.camsId} submitted successfully for ${newApp.student.name}!`);
     setTimeout(() => setSuccessToast(null), 4500);
   };
 
-  // Handler: Save draft from wizard
   const handleSaveDraft = (draft: Partial<ApplicationRecord>) => {
-    try {
-      localStorage.setItem("devgrate_portal_application_draft", JSON.stringify(draft));
-    } catch {
-      // Ignore
-    }
-    setSuccessToast("Application draft saved locally.");
+    void saveApplicationDraft(draft);
+    setSuccessToast("Application draft saved.");
     setTimeout(() => setSuccessToast(null), 3000);
   };
 
@@ -106,15 +108,42 @@ export const PartnerPortalRoot: React.FC = () => {
     setTimeout(() => setSuccessToast(null), 4000);
   };
 
-  // ============================================================
-  // B2B PROFILE INCOMPLETE → Show Wizard
-  // ============================================================
-  if (activeB2BPartner && !activeB2BPartner.profileCompleted && !profileJustCompleted) {
+  const isOwner = portalRole === "partner";
+  const viewerName = readSessionValue("dakshin_user_name") || activeB2BPartner?.name || "Partner";
+
+  if (!activeB2BPartner) {
+    return (
+      <div className="min-h-screen bg-[#f4f6f9] flex items-center justify-center p-6">
+        <div className="max-w-md bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm">
+          <Building2 className="w-8 h-8 text-orange-500 mx-auto" />
+          <h1 className="mt-3 text-lg font-extrabold text-slate-900">Organization not linked</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            This login is not attached to a B2B organization. Ask Dakshinvedha admin to reissue the account.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isOwner && !activeB2BPartner.profileCompleted && !profileJustCompleted) {
     return (
       <B2BProfileWizard
         partner={activeB2BPartner}
         onComplete={() => setProfileJustCompleted(true)}
       />
+    );
+  }
+
+  if (!isOwner && !activeB2BPartner.profileCompleted) {
+    return (
+      <div className="min-h-screen bg-[#f4f6f9] flex items-center justify-center p-6">
+        <div className="max-w-md bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm">
+          <h1 className="text-lg font-extrabold text-slate-900">Profile still with the owner</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            {viewerName}, your organization has not finished its B2B profile yet. You can sign in again after the owner submits it.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -124,7 +153,7 @@ export const PartnerPortalRoot: React.FC = () => {
   const isB2BMode = !!(activeB2BPartner);
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans selection:bg-[#0B5D3B] selection:text-white">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 flex flex-col font-sans selection:bg-orange-200 selection:text-white">
       {/* 1. Fixed Top Header */}
       <Header
         onToggleSidebarMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -136,11 +165,11 @@ export const PartnerPortalRoot: React.FC = () => {
 
       {/* Global Success Notification Toast */}
       {successToast && (
-        <div className="fixed top-24 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-fade-in">
-          <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+        <div className="fixed top-24 right-6 z-50 bg-white px-4 py-3 rounded-xl shadow-lg border border-orange-200 flex items-center gap-3 animate-fade-in">
+          <div className="w-7 h-7 rounded-full bg-orange-50 flex items-center justify-center shrink-0" style={{ color: "#f97316" }}>
             <CheckCircle2 className="w-4 h-4" />
           </div>
-          <p className="text-xs font-semibold">{successToast}</p>
+          <p className="text-xs font-semibold text-slate-700">{successToast}</p>
         </div>
       )}
 
@@ -153,6 +182,7 @@ export const PartnerPortalRoot: React.FC = () => {
         onOpenAddNewModal={() => setIsApplyNewCourseOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        showTeam={isOwner}
       />
 
       {/* 3. Scrollable Main Content Area */}
@@ -180,7 +210,7 @@ export const PartnerPortalRoot: React.FC = () => {
                       <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                         <span>Welcome back!</span>
                         <span className="text-sm font-normal text-slate-400">|</span>
-                        <span className="text-xs font-semibold text-[#0B5D3B] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                        <span className="text-xs font-semibold text-[#f97316] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
                           Partner ID: AGT-9041
                         </span>
                       </h1>
@@ -192,7 +222,7 @@ export const PartnerPortalRoot: React.FC = () => {
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                       <button
                         onClick={() => setIsApplyNewCourseOpen(true)}
-                        className="px-4 py-2 bg-[#0B5D3B] hover:bg-[#08482D] text-white rounded-xl text-xs font-bold shadow-sm shadow-emerald-900/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-xs font-bold shadow-sm shadow-orange-900/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>+ Add New Application</span>
                       </button>
@@ -276,7 +306,7 @@ export const PartnerPortalRoot: React.FC = () => {
           {currentTab === "chat" && <ChatView />}
 
           {/* TAB: TEAM MANAGEMENT */}
-          {currentTab === "team" && <TeamManagementView />}
+          {currentTab === "team" && isOwner && <TeamManagementView />}
 
           {/* TAB: OTHER */}
           {currentTab === "other" && <OtherView />}

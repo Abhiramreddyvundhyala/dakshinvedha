@@ -15,6 +15,7 @@ import {
   FileText,
 } from "lucide-react";
 import { ApplicationRecord } from "@/types";
+import { buildTimeline, createTrackingId } from "@/utils/tracking";
 
 interface AddNewApplicationModalProps {
   isOpen: boolean;
@@ -77,8 +78,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
-    const generatedCamsId = `CAMS-${randomSuffix}`;
+    const generatedCamsId = createTrackingId("APP");
 
     const names = (formData.studentName || "Kavya Patel").split(" ");
     const firstName = names[0] || "Kavya";
@@ -162,20 +162,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
       dateAdded: "29 Sep 2026",
       dateModified: "29 Sep 2026",
       counselorName: "Sarah Jenkins",
-      timeline: [
-        {
-          status: "Application Created",
-          date: "29 Sep 2026",
-          description: "New application dossier created via Partner Portal",
-          state: "completed",
-        },
-        {
-          status: "Admissions Verification",
-          date: "In Queue",
-          description: "Dossier under review by Central Admissions team",
-          state: "current",
-        },
-      ],
+      timeline: buildTimeline("Application Submitted", "2026-09-29"),
       qualifications: [
         {
           id: "q-1",
@@ -268,7 +255,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
                 step === s.num
                   ? "text-orange-600 font-bold"
                   : step > s.num
-                  ? "text-emerald-600 font-semibold"
+                  ? "text-orange-600 font-semibold"
                   : "text-slate-400"
               }`}
             >
@@ -277,7 +264,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
                   step === s.num
                     ? "bg-orange-500 text-white"
                     : step > s.num
-                    ? "bg-emerald-500 text-white"
+                    ? "bg-orange-500 text-white"
                     : "bg-slate-200 text-slate-500"
                 }`}
               >
@@ -639,7 +626,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
                       <span className="font-medium text-slate-800">{f.name}</span>
                       <span className="text-slate-400 text-[10px]">({f.size})</span>
                     </div>
-                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">
+                    <span className="text-[10px] text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded">
                       Ready
                     </span>
                   </div>

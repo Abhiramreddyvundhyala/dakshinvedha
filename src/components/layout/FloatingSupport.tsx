@@ -77,13 +77,13 @@ export const FloatingSupport: React.FC<FloatingSupportProps> = ({ onStartChat })
                     <p className="text-[10px] text-slate-500">Live agent & university desk instant chat</p>
                   </div>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
               </button>
 
               {/* Option 2: Call Support */}
               <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
                     <PhoneCall className="w-4 h-4" />
                   </div>
                   <div>
@@ -123,7 +123,7 @@ export const FloatingSupport: React.FC<FloatingSupportProps> = ({ onStartChat })
           {activeMode === "message" && (
             <div className="p-4 bg-white">
               {submitted ? (
-                <div className="py-6 text-center text-emerald-600 flex flex-col items-center gap-1.5 animate-fade-in">
+                <div className="py-6 text-center text-orange-600 flex flex-col items-center gap-1.5 animate-fade-in">
                   <CheckCircle className="w-8 h-8" />
                   <span className="text-xs font-bold">Ticket Submitted Successfully!</span>
                   <span className="text-[11px] text-slate-500">Your counselor will follow up in 10 mins.</span>
@@ -146,7 +146,7 @@ export const FloatingSupport: React.FC<FloatingSupportProps> = ({ onStartChat })
                     rows={3}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Include CAMS ID, student issue, or question..."
+                    placeholder="Include Tracking ID, student issue, or question..."
                     className="w-full p-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
                     required
                   />
@@ -176,7 +176,7 @@ export const FloatingSupport: React.FC<FloatingSupportProps> = ({ onStartChat })
         ) : (
           <>
             <MessageCircle className="w-6 h-6 fill-white/20" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">
               1
             </span>
           </>

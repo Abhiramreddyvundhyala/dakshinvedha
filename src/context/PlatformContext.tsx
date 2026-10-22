@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef, ReactNode } from "react";
 import {
   PortalRole,
   StudentProfile,
@@ -17,17 +17,30 @@ import {
   SecondaryStatusType,
   B2BPartnerProfile,
   B2BTeamMember,
+  B2BAccessRequest,
 } from "@/types";
 import {
-  MOCK_UNIVERSITIES,
-  MOCK_COURSES,
-  MOCK_APPLICATIONS,
-  MOCK_NOTICES,
-  MOCK_NOTIFICATIONS,
-} from "@/data/mockData";
-import { SEED_STUDENTS, DEFAULT_REQUIREMENTS } from "@/data/studentSeedData";
-import { SEED_B2B_PARTNERS } from "@/data/b2bSeedData";
+  loadCatalog,
+  removeCourse,
+  removeInstitution,
+  saveCourse,
+  saveInstitution,
+  withCourseCounts,
+  type CatalogStatus,
+  type CatalogWriteResult,
+} from "@/lib/catalog";
 import { performLogout } from "@/utils/auth";
+import { generatePassword, readSessionValue } from "@/utils/accounts";
+import {
+  flushPortalChanges,
+  loadPortalBundle,
+  portalSnapshot,
+  provisionAccount,
+  removeAccount,
+  updateAccountStatus,
+} from "@/lib/portalDb";
+import { isUuid } from "@/lib/records";
+import { buildTimeline, createTrackingId } from "@/utils/tracking";
 
 interface PlatformContextType {
   // Navigation & Role
@@ -40,7 +53,7 @@ interface PlatformContextType {
   activeStudentId: string | null;
   students: StudentProfile[];
   loginStudent: (identifier: string, method: "password" | "otp", codeOrPass: string) => boolean;
-  registerStudent: (basic: { name: string; mobile: string; email: string }) => StudentProfile;
+  registerStudent: (basic: { name: string; mobile: string; email: string; password?: string }) => StudentProfile;
   logoutStudent: () => void;
   logout: () => void;
   switchActiveStudent: (studentId: string) => void;
@@ -66,13 +79,14 @@ interface PlatformContextType {
     courseId: string;
     intake: string;
     notes?: string;
-  }) => ApplicationRecord;
+  }) => ApplicationRecord | null;
   updateApplicationStatus: (
     camsId: string,
     primaryStatus: PrimaryStatusType,
     secondaryStatus: SecondaryStatusType,
     timelineStatus?: string,
-    notApplicableStages?: string[]
+    notApplicableStages?: string[],
+    agentAssignment?: { trackingId: string; name: string } | null
   ) => void;
   cancelApplication: (camsId: string) => void;
 
@@ -92,21 +106,39 @@ interface PlatformContextType {
   // Universities, Courses & Requirements
   universities: UniversityInfo[];
   courses: CourseInfo[];
-  updateCourseRequirements: (courseId: string, req: CourseRequirementsConfig) => void;
-  addUniversity: (univ: UniversityInfo) => void;
+  catalogStatus: CatalogStatus;
+  catalogError: string | null;
+  updateCourseRequirements: (courseId: string, req: CourseRequirementsConfig) => Promise<CatalogWriteResult>;
+  addUniversity: (univ: UniversityInfo) => Promise<CatalogWriteResult>;
+  updateUniversity: (univ: UniversityInfo) => Promise<CatalogWriteResult>;
+  deleteUniversity: (id: string) => Promise<CatalogWriteResult>;
+  addCourse: (course: CourseInfo) => Promise<CatalogWriteResult>;
+  updateCourse: (course: CourseInfo) => Promise<CatalogWriteResult>;
+  deleteCourse: (id: string) => Promise<CatalogWriteResult>;
 
   // B2B / Partner Management
   b2bPartners: B2BPartnerProfile[];
   activeB2BPartner: B2BPartnerProfile | null;
-  createB2BAccount: (basic: { name: string; phone: string; email: string }) => B2BPartnerProfile;
+  createB2BAccount: (basic: {
+    name: string;
+    phone: string;
+    email: string;
+    password?: string;
+    organizationName?: string;
+  }) => Promise<B2BPartnerProfile | { error: string }>;
   updateB2BProfile: (partnerId: string, updates: Partial<B2BPartnerProfile>) => void;
   verifyB2BPartner: (partnerId: string) => void;
   loginB2B: (email: string, password: string) => B2BPartnerProfile | null;
+  accessRequests: B2BAccessRequest[];
+  rejectB2BRequest: (requestId: string) => void;
 
   // B2B Team Management
-  addB2BTeamMember: (partnerId: string, member: { name: string; email: string; password: string }) => B2BTeamMember | { error: string };
-  removeB2BTeamMember: (partnerId: string, memberId: string) => void;
+  addB2BTeamMember: (partnerId: string, member: { name: string; email: string; password: string }) => Promise<B2BTeamMember | { error: string }>;
+  removeB2BTeamMember: (partnerId: string, memberId: string) => Promise<void>;
   updateB2BTeamMember: (partnerId: string, memberId: string, updates: Partial<B2BTeamMember>) => void;
+  recordApplication: (application: ApplicationRecord) => void;
+  claimCommission: (camsId: string) => void;
+  syncError: string | null;
 
   // Notices & Notifications
   notices: NoticeItem[];
@@ -119,103 +151,174 @@ interface PlatformContextType {
 
 const PlatformContext = createContext<PlatformContextType | undefined>(undefined);
 
-const APP_TIMELINE_STAGES = [
-  "Application Submitted",
-  "Initial Review",
-  "Documents Verified",
-  "Submitted to University",
-  "University Review",
-  "Offer Received",
-  "Offer Accepted",
-  "Deposit / Payment",
-  "Admission / CAS Processing",
-  "Visa Stage",
-  "Completed",
-];
+const SAMPLE_CLEARED_KEY = "dakshin_sample_data_cleared_v1";
+let sampleClearAttempted = false;
+
+function clearStoredSampleData() {
+  if (sampleClearAttempted || typeof window === "undefined") return;
+  sampleClearAttempted = true;
+  try {
+    if (localStorage.getItem(SAMPLE_CLEARED_KEY) === "1") return;
+    [
+      "devgrate_courses_data",
+      "devgrate_portal_applications",
+      "devgrate_students_data",
+      "devgrate_active_student_id",
+      "dakshin_admin_team_v1",
+    ].forEach((key) => localStorage.removeItem(key));
+    localStorage.setItem(SAMPLE_CLEARED_KEY, "1");
+  } catch {
+    // Storage can be blocked in private browsing.
+  }
+}
+
+function buildStudentRecord(basic: {
+  name: string;
+  mobile: string;
+  email: string;
+  password?: string;
+}): StudentProfile {
+  const parts = basic.name.trim().split(" ");
+  const firstName = parts[0] || "Student";
+  const lastName = parts.slice(1).join(" ") || "User";
+  return {
+    id: `stu-${Date.now()}`,
+    studentId: createTrackingId("STU"),
+    name: basic.name,
+    firstName,
+    lastName,
+    email: basic.email.trim().toLowerCase(),
+    mobile: basic.mobile,
+    password: basic.password || "password123",
+    accountStatus: "Active",
+    registrationDate: new Date().toISOString().slice(0, 10),
+    lastLogin: new Date().toISOString().slice(0, 16).replace("T", " "),
+    onboardingCompleted: false,
+    profileCompletion: 25,
+    personal: {
+      dob: "",
+      gender: "",
+      nationality: "Indian",
+      countryOfResidence: "India",
+      address: { street: "", city: "", state: "", postalCode: "" },
+    },
+    passport: { hasPassport: "NO", status: "Passport Pending" },
+    education: [],
+    testsStatus: "PLANNING TO TAKE",
+    standardizedTests: [],
+    studyPreferences: {
+      preferredStudyLevel: "Postgraduate",
+      preferredCountries: ["United Kingdom"],
+      preferredIntake: "September",
+      preferredCourseSubject: "",
+      preferredUniversity: "",
+      budgetRange: "",
+      scholarshipRequired: "YES",
+    },
+    documents: [],
+  };
+}
 
 export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  clearStoredSampleData();
+
   // 1. Portal Role: "student" | "partner" | "admin"
   const [portalRole, setPortalRoleState] = useState<PortalRole>("student");
 
   // 2. Student Auth State
-  const [isStudentAuthenticated, setIsStudentAuthenticated] = useState<boolean>(true);
-  const [activeStudentId, setActiveStudentId] = useState<string>("stu-101");
+  const [isStudentAuthenticated, setIsStudentAuthenticated] = useState<boolean>(false);
+  const [activeStudentId, setActiveStudentId] = useState<string>("");
 
   // 3. Shared Entities
-  const [students, setStudents] = useState<StudentProfile[]>(SEED_STUDENTS);
-  const [applications, setApplications] = useState<ApplicationRecord[]>(MOCK_APPLICATIONS);
-  const [universities, setUniversities] = useState<UniversityInfo[]>(MOCK_UNIVERSITIES);
-  const [courses, setCourses] = useState<CourseInfo[]>(() => {
-    return MOCK_COURSES.map((c) => ({
-      ...c,
-      requirementsConfig: c.requirementsConfig || DEFAULT_REQUIREMENTS,
-    }));
-  });
-  const [notices, setNotices] = useState<NoticeItem[]>(MOCK_NOTICES);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
-  const [b2bPartners, setB2bPartners] = useState<B2BPartnerProfile[]>(SEED_B2B_PARTNERS);
+  const [students, setStudents] = useState<StudentProfile[]>([]);
+  const [applications, setApplications] = useState<ApplicationRecord[]>([]);
+  const [universities, setUniversities] = useState<UniversityInfo[]>([]);
+  const [courses, setCourses] = useState<CourseInfo[]>([]);
+  const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>("loading");
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const coursesRef = useRef<CourseInfo[]>([]);
+  coursesRef.current = courses;
+  const [notices, setNotices] = useState<NoticeItem[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [b2bPartners, setB2bPartners] = useState<B2BPartnerProfile[]>([]);
+  const [accessRequests, setAccessRequests] = useState<B2BAccessRequest[]>([]);
+  const [sessionEmail, setSessionEmail] = useState("");
+  const [sessionPartnerId, setSessionPartnerId] = useState("");
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
+  const [dbReady, setDbReady] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const snapshotRef = useRef("");
 
-  // Hydrate from localStorage
   useEffect(() => {
-    try {
-      const savedRole = localStorage.getItem("devgrate_portal_role");
-      if (savedRole === "student" || savedRole === "partner" || savedRole === "agent" || savedRole === "admin") {
-        setPortalRoleState(savedRole);
+    let cancelled = false;
+    (async () => {
+      const result = await loadPortalBundle();
+      if (cancelled) return;
+      if (!result.ok) {
+        if (result.reason === "error") setSyncError(result.error);
+        setIsHydrated(true);
+        return;
       }
-      const savedAuth =
-        sessionStorage.getItem("dakshin_authenticated") ||
-        localStorage.getItem("dakshin_authenticated") ||
-        localStorage.getItem("devgrate_authenticated") ||
-        localStorage.getItem("devgrate_student_auth");
-      if (savedAuth !== null) {
-        setIsStudentAuthenticated(savedAuth === "true");
+      const bundle = result.data;
+      setPortalRoleState(bundle.profile.role);
+      setSessionEmail(bundle.profile.email);
+      setSessionPartnerId(bundle.profile.partnerId);
+      setStudents(bundle.students);
+      setApplications(bundle.applications);
+      setNotices(bundle.notices);
+      setNotifications(bundle.notifications);
+      setB2bPartners(bundle.partners);
+      setAccessRequests(bundle.requests);
+      if (bundle.profile.role === "student") {
+        setIsStudentAuthenticated(true);
+        setActiveStudentId(bundle.profile.id);
       }
-      const savedActiveStudent = localStorage.getItem("devgrate_active_student_id");
-      if (savedActiveStudent) {
-        setActiveStudentId(savedActiveStudent);
-      }
-      const savedStudents = localStorage.getItem("devgrate_students_data");
-      if (savedStudents) {
-        const parsed = JSON.parse(savedStudents);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setStudents(parsed);
-        }
-      }
-      const savedApps = localStorage.getItem("devgrate_portal_applications");
-      if (savedApps) {
-        const parsed = JSON.parse(savedApps);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setApplications(parsed);
-        }
-      }
-      const savedCourses = localStorage.getItem("devgrate_courses_data");
-      if (savedCourses) {
-        const parsed = JSON.parse(savedCourses);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCourses(parsed);
-        }
-      }
-    } catch {
-      // LocalStorage error fallback
-    }
-    setIsHydrated(true);
+      snapshotRef.current = portalSnapshot(bundle);
+      setDbReady(true);
+      setIsHydrated(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
     if (!isHydrated) return;
-    try {
-      localStorage.setItem("devgrate_portal_role", portalRole);
-      localStorage.setItem("devgrate_student_auth", String(isStudentAuthenticated));
-      localStorage.setItem("devgrate_active_student_id", activeStudentId);
-      localStorage.setItem("devgrate_students_data", JSON.stringify(students));
-      localStorage.setItem("devgrate_portal_applications", JSON.stringify(applications));
-      localStorage.setItem("devgrate_courses_data", JSON.stringify(courses));
-    } catch {
-      // Ignore storage quota
-    }
-  }, [portalRole, isStudentAuthenticated, activeStudentId, students, applications, courses, isHydrated]);
+    let cancelled = false;
+    (async () => {
+      setCatalogStatus("loading");
+      const result = await loadCatalog();
+      if (cancelled) return;
+      if (!result.ok) {
+        setUniversities([]);
+        setCourses([]);
+        setCatalogError(result.error);
+        setCatalogStatus(result.reason === "unconfigured" ? "unconfigured" : "error");
+        return;
+      }
+      setUniversities(result.universities);
+      setCourses(result.courses);
+      setCatalogError(null);
+      setCatalogStatus("ready");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isHydrated]);
+
+  useEffect(() => {
+    if (!dbReady) return;
+    const handle = window.setTimeout(() => {
+      void flushPortalChanges(
+        { students, applications, partners: b2bPartners, notices, notifications, requests: accessRequests },
+        snapshotRef.current
+      ).then((result) => {
+        snapshotRef.current = result.snapshot;
+        if (result.error) setSyncError(result.error);
+      });
+    }, 450);
+    return () => window.clearTimeout(handle);
+  }, [dbReady, students, applications, b2bPartners, notices, notifications, accessRequests]);
 
   const setPortalRole = useCallback((role: PortalRole) => {
     setPortalRoleState(role);
@@ -246,121 +349,40 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         s.mobile.replace(/\s+/g, "").includes(cleanId.replace(/\s+/g, ""))
     );
 
-    if (!found) {
-      // Create quick student if not found for seamless testability
-      const newStu: StudentProfile = {
-        id: `stu-${Date.now()}`,
-        studentId: `STU-2026-${Math.floor(100 + Math.random() * 900)}`,
-        name: identifier.includes("@") ? identifier.split("@")[0] : "New Student",
-        firstName: identifier.includes("@") ? identifier.split("@")[0] : "New",
-        lastName: "Student",
-        email: identifier.includes("@") ? identifier : `student${Date.now()}@example.com`,
-        mobile: identifier.includes("@") ? "+91 98765 00000" : identifier,
-        password: "password123",
-        accountStatus: "Active",
-        registrationDate: new Date().toISOString().slice(0, 10),
-        lastLogin: new Date().toISOString().slice(0, 16).replace("T", " "),
-        onboardingCompleted: false,
-        profileCompletion: 30,
-        personal: {
-          dob: "2004-01-01",
-          gender: "Male",
-          nationality: "Indian",
-          countryOfResidence: "India",
-          address: { street: "", city: "", state: "", postalCode: "" },
-        },
-        passport: { hasPassport: "NO", status: "Passport Pending" },
-        education: [],
-        testsStatus: "PLANNING TO TAKE",
-        standardizedTests: [],
-        studyPreferences: {
-          preferredStudyLevel: "Postgraduate",
-          preferredCountries: ["United Kingdom"],
-          preferredIntake: "September",
-          preferredCourseSubject: "Computer Science",
-          preferredUniversity: "University of Greenwich",
-          budgetRange: "£15,000 - £20,000",
-          scholarshipRequired: "YES",
-        },
-        documents: [],
-      };
-      setStudents((prev) => [newStu, ...prev]);
-      setActiveStudentId(newStu.id);
-      setIsStudentAuthenticated(true);
-      return true;
-    }
+    if (!found) return false;
 
     if (method === "otp") {
-      // Visible demo OTP is 123456
-      if (codeOrPass === "123456" || codeOrPass.length === 6) {
-        setActiveStudentId(found.id);
-        setIsStudentAuthenticated(true);
-        return true;
-      }
+      if (codeOrPass !== "123456") return false;
+    } else if (!found.password || codeOrPass !== found.password) {
       return false;
-    } else {
-      // Password match or demo accept
-      setActiveStudentId(found.id);
-      setIsStudentAuthenticated(true);
-      return true;
     }
+
+    setActiveStudentId(found.id);
+    setIsStudentAuthenticated(true);
+    return true;
   };
 
   // Student Registration (Step 1 Basic)
-  const registerStudent = (basic: { name: string; mobile: string; email: string }): StudentProfile => {
-    const parts = basic.name.trim().split(" ");
-    const firstName = parts[0] || "Student";
-    const lastName = parts.slice(1).join(" ") || "User";
-    const newId = `stu-${Date.now()}`;
-    const studentCode = `STU-2026-${Math.floor(100 + Math.random() * 900)}`;
+  const registerStudent = (basic: { name: string; mobile: string; email: string; password?: string }): StudentProfile => {
+    const email = basic.email.trim().toLowerCase();
+    const existing = students.find((student) => student.email.toLowerCase() === email);
+    if (existing) {
+      const updated = { ...existing, name: basic.name, mobile: basic.mobile };
+      delete updated.password;
+      setStudents((prev) => prev.map((student) => (student.id === existing.id ? updated : student)));
+      setActiveStudentId(existing.id);
+      setIsStudentAuthenticated(true);
+      return updated;
+    }
+    const sessionId = readSessionValue("dakshin_account_id") || "";
+    const newStudent = buildStudentRecord(basic);
+    if (isUuid(sessionId)) newStudent.id = sessionId;
+    const trackingId = readSessionValue("dakshin_tracking_id");
+    if (trackingId) newStudent.studentId = trackingId;
+    delete newStudent.password;
 
-    const newStudent: StudentProfile = {
-      id: newId,
-      studentId: studentCode,
-      name: basic.name,
-      firstName,
-      lastName,
-      email: basic.email,
-      mobile: basic.mobile,
-      password: "password123",
-      accountStatus: "Active",
-      registrationDate: new Date().toISOString().slice(0, 10),
-      lastLogin: new Date().toISOString().slice(0, 16).replace("T", " "),
-      onboardingCompleted: false,
-      profileCompletion: 25,
-      personal: {
-        dob: "",
-        gender: "Male",
-        nationality: "Indian",
-        countryOfResidence: "India",
-        address: {
-          street: "",
-          city: "",
-          state: "",
-          postalCode: "",
-        },
-      },
-      passport: {
-        hasPassport: "NO",
-        status: "Passport Pending",
-      },
-      education: [],
-      testsStatus: "PLANNING TO TAKE",
-      standardizedTests: [],
-      studyPreferences: {
-        preferredStudyLevel: "Postgraduate",
-        preferredCountries: ["United Kingdom"],
-        preferredIntake: "September",
-        preferredCourseSubject: "Computer Science",
-        preferredUniversity: "University of Greenwich",
-        budgetRange: "£14,000 - £22,000",
-        scholarshipRequired: "YES",
-      },
-      documents: [],
-    };
-
-    setStudents((prev) => [newStudent, ...prev]);
-    setActiveStudentId(newId);
+    setStudents((prev) => [newStudent, ...prev.filter((student) => student.email.toLowerCase() !== newStudent.email.toLowerCase())]);
+    setActiveStudentId(newStudent.id);
     setIsStudentAuthenticated(true);
 
     // Add alert notification to Super Admin
@@ -371,7 +393,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       timeAgo: "Just now",
       type: "system",
       isRead: false,
-      studentId: newId,
+      studentId: newStudent.id,
     };
     setNotifications((prev) => [adminNotif, ...prev]);
 
@@ -540,7 +562,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (s.id === activeStudentId) {
           const existingIndex = s.documents.findIndex((d) => d.category === doc.category);
           const newDoc = {
-            id: existingIndex >= 0 ? s.documents[existingIndex].id : `doc-${Date.now()}`,
+            id: existingIndex >= 0 ? s.documents[existingIndex].id : createTrackingId("DOC"),
             category: doc.category,
             title: doc.title,
             fileName: doc.fileName,
@@ -596,25 +618,15 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     courseId: string;
     intake: string;
     notes?: string;
-  }): ApplicationRecord => {
-    const student = activeStudent || SEED_STUDENTS[0];
-    const univ = universities.find((u) => u.id === data.universityId) || universities[0];
-    const course = courses.find((c) => c.id === data.courseId) || courses[0];
+  }): ApplicationRecord | null => {
+    const student = activeStudent;
+    const univ = universities.find((u) => u.id === data.universityId);
+    const course = courses.find((c) => c.id === data.courseId);
+    if (!student || !univ || !course) return null;
 
-    const newCamsId = `APP-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+    const newCamsId = createTrackingId("APP");
     const today = new Date().toISOString().slice(0, 10);
-
-    const timeline = APP_TIMELINE_STAGES.map((stage, idx) => ({
-      status: stage,
-      date: idx === 0 ? today : "Pending",
-      description:
-        idx === 0
-          ? "Application submitted online by student"
-          : idx === 1
-          ? "Admissions compliance vetting in progress"
-          : "Stage pending previous step completion",
-      state: idx === 0 ? ("completed" as const) : idx === 1 ? ("current" as const) : ("pending" as const),
-    }));
+    const timeline = buildTimeline("Application Submitted", today);
 
     const newApp: ApplicationRecord = {
       camsId: newCamsId,
@@ -646,6 +658,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       dateAdded: today,
       dateModified: today,
       counselorName: "Dakshinvedha Student Self-Apply",
+      studentProfileId: isUuid(student.id) ? student.id : undefined,
       qualifications: student.education.map((e) => ({
         id: e.id,
         highestQualification: e.degree || e.level,
@@ -718,27 +731,32 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     primaryStatus: PrimaryStatusType,
     secondaryStatus: SecondaryStatusType,
     timelineStatus?: string,
-    notApplicableStages: string[] = []
+    notApplicableStages: string[] = [],
+    agentAssignment?: { trackingId: string; name: string } | null
   ) => {
+    const today = new Date().toISOString().slice(0, 10);
     setApplications((prev) =>
       prev.map((app) => {
         if (app.camsId === camsId) {
-          const updatedTimeline = app.timeline.map((t) => {
-            if (notApplicableStages.includes(t.status)) {
-              return { ...t, state: "not_applicable" as const };
+          const updatedTimeline = buildTimeline(primaryStatus, today, app.timeline).map((stage) => {
+            if (notApplicableStages.includes(stage.status)) {
+              return { ...stage, state: "not_applicable" as const, date: "Not applicable" };
             }
-            if (t.status === timelineStatus || t.status === primaryStatus) {
-              return { ...t, state: "completed" as const, date: new Date().toISOString().slice(0, 10) };
+            if (timelineStatus && stage.status === timelineStatus) {
+              return { ...stage, state: "completed" as const, date: today };
             }
-            return t;
+            return stage;
           });
 
           return {
             ...app,
             primaryStatus,
             secondaryStatus,
-            dateModified: new Date().toISOString().slice(0, 10),
+            dateModified: today,
             timeline: updatedTimeline,
+            agentTrackingId:
+              agentAssignment === undefined ? app.agentTrackingId : agentAssignment?.trackingId || undefined,
+            counselorName: agentAssignment ? agentAssignment.name : app.counselorName,
           };
         }
         return app;
@@ -878,22 +896,83 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     );
   };
 
-  // Course Requirements update
-  const updateCourseRequirements = (courseId: string, req: CourseRequirementsConfig) => {
-    setCourses((prev) =>
-      prev.map((c) => (c.id === courseId ? { ...c, requirementsConfig: req } : c))
-    );
+  const rememberCourses = (nextCourses: CourseInfo[]) => {
+    setCourses(nextCourses);
+    setUniversities((prev) => withCourseCounts(prev, nextCourses));
   };
 
-  const addUniversity = (univ: UniversityInfo) => {
-    setUniversities((prev) => [univ, ...prev]);
+  const updateCourseRequirements = async (courseId: string, req: CourseRequirementsConfig): Promise<CatalogWriteResult> => {
+    const existing = coursesRef.current.find((course) => course.id === courseId);
+    if (!existing) return { ok: false, error: "Course not found." };
+    return updateCourse({ ...existing, requirementsConfig: req });
+  };
+
+  const addUniversity = async (univ: UniversityInfo): Promise<CatalogWriteResult> => {
+    const next = { ...univ, availableCoursesCount: 0 };
+    const saved = await saveInstitution(next);
+    if (!saved.ok) return saved;
+    setUniversities((prev) => [next, ...prev.filter((item) => item.id !== next.id)]);
+    return { ok: true };
+  };
+
+  const updateUniversity = async (univ: UniversityInfo): Promise<CatalogWriteResult> => {
+    const linked = coursesRef.current
+      .filter((course) => course.universityId === univ.id)
+      .map((course) => ({
+        ...course,
+        universityName: univ.name,
+        country: univ.country,
+        city: univ.city,
+        aboutUniversity: univ.about || course.aboutUniversity,
+      }));
+    const next = { ...univ, availableCoursesCount: linked.length };
+    const saved = await saveInstitution(next);
+    if (!saved.ok) return saved;
+    for (const course of linked) {
+      const courseSaved = await saveCourse(course);
+      if (!courseSaved.ok) return courseSaved;
+    }
+    setUniversities((prev) => prev.map((item) => (item.id === next.id ? next : item)));
+    if (linked.length > 0) {
+      setCourses((prev) => prev.map((course) => linked.find((item) => item.id === course.id) || course));
+    }
+    return { ok: true };
+  };
+
+  const deleteUniversity = async (id: string): Promise<CatalogWriteResult> => {
+    const removed = await removeInstitution(id);
+    if (!removed.ok) return removed;
+    setUniversities((prev) => prev.filter((item) => item.id !== id));
+    setCourses((prev) => prev.filter((course) => course.universityId !== id));
+    return { ok: true };
+  };
+
+  const addCourse = async (course: CourseInfo): Promise<CatalogWriteResult> => {
+    const saved = await saveCourse(course);
+    if (!saved.ok) return saved;
+    rememberCourses([course, ...coursesRef.current.filter((item) => item.id !== course.id)]);
+    return { ok: true };
+  };
+
+  const updateCourse = async (course: CourseInfo): Promise<CatalogWriteResult> => {
+    const saved = await saveCourse(course);
+    if (!saved.ok) return saved;
+    rememberCourses(coursesRef.current.map((item) => (item.id === course.id ? course : item)));
+    return { ok: true };
+  };
+
+  const deleteCourse = async (id: string): Promise<CatalogWriteResult> => {
+    const removed = await removeCourse(id);
+    if (!removed.ok) return removed;
+    rememberCourses(coursesRef.current.filter((course) => course.id !== id));
+    return { ok: true };
   };
 
   // Notices
   const publishNotice = (noticeData: Omit<NoticeItem, "id" | "dateAdded">) => {
     const newNotice: NoticeItem = {
       ...noticeData,
-      id: `notice-${Date.now()}`,
+      id: createTrackingId("NTC"),
       dateAdded: new Date().toISOString().slice(0, 10),
     };
     setNotices((prev) => [newNotice, ...prev]);
@@ -934,81 +1013,60 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   // B2B / PARTNER MANAGEMENT
   // ==========================================
   const activeB2BPartner = useMemo(() => {
-    if (portalRole !== "partner" && portalRole !== "agent") return null;
-    const userEmail = typeof window !== "undefined" ? localStorage.getItem("devgrate_user_email") : null;
-    if (userEmail) {
-      return b2bPartners.find((p) => p.email.toLowerCase() === userEmail.toLowerCase()) || b2bPartners[0] || null;
+    if (portalRole !== "partner" && portalRole !== "team") return null;
+    if (sessionPartnerId) {
+      const byId = b2bPartners.find(
+        (partner) => partner.id === sessionPartnerId || partner.partnerId === sessionPartnerId
+      );
+      if (byId) return byId;
     }
-    return b2bPartners[0] || null;
-  }, [b2bPartners, portalRole]);
+    if (sessionEmail) {
+      const owner = b2bPartners.find((partner) => partner.email.toLowerCase() === sessionEmail.toLowerCase());
+      if (owner) return owner;
+      const viaTeam = b2bPartners.find((partner) =>
+        (partner.teamMembers || []).some((member) => member.email.toLowerCase() === sessionEmail.toLowerCase())
+      );
+      if (viaTeam) return viaTeam;
+    }
+    return null;
+  }, [b2bPartners, portalRole, sessionEmail, sessionPartnerId]);
 
-  // Admin creates B2B account with credentials
-  const createB2BAccount = (basic: { name: string; phone: string; email: string }): B2BPartnerProfile => {
-    const newId = `b2b-${Date.now()}`;
-    const partnerCode = `PTR-2026-${Math.floor(100 + Math.random() * 900)}`;
-    const newPartner: B2BPartnerProfile = {
-      id: newId,
-      partnerId: partnerCode,
-      name: basic.name,
+  const rejectB2BRequest = (requestId: string) => {
+    setAccessRequests((prev) => prev.map((request) => (request.id === requestId ? { ...request, status: "Rejected" } : request)));
+  };
+
+  const createB2BAccount = async (basic: {
+    name: string;
+    phone: string;
+    email: string;
+    password?: string;
+    organizationName?: string;
+  }): Promise<B2BPartnerProfile | { error: string }> => {
+    const email = basic.email.trim().toLowerCase();
+    if (b2bPartners.some((partner) => partner.email.toLowerCase() === email)) {
+      return { error: "An account with this email already exists." };
+    }
+    const password = basic.password?.trim() || generatePassword();
+    const result = await provisionAccount({
+      role: "partner",
+      email,
+      password,
+      fullName: basic.name.trim(),
       phone: basic.phone,
-      email: basic.email,
-      password: "password123",
-      accountStatus: "Pending Profile",
-      profileCompleted: false,
-      verificationStatus: "Pending",
-      createdByAdmin: "Super Admin",
-      createdDate: new Date().toISOString().slice(0, 10),
-      lastLogin: "",
-      organizationName: "",
-      organizationEmail: "",
-      organizationPhone: "",
-      incorporationNumber: "",
-      registrationNumber: "",
-      personalDocuments: {
-        aadhaarNumber: "",
-        aadhaarStatus: "Pending",
-        panNumber: "",
-        panStatus: "Pending",
-      },
-      organizationDocuments: {
-        orgPanNumber: "",
-        orgPanStatus: "Pending",
-        orgCertificateStatus: "Pending",
-        gstNumber: "",
-        gstCertificateStatus: "Pending",
-      },
-      bankDetails: {
-        ifsc: "",
-        bankName: "",
-        accountNumber: "",
-        swiftCode: "",
-        accountHolderName: "",
-        status: "Pending",
-      },
-      metrics: {
-        totalApplications: 0,
-        processingApplications: 0,
-        completedApplications: 0,
-        rejectedApplications: 0,
-        intakeStudents: { january: 0, may: 0, september: 0, december: 0 },
-        commissionAmount: "₹0",
-        commissionPending: "₹0",
-        commissionPaid: "₹0",
-      },
-    };
-    setB2bPartners((prev) => [newPartner, ...prev]);
-
-    const adminNotif: NotificationItem = {
-      id: `notif-${Date.now()}`,
-      title: "New B2B Partner Created",
-      message: `B2B account created for ${basic.name} (${basic.email}). Credentials: password123. Profile pending completion.`,
-      timeAgo: "Just now",
-      type: "system",
-      isRead: false,
-    };
-    setNotifications((prev) => [adminNotif, ...prev]);
-
-    return newPartner;
+      organizationName: basic.organizationName,
+    });
+    if (!result.ok) return { error: result.error };
+    if (!result.partner) return { error: "The organization record was not created." };
+    const partner = { ...result.partner, password };
+    setB2bPartners((prev) => [partner, ...prev.filter((item) => item.id !== partner.id)]);
+    setAccessRequests((prev) =>
+      prev.map((request) =>
+        request.email.toLowerCase() === email && request.status === "Pending"
+          ? { ...request, status: "Approved", partnerId: partner.id }
+          : request
+      )
+    );
+    return partner;
   };
 
   // B2B partner updates their profile
@@ -1072,41 +1130,55 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // B2B Login
   const loginB2B = (email: string, password: string): B2BPartnerProfile | null => {
-    const found = b2bPartners.find((p) => p.email.toLowerCase() === email.toLowerCase());
-    if (!found) return null;
-    // Demo: accept any password
+    const found = b2bPartners.find((partner) => partner.email.toLowerCase() === email.trim().toLowerCase());
+    if (!found || found.accountStatus === "Suspended") return null;
+    if (!found.password || password !== found.password) return null;
     return found;
   };
 
   // ==========================================
   // B2B TEAM MANAGEMENT
   // ==========================================
-  const addB2BTeamMember = (
+  const addB2BTeamMember = async (
     partnerId: string,
     member: { name: string; email: string; password: string }
-  ): B2BTeamMember | { error: string } => {
+  ): Promise<B2BTeamMember | { error: string }> => {
     const partner = b2bPartners.find((p) => p.id === partnerId || p.partnerId === partnerId);
     if (!partner) return { error: "Partner not found" };
     const currentMembers = partner.teamMembers || [];
     if (currentMembers.length >= 5) {
       return { error: "Maximum of 5 team members allowed" };
     }
-    // Check if email already exists
-    const emailExists = currentMembers.some((m) => m.email.toLowerCase() === member.email.toLowerCase());
-    if (emailExists) return { error: "A team member with this email already exists" };
+    const email = member.email.trim().toLowerCase();
+    if (email === partner.email.toLowerCase()) {
+      return { error: "Use a different email from the organization owner." };
+    }
+    if (currentMembers.some((item) => item.email.toLowerCase() === email)) {
+      return { error: "This email is already used by another team member." };
+    }
+    const result = await provisionAccount({
+      role: "team",
+      email,
+      password: member.password,
+      fullName: member.name.trim(),
+      partnerId: partner.id,
+    });
+    if (!result.ok) return { error: result.error };
+    if (!result.account) return { error: "The team login was not created." };
     const newMember: B2BTeamMember = {
-      id: `mem-${Date.now()}`,
-      name: member.name,
-      email: member.email,
+      id: result.account.id,
+      name: member.name.trim(),
+      email,
       password: member.password,
       role: "Team Member",
       status: "Active",
       createdAt: new Date().toISOString().slice(0, 10),
+      trackingId: result.account.trackingId,
     };
     setB2bPartners((prev) =>
       prev.map((p) => {
         if (p.id === partnerId || p.partnerId === partnerId) {
-          return { ...p, teamMembers: [...(p.teamMembers || []), newMember] };
+          return { ...p, teamMembers: [...(p.teamMembers || []).filter((item) => item.email.toLowerCase() !== email), newMember] };
         }
         return p;
       })
@@ -1114,7 +1186,12 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     return newMember;
   };
 
-  const removeB2BTeamMember = (partnerId: string, memberId: string) => {
+  const removeB2BTeamMember = async (partnerId: string, memberId: string) => {
+    const removed = await removeAccount(memberId);
+    if (!removed.ok) {
+      setSyncError(removed.error);
+      return;
+    }
     setB2bPartners((prev) =>
       prev.map((p) => {
         if (p.id === partnerId || p.partnerId === partnerId) {
@@ -1126,18 +1203,39 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const updateB2BTeamMember = (partnerId: string, memberId: string, updates: Partial<B2BTeamMember>) => {
+    if (updates.status && isUuid(memberId)) {
+      void updateAccountStatus(memberId, updates.status === "Suspended" ? "Suspended" : "Active").then((error) => {
+        if (error) setSyncError(error);
+      });
+    }
     setB2bPartners((prev) =>
       prev.map((p) => {
         if (p.id === partnerId || p.partnerId === partnerId) {
           return {
             ...p,
-            teamMembers: (p.teamMembers || []).map((m) =>
-              m.id === memberId ? { ...m, ...updates } : m
-            ),
+            teamMembers: (p.teamMembers || []).map((m) => (m.id === memberId ? { ...m, ...updates } : m)),
           };
         }
         return p;
       })
+    );
+  };
+
+  const recordApplication = (application: ApplicationRecord) => {
+    setApplications((prev) => [application, ...prev.filter((item) => item.camsId !== application.camsId)]);
+  };
+
+  const claimCommission = (camsId: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.camsId === camsId
+          ? {
+              ...app,
+              commission: { ...app.commission, status: "Claimed" },
+              secondaryStatus: app.secondaryStatus === "Commission Paid" ? app.secondaryStatus : "Commission Pending",
+            }
+          : app
+      )
     );
   };
 
@@ -1175,17 +1273,29 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         reviewStudentEducation,
         universities,
         courses,
+        catalogStatus,
+        catalogError,
         updateCourseRequirements,
         addUniversity,
+        updateUniversity,
+        deleteUniversity,
+        addCourse,
+        updateCourse,
+        deleteCourse,
         b2bPartners,
         activeB2BPartner,
         createB2BAccount,
         updateB2BProfile,
         verifyB2BPartner,
         loginB2B,
+        accessRequests,
+        rejectB2BRequest,
         addB2BTeamMember,
         removeB2BTeamMember,
         updateB2BTeamMember,
+        recordApplication,
+        claimCommission,
+        syncError,
         notices,
         publishNotice,
         notifications,

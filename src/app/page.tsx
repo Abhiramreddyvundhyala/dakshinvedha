@@ -8,131 +8,32 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  ChevronLeft,
   AlertCircle,
   CheckCircle2,
   Loader2,
   Shield,
-  Building2,
   User,
   Phone,
-  Briefcase,
-  ShieldCheck,
-  KeyRound,
-  RotateCcw,
-  Sparkles,
-  Check,
   Smartphone,
   Globe2,
 } from "lucide-react";
+import { writeSession } from "@/utils/accounts";
+import { getSupabase } from "@/lib/supabase";
+import { fetchMyProfile } from "@/lib/portalDb";
+import { sessionAccount } from "@/lib/records";
+import { PortalAccount } from "@/types";
 
-const WEBSITE_URL = "http://localhost:3000";
-
-/* =========================================================
-   ROLE RESOLUTION & SESSION HELPER
-   ========================================================= */
-interface UserSessionProfile {
-  role: "student" | "partner" | "agent" | "admin";
-  name: string;
-  portalTitle: string;
-}
-
-const REGISTERED_ACCOUNTS: Record<string, UserSessionProfile> = {
-  "admin@dakshinvedha.com": {
-    role: "admin",
-    name: "Central Super Admin",
-    portalTitle: "Super Admin Control Center",
-  },
-  "partner@dakshinvedha.com": {
-    role: "partner",
-    name: "Sarah Jenkins",
-    portalTitle: "B2B Partner Dashboard",
-  },
-  "agent@dakshinvedha.com": {
-    role: "agent",
-    name: "Partner Agent",
-    portalTitle: "Agent Recruitment Dashboard",
-  },
-  "student@dakshinvedha.com": {
-    role: "student",
-    name: "Demo Student",
-    portalTitle: "Student Admission Portal",
-  },
-  "rohan@example.com": {
-    role: "student",
-    name: "Rohan Sharma",
-    portalTitle: "Student Admission Portal",
-  },
+const PORTAL_TITLES: Record<PortalAccount["role"], string> = {
+  admin: "Super Admin Control Center",
+  partner: "B2B Owner Dashboard",
+  team: "B2B Team Dashboard",
+  agent: "Agent Dashboard",
+  student: "Student Admission Portal",
 };
-
-/**
- * Resolve stakeholder role from entered credentials
- */
-function resolveStakeholderRole(email: string): UserSessionProfile {
-  const clean = email.trim().toLowerCase();
-
-  // 1. Direct match
-  if (REGISTERED_ACCOUNTS[clean]) {
-    return REGISTERED_ACCOUNTS[clean];
-  }
-
-  // 2. Check if this student was created via student registration in local/session storage
-  try {
-    const savedStudentEmail =
-      localStorage.getItem("dakshin_user_email") ||
-      sessionStorage.getItem("dakshin_user_email") ||
-      localStorage.getItem("devgrate_user_email");
-    const savedStudentName =
-      localStorage.getItem("dakshin_user_name") ||
-      sessionStorage.getItem("dakshin_user_name") ||
-      localStorage.getItem("devgrate_user_name");
-
-    if (savedStudentEmail && savedStudentEmail.toLowerCase() === clean) {
-      return {
-        role: "student",
-        name: savedStudentName || clean.split("@")[0],
-        portalTitle: "Student Admission Portal",
-      };
-    }
-  } catch {
-    // Ignore storage errors
-  }
-
-  // 3. Corporate email role routing
-  if (clean.includes("admin") || clean.includes("super")) {
-    return {
-      role: "admin",
-      name: clean.split("@")[0].replace(/[._]/g, " ").toUpperCase(),
-      portalTitle: "Super Admin Control Center",
-    };
-  }
-  if (clean.includes("partner") || clean.includes("b2b")) {
-    return {
-      role: "partner",
-      name: clean.split("@")[0].replace(/[._]/g, " ").toUpperCase(),
-      portalTitle: "B2B Partner Dashboard",
-    };
-  }
-  if (clean.includes("agent")) {
-    return {
-      role: "agent",
-      name: clean.split("@")[0].replace(/[._]/g, " ").toUpperCase(),
-      portalTitle: "Agent Recruitment Dashboard",
-    };
-  }
-
-  // 4. Default to Student
-  const displayName = clean.split("@")[0].replace(/[._]/g, " ");
-  return {
-    role: "student",
-    name: displayName.charAt(0).toUpperCase() + displayName.slice(1),
-    portalTitle: "Student Admission Portal",
-  };
-}
 
 export default function UnifiedLoginPage() {
   // Authentication mode: "signin" (Single Login for Everyone) vs "signup" (Students Only)
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authMode, setAuthMode] = useState<"signin" | "signup" | "request">("signin");
 
   // Sign In form states
   const [email, setEmail] = useState("");
@@ -142,6 +43,13 @@ export default function UnifiedLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [redirectNotice, setRedirectNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [requestOrg, setRequestOrg] = useState("");
+  const [requestName, setRequestName] = useState("");
+  const [requestPhone, setRequestPhone] = useState("");
+  const [requestEmail, setRequestEmail] = useState("");
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestSent, setRequestSent] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   // Student Sign Up form states (Step 1)
@@ -151,14 +59,7 @@ export default function UnifiedLoginPage() {
   const [studentPassword, setStudentPassword] = useState("");
   const [showStudentPassword, setShowStudentPassword] = useState(false);
 
-  // Student Dual OTP Verification states (Step 2)
-  const [isOtpStep, setIsOtpStep] = useState(false);
-  const [smsDigits, setSmsDigits] = useState(["", "", "", "", "", ""]);
-  const [emailDigits, setEmailDigits] = useState(["", "", "", "", "", ""]);
-  const [smsVerified, setSmsVerified] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  // OTP send/verify routes stay in /api/auth/otp for later. Signup skips them for now.
 
   // Check if session is already active
   useEffect(() => {
@@ -175,6 +76,10 @@ export default function UnifiedLoginPage() {
           "dakshin_new_student_name",
           "dakshin_new_student_mobile",
           "dakshin_new_student_email",
+          "dakshin_new_student_password",
+          "dakshin_account_id",
+          "dakshin_partner_id",
+          "dakshin_member_kind",
           "devgrate_authenticated",
           "devgrate_portal_role",
           "devgrate_user_email",
@@ -206,34 +111,6 @@ export default function UnifiedLoginPage() {
     }
   }, []);
 
-  // Cooldown countdown for resend
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
-
-  // Live status update for SMS OTP
-  useEffect(() => {
-    const code = smsDigits.join("");
-    if (code.length === 6) {
-      setSmsVerified(true);
-    } else {
-      setSmsVerified(false);
-    }
-  }, [smsDigits]);
-
-  // Live status update for Email OTP
-  useEffect(() => {
-    const code = emailDigits.join("");
-    if (code.length === 6) {
-      setEmailVerified(true);
-    } else {
-      setEmailVerified(false);
-    }
-  }, [emailDigits]);
-
   /* =========================================================
      1. UNIFIED LOGIN HANDLER (STUDENT, B2B, AGENT, ADMIN)
      ========================================================= */
@@ -251,50 +128,69 @@ export default function UnifiedLoginPage() {
       return;
     }
 
-    setIsLoading(true);
-
-    // Resolve user role
-    const profile = resolveStakeholderRole(cleanEmail);
-    setRedirectNotice(`Authenticating... Routing to ${profile.portalTitle}`);
-
-    await new Promise((res) => setTimeout(res, 850));
-
-    try {
-      // Persist session into both LocalStorage and SessionStorage
-      sessionStorage.setItem("dakshin_authenticated", "true");
-      sessionStorage.setItem("dakshin_portal_role", profile.role);
-      sessionStorage.setItem("dakshin_user_email", cleanEmail.toLowerCase());
-      sessionStorage.setItem("dakshin_user_name", profile.name);
-
-      localStorage.setItem("dakshin_authenticated", "true");
-      localStorage.setItem("dakshin_portal_role", profile.role);
-      localStorage.setItem("dakshin_user_email", cleanEmail.toLowerCase());
-      localStorage.setItem("dakshin_user_name", profile.name);
-
-      // Compatibility mapping for existing dashboard views
-      localStorage.setItem("devgrate_authenticated", "true");
-      localStorage.setItem("devgrate_portal_role", profile.role);
-      localStorage.setItem("devgrate_user_email", cleanEmail.toLowerCase());
-      localStorage.setItem("devgrate_user_name", profile.name);
-
-      if (profile.role === "student") {
-        sessionStorage.setItem("dakshin_student_auth", "true");
-        localStorage.setItem("devgrate_student_auth", "true");
-      }
-    } catch {
-      // Storage fallback
+    const supabase = getSupabase();
+    if (!supabase) {
+      setError("Database is not configured. Add the Supabase keys in .env.local and restart the app.");
+      return;
     }
 
-    setRedirectNotice(`Access granted. Opening dashboard...`);
-    await new Promise((res) => setTimeout(res, 250));
+    setIsLoading(true);
+    const signedIn = await supabase.auth.signInWithPassword({ email: cleanEmail.toLowerCase(), password });
+    if (signedIn.error) {
+      setIsLoading(false);
+      setError("Those credentials were not accepted. Use the email and password issued for this portal.");
+      setRedirectNotice(null);
+      return;
+    }
 
+    const profile = await fetchMyProfile();
+    if (!profile.ok || profile.data.status !== "Active") {
+      await supabase.auth.signOut();
+      setIsLoading(false);
+      setError(!profile.ok ? profile.error : "This login is suspended.");
+      setRedirectNotice(null);
+      return;
+    }
+
+    setRedirectNotice(`Access granted. Opening ${PORTAL_TITLES[profile.data.role]}...`);
+    writeSession(sessionAccount(profile.data), rememberMe);
     window.location.href = "/dashboard";
+  };
+
+  const handleAccessRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    const supabase = getSupabase();
+    if (!supabase) {
+      setError("Database is not configured. Add the Supabase keys in .env.local and restart the app.");
+      return;
+    }
+    const email = requestEmail.trim().toLowerCase();
+    if (!requestOrg.trim() || !requestName.trim() || !email.includes("@")) {
+      setError("Organization, contact name, and a valid email are required.");
+      return;
+    }
+    const { error: insertError } = await supabase.from("b2b_access_requests").insert({
+      organization_name: requestOrg.trim(),
+      contact_name: requestName.trim(),
+      phone: requestPhone.startsWith("+") ? requestPhone : `+91 ${requestPhone}`,
+      email,
+      message: requestMessage.trim(),
+      status: "Pending",
+    });
+    if (insertError) {
+      setError(insertError.message);
+      return;
+    }
+    setRequestSent(true);
+    setInfo("Request sent. Dakshinvedha admin will issue your B2B login after review.");
   };
 
   /* =========================================================
      2. STUDENT REGISTRATION (STEP 1: DETAILS)
      ========================================================= */
-  const handleProceedToVerification = (e: React.FormEvent) => {
+  const handleStudentSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -311,117 +207,54 @@ export default function UnifiedLoginPage() {
       setError("Please enter a valid email address.");
       return;
     }
+    if (studentPassword.trim().length < 6) {
+      setError("Create a password with at least 6 characters.");
+      return;
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      setError("Database is not configured. Add the Supabase keys in .env.local and restart the app.");
+      return;
+    }
 
     setIsLoading(true);
-    setTimeout(() => {
+    const cleanEmail = emailAddress.trim().toLowerCase();
+    const cleanName = fullName.trim();
+    const fullMobile = mobileNumber.startsWith("+") ? mobileNumber : `+91 ${mobileNumber}`;
+
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        role: "student",
+        email: cleanEmail,
+        password: studentPassword.trim(),
+        fullName: cleanName,
+        phone: fullMobile,
+      }),
+    });
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+    if (!response.ok) {
       setIsLoading(false);
-      setIsOtpStep(true);
-      setResendCooldown(45);
-      setSmsDigits(["", "", "", "", "", ""]);
-      setEmailDigits(["", "", "", "", "", ""]);
-      setSmsVerified(false);
-      setEmailVerified(false);
-      setOtpError(null);
-    }, 600);
-  };
-
-  /* =========================================================
-     3. OTP INPUT CONTROLLERS
-     ========================================================= */
-  const handleSmsChange = (index: number, val: string) => {
-    setOtpError(null);
-    if (val.length > 1) {
-      const pasted = val.slice(0, 6).split("");
-      const next = [...smsDigits];
-      pasted.forEach((d, i) => {
-        if (i < 6) next[i] = d;
-      });
-      setSmsDigits(next);
-      return;
-    }
-    const next = [...smsDigits];
-    next[index] = val;
-    setSmsDigits(next);
-    if (val && index < 5) {
-      document.getElementById(`sms-code-${index + 1}`)?.focus();
-    }
-  };
-
-  const handleEmailChange = (index: number, val: string) => {
-    setOtpError(null);
-    if (val.length > 1) {
-      const pasted = val.slice(0, 6).split("");
-      const next = [...emailDigits];
-      pasted.forEach((d, i) => {
-        if (i < 6) next[i] = d;
-      });
-      setEmailDigits(next);
-      return;
-    }
-    const next = [...emailDigits];
-    next[index] = val;
-    setEmailDigits(next);
-    if (val && index < 5) {
-      document.getElementById(`email-code-${index + 1}`)?.focus();
-    }
-  };
-
-  /* =========================================================
-     4. STUDENT REGISTRATION (STEP 2: VERIFY BOTH OTPS)
-     ========================================================= */
-  const handleCompleteRegistration = (e: React.FormEvent) => {
-    e.preventDefault();
-    setOtpError(null);
-
-    const smsCode = smsDigits.join("");
-    const emailCode = emailDigits.join("");
-
-    if (smsCode.length !== 6) {
-      setOtpError("Please enter the complete 6-digit SMS verification code.");
-      return;
-    }
-    if (emailCode.length !== 6) {
-      setOtpError("Please enter the complete 6-digit Email verification code.");
+      setError(payload.error || "Could not create the student account.");
       return;
     }
 
-    setIsLoading(true);
-    setRedirectNotice("Both codes verified. Activating your student account...");
-
-    setTimeout(() => {
-      const cleanEmail = emailAddress.trim().toLowerCase();
-      const cleanName = fullName.trim();
-      const fullMobile = mobileNumber.startsWith("+") ? mobileNumber : `+91 ${mobileNumber}`;
-
-      try {
-        // Save in SessionStorage & LocalStorage
-        sessionStorage.setItem("dakshin_authenticated", "true");
-        sessionStorage.setItem("dakshin_portal_role", "student");
-        sessionStorage.setItem("dakshin_user_email", cleanEmail);
-        sessionStorage.setItem("dakshin_user_name", cleanName);
-        sessionStorage.setItem("dakshin_student_auth", "true");
-
-        localStorage.setItem("dakshin_authenticated", "true");
-        localStorage.setItem("dakshin_portal_role", "student");
-        localStorage.setItem("dakshin_user_email", cleanEmail);
-        localStorage.setItem("dakshin_user_name", cleanName);
-
-        // Signal dashboard router to register this student
-        localStorage.setItem("devgrate_authenticated", "true");
-        localStorage.setItem("devgrate_portal_role", "student");
-        localStorage.setItem("devgrate_student_auth", "true");
-        localStorage.setItem("devgrate_user_name", cleanName);
-        localStorage.setItem("devgrate_user_email", cleanEmail);
-        localStorage.setItem("devgrate_student_new_registration", "true");
-        localStorage.setItem("devgrate_new_student_name", cleanName);
-        localStorage.setItem("devgrate_new_student_mobile", fullMobile);
-        localStorage.setItem("devgrate_new_student_email", cleanEmail);
-      } catch {
-        // Storage fallback
-      }
-
-      window.location.href = "/dashboard";
-    }, 900);
+    const signedIn = await supabase.auth.signInWithPassword({ email: cleanEmail, password: studentPassword.trim() });
+    if (signedIn.error) {
+      setIsLoading(false);
+      setError(signedIn.error.message);
+      return;
+    }
+    const profile = await fetchMyProfile();
+    if (!profile.ok) {
+      setIsLoading(false);
+      setError(profile.error);
+      return;
+    }
+    writeSession(sessionAccount(profile.data), true);
+    window.location.href = "/dashboard";
   };
 
   return (
@@ -450,10 +283,7 @@ export default function UnifiedLoginPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
           {/* Logo & Platform Name */}
           <div>
-            <a
-              href={WEBSITE_URL}
-              className="inline-flex items-center gap-3.5 group transition-transform hover:translate-x-0.5"
-            >
+            <div className="inline-flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/25 ring-2 ring-white/10">
                 <GraduationCap className="w-7 h-7 text-white" />
               </div>
@@ -465,7 +295,7 @@ export default function UnifiedLoginPage() {
                   ABROAD SOLUTIONS
                 </span>
               </div>
-            </a>
+            </div>
           </div>
 
           {/* Higher Education in Abroad Content */}
@@ -528,11 +358,11 @@ export default function UnifiedLoginPage() {
           {/* Trust & Academic Accreditation Footer */}
           <div className="flex items-center justify-between pt-6 border-t border-white/5 text-xs text-slate-400">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
+              <Shield className="w-4 h-4 text-orange-400" />
               <span>Certified Overseas Education Consultants</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
               <span>Accredited Global Admissions Network</span>
             </div>
           </div>
@@ -561,17 +391,6 @@ export default function UnifiedLoginPage() {
             </div>
           </div>
 
-          {/* Back to Website */}
-          <div className="mb-4">
-            <a
-              href={WEBSITE_URL}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Back to website</span>
-            </a>
-          </div>
-
           {/* AUTHENTICATION CARD */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 p-6 sm:p-8">
             {/* TAB SELECTOR: LOG IN vs SIGN UP */}
@@ -581,7 +400,6 @@ export default function UnifiedLoginPage() {
                 onClick={() => {
                   setAuthMode("signin");
                   setError(null);
-                  setIsOtpStep(false);
                 }}
                 className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   authMode === "signin"
@@ -616,11 +434,17 @@ export default function UnifiedLoginPage() {
                 <span className="font-semibold">{error}</span>
               </div>
             )}
+            {info && !error && (
+              <div className="mb-5 p-3.5 bg-sky-50 border border-sky-200 text-sky-800 rounded-xl text-xs flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-semibold">{info}</span>
+              </div>
+            )}
 
             {/* Redirecting Progress Notice */}
             {redirectNotice && (
-              <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2.5">
-                <Loader2 className="w-4 h-4 text-emerald-600 animate-spin shrink-0" />
+              <div className="mb-5 p-3.5 bg-orange-50 border border-orange-200 text-orange-800 rounded-xl text-xs flex items-center gap-2.5">
+                <Loader2 className="w-4 h-4 text-orange-600 animate-spin shrink-0" />
                 <span className="font-bold">{redirectNotice}</span>
               </div>
             )}
@@ -669,7 +493,7 @@ export default function UnifiedLoginPage() {
                       </label>
                       <button
                         type="button"
-                        onClick={() => alert("Please contact support or platform administration for password reset.")}
+                        onClick={() => setInfo("Password resets are issued by Dakshinvedha admin or, for team logins, by your B2B owner.")}
                         className="text-[11px] font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
                       >
                         Forgot password?
@@ -731,20 +555,105 @@ export default function UnifiedLoginPage() {
                   </button>
                 </form>
 
-                {/* Footer Switch to Sign Up */}
-                <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-100">
-                  Don&apos;t have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signup");
-                      setError(null);
-                    }}
-                    className="font-bold text-orange-600 hover:text-orange-700 hover:underline cursor-pointer"
-                  >
-                    Sign Up
-                  </button>
+                <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-100 space-y-2">
+                  <p>
+                    Student without an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("signup");
+                        setError(null);
+                        setInfo(null);
+                      }}
+                      className="font-bold text-orange-600 hover:text-orange-700 hover:underline cursor-pointer"
+                    >
+                      Sign Up
+                    </button>
+                  </p>
+                  <p>
+                    B2B organization?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("request");
+                        setError(null);
+                        setInfo(null);
+                        setRequestSent(false);
+                      }}
+                      className="font-bold text-orange-600 hover:text-orange-700 hover:underline cursor-pointer"
+                    >
+                      Request portal access
+                    </button>
+                  </p>
+                  <details className="text-left bg-slate-50 border border-slate-200 rounded-xl p-3">
+                    <summary className="cursor-pointer font-bold text-slate-600">How accounts are created</summary>
+                    <ul className="mt-2 space-y-1 text-[11px] text-slate-600">
+                      <li>Students create an account with Sign Up. That login opens the student dashboard.</li>
+                      <li>B2B owners request access. Admin issues their login from B2B Partners.</li>
+                      <li>A B2B owner can create up to 5 team logins. Agents and admin staff are created by admin.</li>
+                      <li>The first admin is created in Supabase Authentication, then promoted with the SQL note in supabase/schema.sql.</li>
+                    </ul>
+                  </details>
                 </div>
+              </div>
+            )}
+
+            {authMode === "request" && (
+              <div className="space-y-5 animate-fade-in">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Request B2B access</h2>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Tell Dakshinvedha admin about your organization. After review, admin will create your owner login.
+                  </p>
+                </div>
+                {requestSent ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl text-sm text-orange-800">
+                      Your request is with the admin team. Sign in only after they share your email and password.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("signin");
+                        setInfo(null);
+                      }}
+                      className="w-full py-3 bg-slate-900 text-white font-bold text-sm rounded-xl cursor-pointer"
+                    >
+                      Back to log in
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleAccessRequest} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Organization name</label>
+                      <input required value={requestOrg} onChange={(e) => setRequestOrg(e.target.value)} placeholder="e.g. GlobalEdu Solutions" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Your name</label>
+                      <input required value={requestName} onChange={(e) => setRequestName(e.target.value)} placeholder="Contact person" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-700">Phone</label>
+                        <input required value={requestPhone} onChange={(e) => setRequestPhone(e.target.value)} placeholder="98765 43210" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-700">Work email</label>
+                        <input required type="email" value={requestEmail} onChange={(e) => setRequestEmail(e.target.value)} placeholder="owner@company.com" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Message</label>
+                      <textarea required value={requestMessage} onChange={(e) => setRequestMessage(e.target.value)} rows={3} placeholder="Countries you recruit for, expected student volume, and how to reach you." className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y" />
+                    </div>
+                    <button type="submit" className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-sm rounded-xl cursor-pointer">
+                      Send request to admin
+                    </button>
+                    <button type="button" onClick={() => { setAuthMode("signin"); setError(null); }} className="w-full text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer">
+                      Back to log in
+                    </button>
+                  </form>
+                )}
               </div>
             )}
 
@@ -753,15 +662,13 @@ export default function UnifiedLoginPage() {
                 ========================================================= */}
             {authMode === "signup" && (
               <div className="animate-fade-in">
-                {!isOtpStep ? (
-                  /* STEP 2A: PROFILE DETAILS */
-                  <form onSubmit={handleProceedToVerification} className="space-y-4">
+                  <form onSubmit={handleStudentSignup} className="space-y-4">
                     <div>
                       <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                         Create Account
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        Register with your mobile and email to receive verification codes.
+                        Register with your name, mobile, email, and a password.
                       </p>
                     </div>
 
@@ -790,9 +697,9 @@ export default function UnifiedLoginPage() {
                           <span>Phone Number</span>
                           <span className="text-rose-500">*</span>
                         </label>
-                        <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Smartphone className="w-3 h-3" />
-                          <span>SMS OTP</span>
+                          <span>Saved on profile</span>
                         </span>
                       </div>
                       <div className="flex gap-2">
@@ -810,7 +717,7 @@ export default function UnifiedLoginPage() {
                         />
                       </div>
                       <p className="text-[10px] text-slate-400">
-                        An SMS one-time passcode will be sent to this number.
+                        Stored on your student profile. SMS OTP can be turned on later.
                       </p>
                     </div>
 
@@ -822,9 +729,9 @@ export default function UnifiedLoginPage() {
                           <span>Email Address</span>
                           <span className="text-rose-500">*</span>
                         </label>
-                        <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Mail className="w-3 h-3" />
-                          <span>Email OTP</span>
+                          <span>Login email</span>
                         </span>
                       </div>
                       <input
@@ -836,7 +743,7 @@ export default function UnifiedLoginPage() {
                         className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                       />
                       <p className="text-[10px] text-slate-400">
-                        An email verification code will be sent to this address.
+                        Used to log in. Email OTP can be turned on later.
                       </p>
                     </div>
 
@@ -849,7 +756,9 @@ export default function UnifiedLoginPage() {
                       <div className="relative">
                         <input
                           type={showStudentPassword ? "text" : "password"}
-                          placeholder="Choose password for sign-in"
+                          placeholder="At least 6 characters"
+                          required
+                          minLength={6}
                           value={studentPassword}
                           onChange={(e) => setStudentPassword(e.target.value)}
                           className="w-full px-3.5 pr-11 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
@@ -873,11 +782,11 @@ export default function UnifiedLoginPage() {
                       {isLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Generating verification codes...</span>
+                          <span>Creating your account...</span>
                         </>
                       ) : (
                         <>
-                          <span>Continue to Verification</span>
+                          <span>Create Student Account</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -897,185 +806,6 @@ export default function UnifiedLoginPage() {
                       </button>
                     </div>
                   </form>
-                ) : (
-                  /* STEP 2B: DUAL OTP VERIFICATION (BOTH SMS & EMAIL) */
-                  <form onSubmit={handleCompleteRegistration} className="space-y-5">
-                    <div className="text-center space-y-1.5">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 text-white flex items-center justify-center mx-auto shadow-md shadow-orange-500/20">
-                        <KeyRound className="w-6 h-6" />
-                      </div>
-                      <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                        Dual-Factor Verification
-                      </h2>
-                      <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                        Please verify both the SMS code sent to your phone and the Email code sent to your inbox.
-                      </p>
-                    </div>
-
-                    {/* Contact Badges */}
-                    <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
-                      <div className="flex items-center gap-2 truncate">
-                        <Smartphone className="w-3.5 h-3.5 text-orange-600 shrink-0" />
-                        <span className="text-slate-600 truncate font-mono">
-                          +91 {mobileNumber || "9876543210"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 truncate">
-                        <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span className="text-slate-600 truncate">
-                          {emailAddress || "student@example.com"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Error display */}
-                    {otpError && (
-                      <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span className="font-semibold">{otpError}</span>
-                      </div>
-                    )}
-
-                    {/* SECTION 1: SMS OTP VERIFICATION */}
-                    <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2.5 shadow-xs">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Smartphone className="w-4 h-4 text-orange-600" />
-                          <span className="text-xs font-black text-slate-800">
-                            1. SMS Code (Phone)
-                          </span>
-                        </div>
-                        {smsVerified ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                            <Check className="w-3 h-3" />
-                            <span>Verified</span>
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-semibold text-slate-400">
-                            6-digit code
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex justify-center gap-1.5 sm:gap-2">
-                        {smsDigits.map((digit, index) => (
-                          <input
-                            key={`sms-${index}`}
-                            id={`sms-code-${index}`}
-                            type="text"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) => handleSmsChange(index, e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Backspace" && !digit && index > 0) {
-                                document.getElementById(`sms-code-${index - 1}`)?.focus();
-                              }
-                            }}
-                            className={`w-10 h-12 sm:w-11 sm:h-12 text-center text-lg font-black rounded-xl border-2 transition-all font-mono ${
-                              smsVerified
-                                ? "border-emerald-500 bg-emerald-50/50 text-emerald-900"
-                                : "border-slate-300 bg-slate-50 text-slate-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* SECTION 2: EMAIL OTP VERIFICATION */}
-                    <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2.5 shadow-xs">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-blue-600" />
-                          <span className="text-xs font-black text-slate-800">
-                            2. Email Code (Inbox)
-                          </span>
-                        </div>
-                        {emailVerified ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                            <Check className="w-3 h-3" />
-                            <span>Verified</span>
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-semibold text-slate-400">
-                            6-digit code
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex justify-center gap-1.5 sm:gap-2">
-                        {emailDigits.map((digit, index) => (
-                          <input
-                            key={`email-${index}`}
-                            id={`email-code-${index}`}
-                            type="text"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) => handleEmailChange(index, e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Backspace" && !digit && index > 0) {
-                                document.getElementById(`email-code-${index - 1}`)?.focus();
-                              }
-                            }}
-                            className={`w-10 h-12 sm:w-11 sm:h-12 text-center text-lg font-black rounded-xl border-2 transition-all font-mono ${
-                              emailVerified
-                                ? "border-emerald-500 bg-emerald-50/50 text-emerald-900"
-                                : "border-slate-300 bg-slate-50 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* VERIFY BUTTON */}
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full py-3 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Verifying codes...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Verify & Activate Account</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Action Footers */}
-                    <div className="flex items-center justify-between text-xs text-slate-500 px-1 pt-1">
-                      <button
-                        type="button"
-                        disabled={resendCooldown > 0}
-                        onClick={() => {
-                          setResendCooldown(30);
-                          setOtpError(null);
-                        }}
-                        className={`flex items-center gap-1 font-bold ${
-                          resendCooldown > 0
-                            ? "text-slate-400 cursor-not-allowed"
-                            : "text-orange-600 hover:text-orange-700 cursor-pointer"
-                        }`}
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>
-                          {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend codes"}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsOtpStep(false)}
-                        className="text-slate-500 hover:text-slate-900 font-medium cursor-pointer"
-                      >
-                        Change Phone / Email
-                      </button>
-                    </div>
-                  </form>
-                )}
               </div>
             )}
           </div>

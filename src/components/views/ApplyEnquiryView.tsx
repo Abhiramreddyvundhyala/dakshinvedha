@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { submitEnquiry } from "@/lib/portalDb";
 import {
   FileQuestion,
   Globe,
@@ -18,6 +19,7 @@ export const ApplyEnquiryView: React.FC = () => {
   const [courseType, setCourseType] = useState("");
   const [intake, setIntake] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [enquiryNote, setEnquiryNote] = useState<string | null>(null);
 
   const isFormValid = Boolean(enquiryCountry) && Boolean(courseType) && Boolean(intake);
 
@@ -34,20 +36,24 @@ export const ApplyEnquiryView: React.FC = () => {
     "Other International",
   ];
 
-  const handleApplyNow = (e: React.FormEvent) => {
+  const handleApplyNow = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
     setSubmitted(true);
-    setTimeout(() => {
-      alert(`Pre-assessment enquiry dispatched for ${enquiryCountry} (${courseType} - ${intake}). Official liaison will respond shortly.`);
-      setSubmitted(false);
-      setCourseType("");
-      setIntake("");
-    }, 1200);
+    const result = await submitEnquiry({ country: enquiryCountry, courseType, intake });
+    setSubmitted(false);
+    if ("error" in result) {
+      setEnquiryNote(result.error);
+      return;
+    }
+    setEnquiryNote(`Enquiry saved. Tracking ID ${result.trackingId}.`);
+    setCourseType("");
+    setIntake("");
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+      {enquiryNote && <p className="rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-900">{enquiryNote}</p>}
       {/* Header */}
       <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex items-center justify-between">
         <div>
@@ -85,11 +91,11 @@ export const ApplyEnquiryView: React.FC = () => {
 
           <div className="pt-6 relative z-10 border-t border-slate-700/60 mt-6 space-y-2 text-xs text-slate-300">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
               <span>Direct regional officer document vetting</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
               <span>Average response time &lt; 24 business hours</span>
             </div>
           </div>
