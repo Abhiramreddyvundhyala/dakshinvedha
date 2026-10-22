@@ -76,11 +76,19 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
 
         <div
           onClick={() => onNavigateTab("applications")}
+<<<<<<< HEAD
           className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-orange-200 transition-all cursor-pointer group"
         >
           <span className="text-xs font-bold text-slate-500">Offers Issued</span>
           <p className="text-2xl sm:text-3xl font-black text-orange-600 mt-2">{offersCount}</p>
           <p className="text-[11px] text-orange-700 font-bold mt-1 flex items-center gap-1">
+=======
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-[#F5D2C1] transition-all cursor-pointer group"
+        >
+          <span className="text-xs font-bold text-slate-500">Offers Issued</span>
+          <p className="text-2xl sm:text-3xl font-black text-[#D56732] mt-2">{offersCount}</p>
+          <p className="text-[11px] text-[#D56732] font-bold mt-1 flex items-center gap-1">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             <span>Scholarship grants</span>
             <ArrowRight className="w-3 h-3" />
           </p>
@@ -131,7 +139,11 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                   app.primaryStatus.includes("Offer")
+<<<<<<< HEAD
                     ? "bg-orange-100 text-orange-800"
+=======
+                    ? "bg-[#FDF5F0] text-[#BA5322]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     : "bg-blue-100 text-blue-800"
                 }`}
               >

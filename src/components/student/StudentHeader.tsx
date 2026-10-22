@@ -9,6 +9,11 @@ import {
   ChevronDown,
   FileText,
   Building2,
+<<<<<<< HEAD
+=======
+  Clock,
+  ExternalLink,
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
   Menu,
 } from "lucide-react";
 
@@ -22,17 +27,25 @@ const TAB_LABELS: Record<StudentNavTab, string> = {
 };
 
 interface StudentHeaderProps {
-  currentTab: StudentNavTab;
+  currentTab?: StudentNavTab;
   onSelectTab: (tab: StudentNavTab) => void;
   onOpenCompleteProfile: () => void;
+<<<<<<< HEAD
   onOpenMenu: () => void;
+=======
+  onToggleSidebarMobile?: () => void;
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 }
 
 export const StudentHeader: React.FC<StudentHeaderProps> = ({
   currentTab,
   onSelectTab,
   onOpenCompleteProfile,
+<<<<<<< HEAD
   onOpenMenu,
+=======
+  onToggleSidebarMobile,
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 }) => {
   const { activeStudent, logoutStudent, studentNotifications, markNotificationAsRead, clearNotifications } =
     usePlatform();
@@ -58,6 +71,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
   }, []);
 
   return (
+<<<<<<< HEAD
     <header className="sticky top-0 z-30 bg-white border-b border-[#E7E5E0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <div className="px-3 sm:px-6 h-14 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
@@ -72,6 +86,38 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-slate-900 truncate">{TAB_LABELS[currentTab]}</h1>
             <p className="text-[10px] text-slate-400">Student Portal</p>
+=======
+    <header className="bg-white border-b border-[#E7E5E0] sticky top-0 z-40 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        {/* Left: Mobile Toggle & Brand */}
+        <div className="flex items-center gap-3">
+          {onToggleSidebarMobile && (
+            <button
+              onClick={onToggleSidebarMobile}
+              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              title="Open Navigation Menu"
+              aria-label="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+
+          <div
+            onClick={() => onSelectTab("dashboard")}
+            className="flex items-center gap-2.5 cursor-pointer group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-[#D56732] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-slate-900 tracking-tight leading-none block">
+                Dakshinvedha
+              </span>
+              <span className="text-[10px] font-semibold text-[#D56732] tracking-wider uppercase block">
+                Abroad Solutions
+              </span>
+            </div>
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           </div>
         </div>
 
@@ -79,7 +125,11 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
           <div className="hidden lg:flex items-center gap-2.5 bg-white border border-[#E7E5E0] px-3.5 py-1.5 rounded-full shadow-xs">
             <div className="w-16 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
               <div
+<<<<<<< HEAD
                 className="h-full bg-[#ea580c] rounded-full transition-all duration-500"
+=======
+                className="h-full bg-[#D56732] rounded-full transition-all duration-500"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 style={{ width: `${activeStudent?.profileCompletion || 72}%` }}
               />
             </div>
@@ -89,7 +139,11 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCompleteProfile}
+<<<<<<< HEAD
               className="text-[11px] font-semibold text-[#ea580c] hover:text-[#c2410c] bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa]/80 px-2.5 py-1 rounded-full transition-all cursor-pointer"
+=======
+              className="text-[11px] font-semibold text-[#D56732] hover:text-[#BA5322] bg-[#FDF5F0] hover:bg-[#FBE5D8] border border-[#F5D2C1] px-2.5 py-1 rounded-full transition-all cursor-pointer"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             >
               COMPLETE PROFILE
             </button>
@@ -133,11 +187,10 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                       <div
                         key={n.id}
                         onClick={() => markNotificationAsRead(n.id)}
-                        className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
-                          !n.isRead
+                        className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${!n.isRead
                             ? "bg-orange-50/60 border-orange-200/80"
                             : "bg-slate-50 border-slate-100"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-bold text-slate-900">{n.title}</p>
@@ -158,7 +211,11 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 p-1.5 pl-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
             >
+<<<<<<< HEAD
               <div className="w-8 h-8 rounded-full bg-[#ea580c] text-white font-bold text-xs flex items-center justify-center">
+=======
+              <div className="w-8 h-8 rounded-full bg-[#D56732] text-white font-bold text-xs flex items-center justify-center">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 {activeStudent?.firstName?.charAt(0) || "S"}
               </div>
               <div className="hidden sm:flex flex-col text-left">
@@ -177,7 +234,11 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                 <div className="px-3 py-2 border-b border-slate-100 mb-1">
                   <p className="font-bold text-slate-900">{activeStudent?.name}</p>
                   <p className="text-[11px] text-slate-400">{activeStudent?.email}</p>
+<<<<<<< HEAD
                   <p className="text-[10px] text-[#ea580c] font-bold mt-1">
+=======
+                  <p className="text-[10px] text-[#D56732] font-bold mt-1">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     Student ID: {activeStudent?.studentId}
                   </p>
                 </div>

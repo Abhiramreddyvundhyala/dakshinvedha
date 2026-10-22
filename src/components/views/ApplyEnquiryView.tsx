@@ -91,11 +91,19 @@ export const ApplyEnquiryView: React.FC = () => {
 
           <div className="pt-6 relative z-10 border-t border-slate-700/60 mt-6 space-y-2 text-xs text-slate-300">
             <div className="flex items-center gap-2">
+<<<<<<< HEAD
               <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
               <span>Direct regional officer document vetting</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
+=======
+              <CheckCircle2 className="w-4 h-4 text-[#E58D5F] shrink-0" />
+              <span>Direct regional officer document vetting</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#E58D5F] shrink-0" />
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               <span>Average response time &lt; 24 business hours</span>
             </div>
           </div>

@@ -48,11 +48,15 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
   const getPrimaryStatusStyle = (status: string) => {
     switch (status) {
       case "Offer Issued":
+<<<<<<< HEAD
         return "bg-orange-50 text-orange-700 border-orange-200";
+=======
+        return "bg-[#FDF5F0] text-[#D56732] border-[#F5D2C1]";
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
       case "Full and Final Payment Done":
         return "bg-blue-50 text-blue-700 border-blue-200";
       case "With CAS Team":
-        return "bg-teal-50 text-teal-700 border-teal-200";
+        return "bg-[#FDF5F0] text-[#D56732] border-[#F5D2C1]";
       case "Visa Granted":
         return "bg-purple-50 text-purple-700 border-purple-200";
       case "Case Closed":
@@ -67,7 +71,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
       {/* Table Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
+<<<<<<< HEAD
           <div className="w-8 h-8 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f97316]">
+=======
+          <div className="w-8 h-8 rounded-lg bg-[#FDF5F0] border border-[#F5D2C1] flex items-center justify-center text-[#D56732]">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             <FileCheck2 className="w-4 h-4" />
           </div>
           <div>
@@ -89,7 +97,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Filter applications..."
+<<<<<<< HEAD
               className="pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#f97316] w-36 sm:w-48"
+=======
+              className="pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#D56732] w-36 sm:w-48"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             />
           </div>
 
@@ -99,7 +111,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
+<<<<<<< HEAD
               className="pl-8 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+=======
+              className="pl-8 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#D56732]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             >
               <option value="all">All Statuses</option>
               <option value="Offer Issued">Offer Issued</option>
@@ -114,7 +130,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
           {/* VIEW ALL Link */}
           <button
             onClick={onViewAllClick}
+<<<<<<< HEAD
             className="group flex items-center gap-1 text-xs font-bold text-[#f97316] hover:text-[#ea580c] tracking-wide transition-colors shrink-0 ml-1"
+=======
+            className="group flex items-center gap-1 text-xs font-bold text-[#D56732] hover:text-[#BA5322] tracking-wide transition-colors shrink-0 ml-1"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           >
             <span>VIEW ALL</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -148,7 +168,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
                   <td className="py-3.5 px-3 whitespace-nowrap">
                     <button
                       onClick={() => onSelectApplication(app)}
+<<<<<<< HEAD
                       className="font-mono font-bold text-[#f97316] hover:text-[#ea580c] hover:underline flex items-center gap-1"
+=======
+                      className="font-mono font-bold text-[#D56732] hover:text-[#BA5322] hover:underline flex items-center gap-1"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       title="Open Application Details"
                     >
                       {app.camsId}
@@ -158,7 +182,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
                   {/* Student Column: Name, Passport Number, Student ID */}
                   <td className="py-3.5 px-3">
                     <div className="space-y-0.5">
+<<<<<<< HEAD
                       <p className="font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
+=======
+                      <p className="font-bold text-slate-900 group-hover:text-[#D56732] transition-colors">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         {app.student.name}
                       </p>
                       <div className="flex items-center gap-2 text-[10px] text-slate-500">
@@ -204,7 +232,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
                       <p className="font-semibold text-slate-800 line-clamp-1">
                         {app.course.courseName}
                       </p>
+<<<<<<< HEAD
                       <p className="text-[10px] text-[#f97316] font-medium flex items-center gap-1">
+=======
+                      <p className="text-[10px] text-[#D56732] font-medium flex items-center gap-1">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         <Calendar className="w-3 h-3" />
                         {app.course.activeIntake || (app.course as any).intake}
                       </p>
@@ -240,7 +272,11 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
                   <td className="py-3.5 px-3 text-center whitespace-nowrap">
                     <button
                       onClick={() => onSelectApplication(app)}
+<<<<<<< HEAD
                       className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-[#f97316] hover:text-white text-slate-600 inline-flex items-center justify-center transition-colors shadow-2xs"
+=======
+                      className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-[#D56732] hover:text-white text-slate-600 inline-flex items-center justify-center transition-colors shadow-2xs"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       title="View Application Details"
                     >
                       <Eye className="w-4 h-4" />

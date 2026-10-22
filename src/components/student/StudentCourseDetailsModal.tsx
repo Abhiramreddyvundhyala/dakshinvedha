@@ -43,10 +43,17 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
+<<<<<<< HEAD
         <div className="p-6 bg-orange-950 border-b border-orange-900 text-white flex items-start justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-orange-700 text-white">
+=======
+        <div className="p-6 bg-[#2E1810] border-b border-[#452216] text-white flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#D56732] text-white">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 {course.studyLevel}
               </span>
               <span className="text-xs text-slate-300 font-bold">
@@ -93,7 +100,11 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
           <div
             className={`p-5 rounded-2xl border ${
               eligibility.status === "Likely Eligible"
+<<<<<<< HEAD
                 ? "bg-orange-50/90 border-orange-300 text-orange-900"
+=======
+                ? "bg-[#FDF5F0] border-[#F5D2C1] text-[#8C370F]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 : eligibility.status === "Requirements Need Review"
                 ? "bg-amber-50/90 border-amber-300 text-amber-900"
                 : "bg-sky-50/90 border-sky-300 text-sky-900"
@@ -196,12 +207,21 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
 
           {/* Scholarships Info */}
           {course.scholarshipsInfo && (
+<<<<<<< HEAD
             <div className="p-4 bg-orange-50/70 border border-orange-200 rounded-2xl space-y-1">
               <span className="font-bold text-orange-900 flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-orange-600" />
                 <span>Scholarship Details</span>
               </span>
               <p className="text-xs text-orange-800">{course.scholarshipsInfo}</p>
+=======
+            <div className="p-4 bg-[#FDF5F0] border border-[#F5D2C1] rounded-2xl space-y-1">
+              <span className="font-bold text-[#8C370F] flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-[#D56732]" />
+                <span>Scholarship Details</span>
+              </span>
+              <p className="text-xs text-[#BA5322]">{course.scholarshipsInfo}</p>
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             </div>
           )}
         </div>
@@ -219,7 +239,11 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
               onClose();
               onApplyNow(course);
             }}
+<<<<<<< HEAD
             className="px-6 py-2.5 bg-orange-700 hover:bg-orange-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+=======
+            className="px-6 py-2.5 bg-[#D56732] hover:bg-[#BA5322] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           >
             <span>APPLY NOW FOR THIS COURSE</span>
             <ArrowRight className="w-4 h-4" />

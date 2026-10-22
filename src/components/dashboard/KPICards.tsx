@@ -20,7 +20,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
       value: String(applications.length),
       subtext: "Live application records",
       icon: FileText,
+<<<<<<< HEAD
       badgeColor: "text-orange-700 bg-orange-50",
+=======
+      badgeColor: "text-[#D56732] bg-[#FDF5F0]",
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
     },
     {
       id: "processed",
@@ -36,7 +40,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
       value: String(withCas),
       subtext: "CAS processing or issued",
       icon: ShieldCheck,
+<<<<<<< HEAD
       badgeColor: "text-orange-700 bg-orange-50",
+=======
+      badgeColor: "text-[#D56732] bg-[#FDF5F0]",
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
     },
     {
       id: "closed",
@@ -56,11 +64,19 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
           <div
             key={card.id}
             onClick={() => onCardClick && onCardClick(card.id)}
+<<<<<<< HEAD
             className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-orange-200"
           >
             <div className="flex items-start justify-between">
               {/* Large circular icon container with orange line icon */}
               <div className="w-14 h-14 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f97316] group-hover:bg-[#f97316] group-hover:text-white transition-colors duration-200 shadow-xs">
+=======
+            className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-[#F5D2C1]"
+          >
+            <div className="flex items-start justify-between">
+              {/* Large circular icon container with emerald line icon */}
+              <div className="w-14 h-14 rounded-full bg-[#FDF5F0]/80 border border-[#F5D2C1] flex items-center justify-center text-[#D56732] group-hover:bg-[#D56732] group-hover:text-white transition-colors duration-200 shadow-xs">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 <IconComponent className="w-7 h-7 stroke-[1.75]" />
               </div>
 
@@ -70,7 +86,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
                   <TrendingUp className="w-3 h-3" />
                   Active
                 </span>
+<<<<<<< HEAD
                 <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-orange-600 transition-colors" />
+=======
+                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-[#D56732] transition-colors" />
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               </div>
             </div>
 
@@ -89,7 +109,11 @@ export const KPICards: React.FC<KPICardsProps> = ({ onCardClick }) => {
 
               {/* Auxiliary metric detail */}
               <p className="text-[11px] text-slate-500 mt-1 font-medium flex items-center gap-1">
+<<<<<<< HEAD
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+=======
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D56732]"></span>
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 {card.subtext}
               </p>
             </div>

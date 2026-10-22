@@ -200,7 +200,11 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                 <div className="flex flex-col items-center gap-1.5">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                     isCompleted
+<<<<<<< HEAD
                       ? "text-white shadow-sm"
+=======
+                      ? "bg-[#D56732] text-white shadow-lg shadow-[#D56732]/30"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       : isCurrent
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-110"
                       : "bg-slate-800 text-slate-500"
@@ -208,12 +212,20 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                     {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                   </div>
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${
+<<<<<<< HEAD
                     isCurrent ? "text-blue-400" : isCompleted ? "text-orange-500" : "text-slate-600"
+=======
+                    isCurrent ? "text-blue-400" : isCompleted ? "text-[#E58D5F]" : "text-slate-600"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   }`}>{s.label}</span>
                 </div>
                 {idx < STEPS.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-2 rounded ${
+<<<<<<< HEAD
                     step > s.id ? "bg-orange-500" : "bg-slate-800"
+=======
+                    step > s.id ? "bg-[#D56732]" : "bg-slate-800"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   }`} />
                 )}
               </React.Fragment>

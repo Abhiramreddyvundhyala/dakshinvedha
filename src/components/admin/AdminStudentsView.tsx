@@ -127,7 +127,11 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           s.passport.hasPassport === "YES"
+<<<<<<< HEAD
                             ? "bg-orange-100 text-orange-800"
+=======
+                            ? "bg-[#FDF5F0] text-[#BA5322]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             : "bg-amber-100 text-amber-800"
                         }`}
                       >
@@ -175,7 +179,11 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                     </td>
 
                     <td className="p-4">
+<<<<<<< HEAD
                       <span className="px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-orange-100 text-orange-800">
+=======
+                      <span className="px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-[#FDF5F0] text-[#BA5322]">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         {s.accountStatus}
                       </span>
                     </td>

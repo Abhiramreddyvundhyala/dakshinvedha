@@ -156,13 +156,13 @@ export const StudentAuthView: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-45px)] bg-gradient-to-br from-slate-900 via-slate-950 to-orange-950/40 text-slate-100 flex items-center justify-center p-4 sm:p-6 lg:p-12 relative overflow-hidden">
       {/* Background visual elements */}
-      <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-[#FDF5F0]0/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
         {/* Left Side: Brand & Value Proposition */}
         <div className="lg:col-span-5 space-y-6 text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FDF5F0]0/10 border border-orange-500/30 text-orange-400 text-xs font-semibold">
             <GraduationCap className="w-4 h-4" />
             <span>Official Student Admission Portal</span>
           </div>
@@ -180,19 +180,31 @@ export const StudentAuthView: React.FC = () => {
 
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-3 text-xs text-slate-300">
+<<<<<<< HEAD
               <div className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
+=======
+              <div className="w-5 h-5 rounded-full bg-[#D56732]/20 text-[#E58D5F] flex items-center justify-center shrink-0">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 <CheckCircle2 className="w-3.5 h-3.5" />
               </div>
               <span>Instant SMS OTP verification • No cumbersome paperwork</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-300">
+<<<<<<< HEAD
               <div className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
+=======
+              <div className="w-5 h-5 rounded-full bg-[#D56732]/20 text-[#E58D5F] flex items-center justify-center shrink-0">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 <CheckCircle2 className="w-3.5 h-3.5" />
               </div>
               <span>Frontend eligibility calculator against live entry criteria</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-300">
+<<<<<<< HEAD
               <div className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
+=======
+              <div className="w-5 h-5 rounded-full bg-[#D56732]/20 text-[#E58D5F] flex items-center justify-center shrink-0">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 <CheckCircle2 className="w-3.5 h-3.5" />
               </div>
               <span>End-to-end status tracking from Offer to CAS & Visa</span>
@@ -293,7 +305,7 @@ export const StudentAuthView: React.FC = () => {
                       placeholder="e.g. Vikramaditya Reddy"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                     />
                   </div>
 
@@ -305,7 +317,7 @@ export const StudentAuthView: React.FC = () => {
                         <span>Mobile Number</span>
                         <span className="text-rose-500">*</span>
                       </span>
-                      <span className="text-[10px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-semibold text-[#D56732] bg-[#FDF5F0] px-2 py-0.5 rounded">
                         SMS OTP required
                       </span>
                     </label>
@@ -319,7 +331,7 @@ export const StudentAuthView: React.FC = () => {
                         placeholder="98765 43210"
                         value={mobileNumber}
                         onChange={(e) => setMobileNumber(e.target.value)}
-                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                       />
                     </div>
                   </div>
@@ -337,14 +349,14 @@ export const StudentAuthView: React.FC = () => {
                       placeholder="vikram@example.com"
                       value={emailAddress}
                       onChange={(e) => setEmailAddress(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                     />
                   </div>
 
                   {/* SEND OTP BUTTON */}
                   <button
                     type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    className="w-full py-3 bg-gradient-to-r from-[#D56732] to-[#BA5322] hover:from-[#BA5322] hover:to-[#BA5322] text-white font-extrabold text-sm rounded-xl shadow-md shadow-[#D56732]/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                   >
                     <span>SEND OTP</span>
                     <ArrowRight className="w-4 h-4" />
@@ -358,7 +370,7 @@ export const StudentAuthView: React.FC = () => {
                 /* STEP 1.5 — SIMULATE SMS OTP FRONTEND FLOW */
                 <form onSubmit={handleVerifyOtpAndCreate} className="space-y-5">
                   <div className="text-center space-y-1">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-2">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FDF5F0] text-[#D56732] flex items-center justify-center mx-auto mb-2">
                       <KeyRound className="w-6 h-6" />
                     </div>
                     <h2 className="text-xl font-extrabold text-slate-900">
@@ -418,7 +430,7 @@ export const StudentAuthView: React.FC = () => {
                   <div className="space-y-3 pt-2">
                     <button
                       type="submit"
-                      className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                      className="w-full py-3 bg-gradient-to-r from-[#D56732] to-[#BA5322] hover:from-[#BA5322] hover:to-[#BA5322] text-white font-extrabold text-sm rounded-xl shadow-md shadow-[#D56732]/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                     >
                       <ShieldCheck className="w-4 h-4" />
                       <span>VERIFY OTP & CREATE ACCOUNT</span>
@@ -431,7 +443,7 @@ export const StudentAuthView: React.FC = () => {
                           fillDevOtp(false);
                           alert("A new OTP (123456) has been dispatched to your mobile.");
                         }}
-                        className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-1 cursor-pointer"
+                        className="text-[#D56732] hover:text-[#BA5322] font-semibold flex items-center gap-1 cursor-pointer"
                       >
                         <RotateCcw className="w-3 h-3" />
                         <span>RESEND OTP</span>
@@ -483,7 +495,7 @@ export const StudentAuthView: React.FC = () => {
                   placeholder="e.g. rohan.sharma@example.com or 9876543210"
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                 />
               </div>
 
@@ -499,7 +511,7 @@ export const StudentAuthView: React.FC = () => {
                       setLoginMethod("password");
                       setIsLoginOtpSent(false);
                     }}
-                    className="text-orange-500 focus:ring-orange-500"
+                    className="text-[#D56732] focus:ring-orange-500"
                   />
                   <span>Password</span>
                 </label>
@@ -509,7 +521,7 @@ export const StudentAuthView: React.FC = () => {
                     name="loginMethod"
                     checked={loginMethod === "otp"}
                     onChange={() => setLoginMethod("otp")}
-                    className="text-orange-500 focus:ring-orange-500"
+                    className="text-[#D56732] focus:ring-orange-500"
                   />
                   <span>Mobile OTP</span>
                 </label>
@@ -526,7 +538,7 @@ export const StudentAuthView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setForgotPasswordMsg(true)}
-                      className="text-[11px] text-orange-600 hover:underline font-semibold cursor-pointer"
+                      className="text-[11px] text-[#D56732] hover:underline font-semibold cursor-pointer"
                     >
                       Forgot Password?
                     </button>
@@ -536,7 +548,7 @@ export const StudentAuthView: React.FC = () => {
                     placeholder="Enter your account password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all"
                   />
                 </div>
               )}
@@ -564,7 +576,7 @@ export const StudentAuthView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => fillDevOtp(true)}
-                          className="text-[11px] text-orange-600 font-bold hover:underline cursor-pointer"
+                          className="text-[11px] text-[#D56732] font-bold hover:underline cursor-pointer"
                         >
                           Fill 123456
                         </button>
@@ -607,7 +619,7 @@ export const StudentAuthView: React.FC = () => {
                   id="rememberMe"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded text-orange-600 focus:ring-orange-500 w-4 h-4 cursor-pointer"
+                  className="rounded text-[#D56732] focus:ring-orange-500 w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="rememberMe" className="text-xs text-slate-600 font-medium cursor-pointer">
                   Remember Me on this device
@@ -617,7 +629,7 @@ export const StudentAuthView: React.FC = () => {
               {/* Sign In Button */}
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-3 bg-gradient-to-r from-[#D56732] to-[#BA5322] hover:from-[#BA5322] hover:to-[#BA5322] text-white font-extrabold text-sm rounded-xl shadow-md shadow-[#D56732]/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span>Sign In</span>
                 <ArrowRight className="w-4 h-4" />

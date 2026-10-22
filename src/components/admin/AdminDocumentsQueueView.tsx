@@ -154,7 +154,11 @@ export const AdminDocumentsQueueView: React.FC = () => {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
                           doc.status === "Verified"
+<<<<<<< HEAD
                             ? "bg-orange-100 text-orange-800"
+=======
+                            ? "bg-[#FDF5F0] text-[#BA5322]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             : doc.status === "Rejected"
                             ? "bg-rose-100 text-rose-800"
                             : doc.status === "Re-upload Required"
@@ -169,7 +173,11 @@ export const AdminDocumentsQueueView: React.FC = () => {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => verifyStudentDocument(doc.studentId, doc.id)}
+<<<<<<< HEAD
                           className="px-2.5 py-1 bg-orange-600 hover:bg-orange-600 text-white font-bold rounded-lg text-xs"
+=======
+                          className="px-2.5 py-1 bg-[#D56732] hover:bg-[#BA5322] text-white font-bold rounded-lg text-xs"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           VERIFY
                         </button>

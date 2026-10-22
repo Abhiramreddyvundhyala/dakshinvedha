@@ -37,8 +37,13 @@ export const DEFAULT_REQUIREMENTS: CourseRequirementsConfig = {
 
 // Helper: Frontend eligibility evaluation
 export function evaluateFrontendEligibility(
+<<<<<<< HEAD
   student: StudentProfile | null,
   course: CourseInfo | null | undefined
+=======
+  student: StudentProfile | null | undefined,
+  course?: CourseInfo | null
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 ): EligibilityResult {
   const disclaimer =
     "Frontend eligibility estimate only based on your profile inputs. This does NOT guarantee official university admission.";
@@ -57,6 +62,15 @@ export function evaluateFrontendEligibility(
       status: "Missing Academic Information",
       color: "slate",
       reasons: ["Sign in or complete profile to evaluate eligibility."],
+      disclaimer,
+    };
+  }
+
+  if (!course) {
+    return {
+      status: "Missing Academic Information",
+      color: "slate",
+      reasons: ["Select a university course to evaluate eligibility."],
       disclaimer,
     };
   }
@@ -82,8 +96,7 @@ export function evaluateFrontendEligibility(
 
       if (effectiveCgpa >= req.minCgpa) {
         reasons.push(
-          `Academic requirement satisfied: ${bachelorDegree.degree || "Bachelor's"} (${bachelorDegree.percentageOrCgpa}${
-            isScale10 ? "/10" : "%"
+          `Academic requirement satisfied: ${bachelorDegree.degree || "Bachelor's"} (${bachelorDegree.percentageOrCgpa}${isScale10 ? "/10" : "%"
           }) meets min ${req.minCgpa}/10 requirement.`
         );
       } else {

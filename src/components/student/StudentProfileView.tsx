@@ -112,7 +112,11 @@ export const StudentProfileView: React.FC = () => {
       {/* Title & Profile Header */}
       <div className="bg-white p-6 rounded-xl border border-[#E7E5E0] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
+<<<<<<< HEAD
           <div className="w-16 h-16 rounded-xl bg-[#ea580c] text-white font-bold text-2xl flex items-center justify-center shrink-0 shadow-xs">
+=======
+          <div className="w-16 h-16 rounded-xl bg-[#D56732] text-white font-bold text-2xl flex items-center justify-center shrink-0 shadow-xs">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             {activeStudent.firstName.charAt(0)}
           </div>
           <div>
@@ -120,8 +124,13 @@ export const StudentProfileView: React.FC = () => {
               <h1 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {activeStudent.name}
               </h1>
+<<<<<<< HEAD
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-[#fff7ed] text-[#ea580c]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
+=======
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FDF5F0] text-[#D56732]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D56732]" />
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 {activeStudent.accountStatus}
               </span>
             </div>
@@ -135,7 +144,11 @@ export const StudentProfileView: React.FC = () => {
         <div className="bg-[#FAFAF8] p-3.5 rounded-xl border border-[#E7E5E0] flex items-center gap-3">
           <div className="w-20 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
             <div
+<<<<<<< HEAD
               className="h-full bg-[#ea580c] rounded-full transition-all duration-500"
+=======
+              className="h-full bg-[#D56732] rounded-full transition-all duration-500"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               style={{ width: `${activeStudent.profileCompletion}%` }}
             />
           </div>
@@ -162,7 +175,11 @@ export const StudentProfileView: React.FC = () => {
               onClick={() => setProfileTab(tab.key as any)}
               className={`py-2 px-3.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 isSelected
+<<<<<<< HEAD
                   ? "bg-[#ea580c] text-white shadow-xs font-semibold"
+=======
+                  ? "bg-[#D56732] text-white shadow-xs font-semibold"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   : "text-slate-600 hover:text-slate-900 hover:bg-[#F4F3EF] font-medium"
               }`}
             >
@@ -213,20 +230,32 @@ export const StudentProfileView: React.FC = () => {
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                           isVerified
+<<<<<<< HEAD
                             ? "bg-[#fff7ed] text-[#ea580c]"
+=======
+                            ? "bg-[#FDF5F0] text-[#D56732]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             : isRejected
                             ? "bg-rose-50 text-rose-700 border border-rose-200/60"
                             : isReupload
                             ? "bg-amber-50 text-amber-800 border border-amber-200/60 animate-pulse"
                             : existingDoc
+<<<<<<< HEAD
                             ? "bg-[#fff7ed] text-[#ea580c]"
+=======
+                            ? "bg-[#FDF5F0] text-[#D56732]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
                             isVerified || existingDoc
+<<<<<<< HEAD
                               ? "bg-[#ea580c]"
+=======
+                              ? "bg-[#D56732]"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                               : isRejected
                               ? "bg-rose-500"
                               : isReupload
@@ -295,7 +324,11 @@ export const StudentProfileView: React.FC = () => {
             </h2>
             <button
               onClick={() => setShowAddEdu(true)}
+<<<<<<< HEAD
               className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
+=======
+              className="h-10 px-4 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Qualification</span>
@@ -315,7 +348,11 @@ export const StudentProfileView: React.FC = () => {
                       {q.level}
                     </span>
                     {q.verificationStatus === "Verified" && (
+<<<<<<< HEAD
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">
+=======
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FDF5F0] text-[#BA5322]">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         Admin Verified
                       </span>
                     )}
@@ -427,7 +464,11 @@ export const StudentProfileView: React.FC = () => {
                         .join(" • ")}
                     </p>
                   </div>
+<<<<<<< HEAD
                   <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 font-bold text-[10px]">
+=======
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#FDF5F0] text-[#BA5322] font-bold text-[10px]">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     {t.status}
                   </span>
                 </div>
@@ -630,7 +671,11 @@ export const StudentProfileView: React.FC = () => {
               </button>
               <button
                 type="submit"
+<<<<<<< HEAD
                 className="h-10 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer active:scale-[0.98] transition-all"
+=======
+                className="h-10 px-5 bg-[#D56732] hover:bg-[#BA5322] text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer active:scale-[0.98] transition-all"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               >
                 Save Qualification
               </button>

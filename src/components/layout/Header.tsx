@@ -106,7 +106,11 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Company Logo */}
         <div className="flex items-center gap-2.5">
+<<<<<<< HEAD
           <div className="w-9 h-9 rounded-xl bg-[#f97316] flex items-center justify-center text-white shadow-xs">
+=======
+          <div className="w-9 h-9 rounded-xl bg-[#D56732] flex items-center justify-center text-white shadow-xs">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
@@ -114,7 +118,11 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-extrabold text-base tracking-tight text-slate-900">
                 DAKSHINVEDHA ABROAD
               </span>
+<<<<<<< HEAD
               <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-orange-50 text-[#f97316] border border-orange-200 rounded">
+=======
+              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-[#FDF5F0] text-[#D56732] border border-[#F5D2C1] rounded">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 SOLUTIONS
               </span>
             </div>
@@ -140,7 +148,11 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               onFocus={() => setIsSearchOpen(true)}
               placeholder="Enter CAMS / Name / Passport..."
+<<<<<<< HEAD
               className="w-44 sm:w-64 md:w-72 pl-9 pr-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#f97316] rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 transition-all"
+=======
+              className="w-44 sm:w-64 md:w-72 pl-9 pr-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#D56732] rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 transition-all"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             />
             {searchQuery && (
               <button
@@ -171,7 +183,11 @@ export const Header: React.FC<HeaderProps> = ({
                       className="p-3 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
                       <div className="flex items-center justify-between mb-1">
+<<<<<<< HEAD
                         <span className="text-xs font-bold text-[#f97316]">
+=======
+                        <span className="text-xs font-bold text-[#D56732]">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                           {app.camsId}
                         </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
@@ -201,21 +217,76 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
+<<<<<<< HEAD
         <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-lg max-w-[180px]">
           <Building2 className="w-4 h-4 text-[#f97316] shrink-0" />
           <span className="font-medium truncate">{orgLabel}</span>
+=======
+        {/* Organization / Partner Branch Dropdown */}
+        <div className="relative" ref={branchRef}>
+          <button
+            onClick={() => setIsBranchOpen(!isBranchOpen)}
+            className="hidden lg:flex items-center gap-1.5 p-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+            title="Agency Branch"
+          >
+            <Building2 className="w-4 h-4 text-[#D56732]" />
+            <span className="font-medium max-w-[130px] truncate">{selectedBranch}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+
+          {isBranchOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 animate-fade-in text-xs">
+              <div className="px-2 py-1.5 text-[11px] font-bold uppercase text-slate-400 tracking-wider">
+                Partner Branches
+              </div>
+              {[
+                "GlobalEdu South Asia HQ",
+                "Delhi Regional Branch (AGT-9041)",
+                "Mumbai West Hub (AGT-9042)",
+                "Dubai Operations Desk (AGT-9099)",
+                "London Liaison Office (AGT-9104)",
+              ].map((branch) => (
+                <button
+                  key={branch}
+                  onClick={() => {
+                    setSelectedBranch(branch);
+                    setIsBranchOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg transition-colors flex items-center justify-between ${
+                    selectedBranch === branch
+                      ? "bg-[#FDF5F0] text-[#D56732] font-semibold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>{branch}</span>
+                  {selectedBranch === branch && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#D56732]" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
         </div>
 
         {/* Notifications Dropdown */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setIsNotifOpen(!isNotifOpen)}
+<<<<<<< HEAD
             className="p-2 text-slate-600 hover:text-[#f97316] hover:bg-orange-50 rounded-lg transition-colors relative"
+=======
+            className="p-2 text-slate-600 hover:text-[#D56732] hover:bg-[#FDF5F0]/60 rounded-lg transition-colors relative"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
+<<<<<<< HEAD
               <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#f97316] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+=======
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#D56732] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 {unreadCount}
               </span>
             )}
@@ -227,7 +298,11 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-900">Notifications</span>
                   {unreadCount > 0 && (
+<<<<<<< HEAD
                     <span className="px-1.5 py-0.5 bg-orange-50 text-[#f97316] text-[10px] font-bold rounded-full">
+=======
+                    <span className="px-1.5 py-0.5 bg-[#FDF5F0] text-[#D56732] text-[10px] font-bold rounded-full">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       {unreadCount} new
                     </span>
                   )}
@@ -235,7 +310,11 @@ export const Header: React.FC<HeaderProps> = ({
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
+<<<<<<< HEAD
                     className="text-[11px] text-[#f97316] hover:text-[#ea580c] font-semibold hover:underline"
+=======
+                    className="text-[11px] text-[#D56732] hover:text-[#BA5322] font-semibold hover:underline"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   >
                     Mark all as read
                   </button>
@@ -256,12 +335,20 @@ export const Header: React.FC<HeaderProps> = ({
                       setIsNotifOpen(false);
                     }}
                     className={`p-3 text-xs transition-colors cursor-pointer hover:bg-slate-50 flex gap-3 ${
+<<<<<<< HEAD
                       !item.isRead ? "bg-orange-50" : ""
+=======
+                      !item.isRead ? "bg-[#FDF5F0]/40" : ""
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     }`}
                   >
                     <div className="mt-0.5">
                       {item.type === "offer" && (
+<<<<<<< HEAD
                         <div className="w-6 h-6 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center">
+=======
+                        <div className="w-6 h-6 rounded-full bg-[#FDF5F0] text-[#D56732] flex items-center justify-center">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                           <Sparkles className="w-3 h-3" />
                         </div>
                       )}
@@ -271,7 +358,11 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       )}
                       {item.type === "finance" && (
+<<<<<<< HEAD
                         <div className="w-6 h-6 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center">
+=======
+                        <div className="w-6 h-6 rounded-full bg-[#FDF5F0] text-[#D56732] flex items-center justify-center">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                           <DollarSign className="w-3 h-3" />
                         </div>
                       )}
@@ -290,7 +381,11 @@ export const Header: React.FC<HeaderProps> = ({
                         {item.message}
                       </p>
                       {item.camsId && (
+<<<<<<< HEAD
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#f97316] mt-1 hover:underline">
+=======
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#D56732] mt-1 hover:underline">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                           View {item.camsId} <ExternalLink className="w-2.5 h-2.5" />
                         </span>
                       )}
@@ -309,10 +404,17 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 p-1 pl-1.5 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <div className="relative">
+<<<<<<< HEAD
               <div className="w-8 h-8 rounded-full bg-[#f97316] text-white flex items-center justify-center font-bold text-xs">
                 {initials}
               </div>
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-orange-500 border-2 border-white rounded-full"></span>
+=======
+              <div className="w-8 h-8 rounded-full bg-[#D56732] text-white flex items-center justify-center font-bold text-xs">
+                SJ
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#D56732] border-2 border-white rounded-full"></span>
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             </div>
             <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-900 leading-tight">
@@ -331,10 +433,15 @@ export const Header: React.FC<HeaderProps> = ({
                 <p className="font-bold text-slate-900">{viewerName}</p>
                 <p className="text-[11px] text-slate-500 truncate">{viewerEmail}</p>
                 <div className="mt-1 flex items-center gap-1">
+<<<<<<< HEAD
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                   <span className="text-[10px] text-orange-700 font-semibold">
                     {activeB2BPartner ? `${roleLabel} · ${activeB2BPartner.partnerId}` : roleLabel}
                   </span>
+=======
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D56732]"></span>
+                  <span className="text-[10px] text-[#D56732] font-semibold">Active Agent #AGT-9041</span>
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 </div>
               </div>
 

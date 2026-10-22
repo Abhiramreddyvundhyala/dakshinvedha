@@ -92,7 +92,11 @@ export const AdminPartnersView: React.FC = () => {
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
+<<<<<<< HEAD
       Active: "bg-orange-100 text-orange-700 border-orange-200",
+=======
+      Active: "bg-[#FDF5F0] text-[#D56732] border-[#F5D2C1]",
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
       "Pending Profile": "bg-amber-100 text-amber-700 border-amber-200",
       "Under Verification": "bg-blue-100 text-blue-700 border-blue-200",
       Suspended: "bg-red-100 text-red-700 border-red-200",
@@ -102,7 +106,11 @@ export const AdminPartnersView: React.FC = () => {
 
   const verificationIcon = (status: string) => {
     switch (status) {
+<<<<<<< HEAD
       case "Verified": return <CheckCircle2 className="w-3.5 h-3.5 text-orange-500" />;
+=======
+      case "Verified": return <CheckCircle2 className="w-3.5 h-3.5 text-[#D56732]" />;
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
       case "Pending": return <Clock className="w-3.5 h-3.5 text-amber-500" />;
       case "Under Review": return <Clock className="w-3.5 h-3.5 text-blue-500" />;
       default: return <AlertCircle className="w-3.5 h-3.5 text-red-500" />;
@@ -200,6 +208,7 @@ export const AdminPartnersView: React.FC = () => {
       )}
 
       {/* Success Toast */}
+<<<<<<< HEAD
       {successMsg && !issued && (
         <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-800 flex items-start gap-3 animate-fade-in">
           <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
@@ -207,6 +216,15 @@ export const AdminPartnersView: React.FC = () => {
             <p className="font-bold">Account Created Successfully!</p>
             <p className="mt-1 font-mono bg-orange-100 px-2 py-1 rounded">{successMsg}</p>
             <p className="mt-1 text-orange-600">Share these credentials with the partner. They will complete their profile on first login.</p>
+=======
+      {successMsg && (
+        <div className="p-4 bg-[#FDF5F0] border border-[#F5D2C1] rounded-xl text-xs text-[#BA5322] flex items-start gap-3 animate-fade-in">
+          <CheckCircle2 className="w-5 h-5 text-[#D56732] shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold">Account Created Successfully!</p>
+            <p className="mt-1 font-mono bg-[#FDF5F0] px-2 py-1 rounded">{successMsg}</p>
+            <p className="mt-1 text-[#D56732]">Share these credentials with the partner. They will complete their profile on first login.</p>
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           </div>
         </div>
       )}
@@ -284,7 +302,11 @@ export const AdminPartnersView: React.FC = () => {
                             setSuccessMsg(`Partner ${partner.name} has been verified successfully!`);
                             setTimeout(() => setSuccessMsg(null), 4000);
                           }}
+<<<<<<< HEAD
                           className="px-3 py-1.5 bg-orange-600 hover:bg-orange-600 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+=======
+                          className="px-3 py-1.5 bg-[#D56732] hover:bg-[#BA5322] text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           Verify
                         </button>
@@ -484,7 +506,11 @@ export const AdminPartnersView: React.FC = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <MetricCard label="Total Apps" value={viewing.metrics.totalApplications} color="bg-blue-50 text-blue-700" />
               <MetricCard label="Processing" value={viewing.metrics.processingApplications} color="bg-amber-50 text-amber-700" />
+<<<<<<< HEAD
               <MetricCard label="Completed" value={viewing.metrics.completedApplications} color="bg-orange-50 text-orange-700" />
+=======
+              <MetricCard label="Completed" value={viewing.metrics.completedApplications} color="bg-[#FDF5F0] text-[#D56732]" />
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               <MetricCard label="Rejected" value={viewing.metrics.rejectedApplications} color="bg-red-50 text-red-700" />
             </div>
 
@@ -497,7 +523,11 @@ export const AdminPartnersView: React.FC = () => {
                   setTimeout(() => setSuccessMsg(null), 4000);
                   setViewPartner(null);
                 }}
+<<<<<<< HEAD
                 className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm rounded-xl shadow-sm cursor-pointer hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2"
+=======
+                className="w-full py-3 bg-gradient-to-r from-[#D56732] to-[#BA5322] text-white font-bold text-sm rounded-xl shadow-sm cursor-pointer hover:from-[#BA5322] hover:to-[#8C370F] transition-all flex items-center justify-center gap-2"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               >
                 <ShieldCheck className="w-4 h-4" />
                 Verify This Partner
@@ -524,7 +554,11 @@ const DocStatus = ({ label, status, value }: { label: string; status: string; va
       <p className="text-xs font-semibold text-slate-800 mt-0.5">{value || "Not uploaded"}</p>
     </div>
     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+<<<<<<< HEAD
       status === "Verified" ? "bg-orange-100 text-orange-700" :
+=======
+      status === "Verified" ? "bg-[#FDF5F0] text-[#D56732]" :
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
       status === "Pending" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
     }`}>{status}</span>
   </div>

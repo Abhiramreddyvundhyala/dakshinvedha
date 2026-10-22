@@ -19,7 +19,11 @@ export const ImportantNotices: React.FC = () => {
         {/* Card Header */}
         <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
+<<<<<<< HEAD
             <div className="w-8 h-8 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f97316]">
+=======
+            <div className="w-8 h-8 rounded-lg bg-[#FDF5F0] border border-[#F5D2C1] flex items-center justify-center text-[#D56732]">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               <BellRing className="w-4 h-4" />
             </div>
             <div>
@@ -34,7 +38,11 @@ export const ImportantNotices: React.FC = () => {
 
           <button
             onClick={() => setViewAll(!viewAll)}
+<<<<<<< HEAD
             className="group flex items-center gap-1 text-xs font-bold text-[#f97316] hover:text-[#ea580c] tracking-wide transition-colors"
+=======
+            className="group flex items-center gap-1 text-xs font-bold text-[#D56732] hover:text-[#BA5322] tracking-wide transition-colors"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           >
             <span>{viewAll ? "SHOW LESS" : "VIEW ALL"}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -55,7 +63,11 @@ export const ImportantNotices: React.FC = () => {
               {/* Left Title & University */}
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center gap-2">
+<<<<<<< HEAD
                   <span className="text-xs font-semibold text-slate-800 group-hover:text-orange-600 transition-colors line-clamp-1">
+=======
+                  <span className="text-xs font-semibold text-slate-800 group-hover:text-[#D56732] transition-colors line-clamp-1">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     {notice.title}
                   </span>
                   {notice.isUrgent && (
@@ -79,7 +91,11 @@ export const ImportantNotices: React.FC = () => {
                   <span className="text-[11px] text-slate-500 block">
                     {notice.dateAdded}
                   </span>
+<<<<<<< HEAD
                   <span className="text-[10px] text-[#f97316] font-medium group-hover:underline">
+=======
+                  <span className="text-[10px] text-[#D56732] font-medium group-hover:underline">
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     View Notice
                   </span>
                 </div>
@@ -88,7 +104,11 @@ export const ImportantNotices: React.FC = () => {
                     e.stopPropagation();
                     setSelectedNotice(notice);
                   }}
+<<<<<<< HEAD
                   className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#f97316] group-hover:text-white text-slate-600 flex items-center justify-center transition-colors"
+=======
+                  className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#D56732] group-hover:text-white text-slate-600 flex items-center justify-center transition-colors"
+>>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   title="View Notice Details"
                 >
                   <Eye className="w-3.5 h-3.5" />
