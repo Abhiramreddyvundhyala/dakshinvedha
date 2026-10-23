@@ -6,6 +6,7 @@ import { CatalogStatusNote } from "@/components/admin/CatalogStatusNote";
 import { DEFAULT_REQUIREMENTS } from "@/data/studentSeedData";
 import { CourseInfo, CourseRequirementsConfig } from "@/types";
 import { BookOpen, Search, Edit2, X, Trash2, Plus, AlertCircle } from "lucide-react";
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
 const INPUT = "w-full p-2 rounded-xl border border-slate-300 text-xs";
 
@@ -229,12 +230,13 @@ export const AdminCoursesView: React.FC = () => {
       </div>
 
       {draft && (
-        <div className="fixed inset-0 z-60 bg-black/60 flex items-center justify-center p-4">
-          <form onSubmit={handleSave} className="bg-white w-full max-w-3xl rounded-3xl p-6 shadow-2xl space-y-4 text-xs max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3">
+        <ModalOverlay onClose={() => setDraft(null)}>
+          <form onSubmit={handleSave} className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl text-xs flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden">
+            <div className="flex items-center justify-between border-b px-6 pt-5 pb-3 shrink-0">
               <h3 className="font-black text-sm text-slate-900">{editingId ? "Edit course" : "Add course"}</h3>
               <button type="button" onClick={() => setDraft(null)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
             </div>
+            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
             {formError && <p className="text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{formError}</p>}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -350,16 +352,17 @@ export const AdminCoursesView: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
+            </div>
+            <div className="flex justify-end gap-2 px-6 py-4 border-t shrink-0 bg-white">
               <button type="button" onClick={() => setDraft(null)} className="px-4 py-2 border rounded-xl font-bold text-slate-600">Cancel</button>
               <button type="submit" disabled={saving} className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white font-extrabold rounded-xl disabled:opacity-70">{saving ? "Saving..." : "Save course"}</button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
 
       {pendingDelete && (
-        <div className="fixed inset-0 z-70 bg-black/50 flex items-center justify-center p-4">
+        <ModalOverlay onClose={() => setPendingDelete(null)} zIndex={70}>
           <div className="bg-white rounded-2xl p-5 max-w-sm w-full space-y-3">
             <p className="font-black text-slate-900 text-sm">Delete {pendingDelete.courseName}?</p>
             <p className="text-xs text-slate-500">Students will no longer see this course in search or apply.</p>
@@ -368,7 +371,7 @@ export const AdminCoursesView: React.FC = () => {
               <button type="button" onClick={confirmDelete} disabled={saving} className="px-3 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">{saving ? "Deleting..." : "Delete"}</button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

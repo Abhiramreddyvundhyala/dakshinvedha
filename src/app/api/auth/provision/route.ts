@@ -1,4 +1,4 @@
-import { isGuardError, requireCaller } from "@/lib/authGuard";
+import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller } from "@/lib/authGuard";
 import { createConfirmedUser, nextTrackingCode } from "@/lib/createPortalUser";
 import { blankPartner, directoryFromProfile, partnerFromRow, partnerToRow, profileFromRow, type DirectoryAccount } from "@/lib/records";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
@@ -40,10 +40,23 @@ export async function POST(request: Request) {
   const caller = gate.caller;
   if (role === "team") {
     const ownOrg = caller.role === "partner" && caller.partner_id && caller.partner_id === body?.partnerId;
-    if (caller.role !== "admin" && !ownOrg) {
+    const adminMayIssue = caller.role === "admin" && (callerIsSuperAdmin(caller) || (await callerCanUseFeature(caller, "partners")));
+    if (!ownOrg && !adminMayIssue) {
       return Response.json({ error: "A B2B owner can create team logins only for their own organization." }, { status: 403 });
     }
     if (!body?.partnerId) return Response.json({ error: "Choose the B2B organization for this team member." }, { status: 400 });
+  } else if (role === "admin") {
+    if (!callerIsSuperAdmin(caller)) {
+      return Response.json({ error: "Only Super Admin can create admin team logins." }, { status: 403 });
+    }
+  } else if (role === "partner") {
+    if (!(await callerCanUseFeature(caller, "partners"))) {
+      return Response.json({ error: "Super Admin has not given this login B2B Partners access." }, { status: 403 });
+    }
+  } else if (role === "agent") {
+    if (!(await callerCanUseFeature(caller, "agents"))) {
+      return Response.json({ error: "Super Admin has not given this login Agents access." }, { status: 403 });
+    }
   } else if (caller.role !== "admin") {
     return Response.json({ error: "Only an admin can create this login." }, { status: 403 });
   }

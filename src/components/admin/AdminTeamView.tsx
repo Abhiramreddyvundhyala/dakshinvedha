@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { UserCog, Plus, Search, Shield, ShieldCheck, User, Users, Crown, Clock, Edit3, Trash2, X, AlertCircle, CheckCircle2 } from "lucide-react";
 import { generatePassword, readSessionValue } from "@/utils/accounts";
-import { listDirectory, provisionAccount, removeAccount, updateAccountProfile } from "@/lib/portalDb";
+import { listDirectory, manageAccount, provisionAccount, removeAccount, updateAccountProfile } from "@/lib/portalDb";
 import type { DirectoryAccount } from "@/lib/records";
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
 interface AdminTeamMember {
   id: string;
@@ -84,7 +85,7 @@ export const AdminTeamView: React.FC = () => {
   }, []);
 
   const openAdd = () => { setForm(emptyForm()); setPassword(generatePassword()); setEditMember(null); setFormError(null); setShowModal(true); };
-  const openEdit = (m: AdminTeamMember) => { setForm({ name: m.name, email: m.email, phone: m.phone || "", role: m.role, department: m.department, status: m.status }); setEditMember(m); setFormError(null); setShowModal(true); };
+  const openEdit = (m: AdminTeamMember) => { setForm({ name: m.name, email: m.email, phone: m.phone || "", role: m.role, department: m.department, status: m.status }); setPassword(""); setEditMember(m); setFormError(null); setShowModal(true); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +107,13 @@ export const AdminTeamView: React.FC = () => {
         department: form.department,
       });
       if (failure) { setFormError(failure); return; }
-      setSuccessMsg(`${form.name} updated.`);
+      if (password.trim().length >= 6) {
+        const reset = await manageAccount({ userId: editMember.id, action: "password", password: password.trim() });
+        if (!reset.ok) { setFormError(reset.error); return; }
+        setSuccessMsg(`${form.name} updated. New password ${password.trim()}.`);
+      } else {
+        setSuccessMsg(`${form.name} updated.`);
+      }
     } else {
       if (password.trim().length < 6) { setFormError("Set a password of at least 6 characters."); return; }
       const issued = password.trim();
@@ -291,7 +298,7 @@ export const AdminTeamView: React.FC = () => {
 
       {/* Delete Confirm */}
       {confirmDeleteId && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)" }}>
+        <ModalOverlay onClose={() => setConfirmDeleteId(null)}>
           <div style={{ width: "100%", maxWidth: 360, background: "#ffffff", border: "1px solid #fecaca", borderRadius: 14, padding: 24, textAlign: "center" }}>
             <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
               <Trash2 style={{ width: 22, height: 22, color: "#dc2626" }} />
@@ -305,13 +312,13 @@ export const AdminTeamView: React.FC = () => {
               <button onClick={() => handleDelete(confirmDeleteId)} style={{ flex: 1, padding: "9px 0", background: "#dc2626", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#ffffff", cursor: "pointer" }}>Remove</button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 16, overflowY: "auto", background: "rgba(0,0,0,0.45)" }}>
-          <div style={{ width: "100%", maxWidth: 460, margin: "auto", maxHeight: "calc(100dvh - 32px)", overflowY: "auto", background: "#ffffff", border: "1px solid #dde1e7", borderRadius: 14 }}>
+        <ModalOverlay onClose={() => setShowModal(false)}>
+          <div style={{ width: "100%", maxWidth: 460, maxHeight: "calc(100dvh - 32px)", overflowY: "auto", background: "#ffffff", border: "1px solid #dde1e7", borderRadius: 14 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #f0f2f5" }}>
               <p style={{ fontSize: 15, fontWeight: 800, color: "#1e293b", margin: 0 }}>{editMember ? "Edit Member" : "Add Member"}</p>
               <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}>
@@ -334,15 +341,13 @@ export const AdminTeamView: React.FC = () => {
                   <input type={type} value={(form as Record<string, string>)[key] || ""} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={INPUT_STYLE} />
                 </div>
               ))}
-              {!editMember && (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>Login password *</label>
-                    <button type="button" onClick={() => setPassword(generatePassword())} style={{ border: "none", background: "none", color: "#ea580c", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Generate</button>
-                  </div>
-                  <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} style={INPUT_STYLE} />
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>{editMember ? "New password (optional)" : "Login password *"}</label>
+                  <button type="button" onClick={() => setPassword(generatePassword())} style={{ border: "none", background: "none", color: "#ea580c", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Generate</button>
                 </div>
-              )}
+                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editMember ? "Leave blank to keep the current password" : ""} style={INPUT_STYLE} />
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
                 <div>
                   <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "block", marginBottom: 4 }}>Role</label>
@@ -363,7 +368,7 @@ export const AdminTeamView: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

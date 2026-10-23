@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AdminSidebar, AdminTabKey } from "./AdminSidebar";
 import { AdminTopbar } from "./AdminTopbar";
 import { AdminDashboardView } from "./AdminDashboardView";
@@ -15,13 +15,24 @@ import { AdminUniversitiesView } from "./AdminUniversitiesView";
 import { AdminTeamView } from "./AdminTeamView";
 import { AdminAgentsView } from "./AdminAgentsView";
 import { AdminAnalyticsView } from "./AdminAnalyticsView";
+import { AdminAccessView } from "./AdminAccessView";
 import { StudentProfile } from "@/types";
+import { usePlatform } from "@/context/PlatformContext";
 
 export const AdminPortalRoot: React.FC = () => {
+  const { canAccessAdminFeature } = usePlatform();
   const [currentTab, setCurrentTab] = useState<AdminTabKey>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedStudentForDetails, setSelectedStudentForDetails] = useState<StudentProfile | null>(null);
+
+  const openTab = (tab: AdminTabKey) => {
+    setCurrentTab(canAccessAdminFeature(tab) ? tab : "dashboard");
+  };
+
+  useEffect(() => {
+    if (!canAccessAdminFeature(currentTab)) setCurrentTab("dashboard");
+  }, [canAccessAdminFeature, currentTab]);
 
   return (
     <div className="min-h-screen flex font-sans" style={{ background: "#eef0f4" }}>
@@ -35,7 +46,7 @@ export const AdminPortalRoot: React.FC = () => {
       )}
       <AdminSidebar
         currentTab={currentTab}
-        onSelectTab={(tab) => setCurrentTab(tab)}
+        onSelectTab={openTab}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
         mobileOpen={mobileOpen}
@@ -50,7 +61,7 @@ export const AdminPortalRoot: React.FC = () => {
         <AdminTopbar currentTab={currentTab} onOpenMenu={() => setMobileOpen(true)} />
 
         <main className="flex-1 p-3 sm:p-6 overflow-auto">
-          {currentTab === "dashboard" && <AdminDashboardView onNavigateTab={(tab) => setCurrentTab(tab)} />}
+          {currentTab === "dashboard" && <AdminDashboardView onNavigateTab={openTab} />}
           {currentTab === "analytics" && <AdminAnalyticsView />}
           {currentTab === "students" && <AdminStudentsView onSelectStudent={(s) => setSelectedStudentForDetails(s)} />}
           {currentTab === "applications" && <AdminApplicationsView />}
@@ -60,6 +71,7 @@ export const AdminPortalRoot: React.FC = () => {
           {currentTab === "partners" && <AdminPartnersView />}
           {currentTab === "agents" && <AdminAgentsView />}
           {currentTab === "team" && <AdminTeamView />}
+          {currentTab === "access" && <AdminAccessView />}
           {currentTab === "notices" && <AdminNoticesView />}
         </main>
       </div>

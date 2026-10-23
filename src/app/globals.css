@@ -83,15 +83,15 @@
   margin-bottom: auto;
 }
 
-/* Micro animations */
+/* Micro animations.
+   Opacity only: a leftover transform (even translateY(0) with fill-mode forwards)
+   makes position:fixed children attach to the animated view instead of the viewport. */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

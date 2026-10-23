@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import { Megaphone, Plus, Calendar, Building2, CheckCircle2 } from "lucide-react";
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
 export const AdminNoticesView: React.FC = () => {
   const { notices, publishNotice } = usePlatform();
@@ -72,7 +73,7 @@ export const AdminNoticesView: React.FC = () => {
       </div>
 
       {showAddNotice && (
-        <div className="fixed inset-0 z-60 bg-black/60 flex items-center justify-center p-4">
+        <ModalOverlay onClose={() => setShowAddNotice(false)}>
           <form
             onSubmit={handlePublish}
             className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 text-xs"
@@ -164,7 +165,7 @@ export const AdminNoticesView: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

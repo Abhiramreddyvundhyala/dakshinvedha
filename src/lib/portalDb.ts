@@ -11,6 +11,7 @@ import type {
   StudentProfile,
   VoucherItem,
 } from "@/types";
+import { DEFAULT_TEAM_FEATURES, parseTeamFeatures, type AdminFeatureKey } from "@/lib/adminAccess";
 import { getSupabase } from "@/lib/supabase";
 import {
   applicationFromRow,
@@ -90,6 +91,37 @@ export async function getAccessToken(): Promise<string | null> {
   if (!supabase) return null;
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
+}
+
+export async function loadTeamFeatures(): Promise<{ features: AdminFeatureKey[]; error: string | null }> {
+  const supabase = getSupabase();
+  if (!supabase) return { features: DEFAULT_TEAM_FEATURES, error: SETUP };
+  const { data, error } = await supabase.from("portal_settings").select("team_features").eq("id", "global").maybeSingle();
+  if (error) {
+    return {
+      features: DEFAULT_TEAM_FEATURES,
+      error: /relation|schema cache|portal_settings/i.test(error.message)
+        ? "Run supabase/team-access.sql in the Supabase SQL editor, then refresh."
+        : explain(error.message),
+    };
+  }
+  return { features: parseTeamFeatures(data?.team_features), error: null };
+}
+
+export async function saveTeamFeatures(features: AdminFeatureKey[]): Promise<{ ok: true; features: AdminFeatureKey[] } | { ok: false; error: string }> {
+  const token = await getAccessToken();
+  if (!token) return { ok: false, error: "Sign in again before changing team access." };
+  const response = await fetch("/api/admin/team-access", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ features }),
+  });
+  const payload = (await response.json().catch(() => ({}))) as { error?: string; features?: AdminFeatureKey[]; sql?: string };
+  if (!response.ok) {
+    const extra = payload.sql ? ` Run supabase/team-access.sql in the Supabase SQL editor.` : "";
+    return { ok: false, error: `${payload.error || "Could not save team access."}${extra}` };
+  }
+  return { ok: true, features: parseTeamFeatures(payload.features) };
 }
 
 export async function fetchMyProfile(): Promise<DbResult<SessionProfile>> {
@@ -338,6 +370,32 @@ export async function provisionAccount(input: {
   const payload = (await response.json().catch(() => ({}))) as { error?: string; account?: DirectoryAccount; partner?: B2BPartnerProfile | null };
   if (!response.ok) return { ok: false, error: payload.error || "Could not create the login." };
   return { ok: true, account: payload.account || null, partner: payload.partner || null };
+}
+
+export async function manageAccount(input: {
+  userId: string;
+  action: "update" | "status" | "password";
+  fullName?: string;
+  phone?: string;
+  organizationName?: string;
+  status?: "Active" | "Suspended";
+  password?: string;
+}): Promise<{ ok: true; password?: string; account?: DirectoryAccount | null; partner?: B2BPartnerProfile | null } | { ok: false; error: string }> {
+  const token = await getAccessToken();
+  if (!token) return { ok: false, error: "Sign in again before changing this account." };
+  const response = await fetch("/api/auth/manage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  const payload = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    password?: string;
+    account?: DirectoryAccount | null;
+    partner?: B2BPartnerProfile | null;
+  };
+  if (!response.ok) return { ok: false, error: payload.error || "Could not update the account." };
+  return { ok: true, password: payload.password, account: payload.account, partner: payload.partner || null };
 }
 
 export async function removeAccount(userId: string): Promise<{ ok: true } | { ok: false; error: string }> {

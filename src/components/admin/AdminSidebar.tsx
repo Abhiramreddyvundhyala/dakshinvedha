@@ -6,12 +6,11 @@ import { performLogout } from "@/utils/auth";
 import {
   LayoutDashboard, BarChart3, Users, FileText, Building2,
   BookOpen, FolderCheck, Building, UserCog, Megaphone,
-  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset,
+  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset, KeyRound,
 } from "lucide-react";
+import type { AdminFeatureKey } from "@/lib/adminAccess";
 
-export type AdminTabKey =
-  | "dashboard" | "analytics" | "students" | "applications"
-  | "universities" | "courses" | "documents" | "partners" | "agents" | "team" | "notices";
+export type AdminTabKey = AdminFeatureKey;
 
 interface AdminSidebarProps {
   currentTab: AdminTabKey;
@@ -33,13 +32,14 @@ const NAV_ITEMS: { key: AdminTabKey; label: string; icon: React.ElementType; gro
   { key: "partners",    label: "B2B Partners",       icon: Building2,       group: "Operations"  },
   { key: "agents",      label: "Agents",             icon: Headset,         group: "Operations"  },
   { key: "team",        label: "Team",               icon: UserCog,         group: "Operations"  },
+  { key: "access",      label: "Team Access",        icon: KeyRound,        group: "Operations"  },
   { key: "notices",     label: "Notices",            icon: Megaphone,       group: "Operations"  },
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   currentTab, onSelectTab, collapsed, onToggleCollapse, mobileOpen, onCloseMobile,
 }) => {
-  const { students, applications } = usePlatform();
+  const { students, applications, staffName, staffTitle, canAccessAdminFeature } = usePlatform();
 
   const pendingDocs = students.reduce(
     (acc, s) => acc + s.documents.filter((d) => d.status === "Uploaded" || d.status === "Under Review").length, 0
@@ -50,7 +50,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     documents: pendingDocs,
   };
 
-  const groups = Array.from(new Set(NAV_ITEMS.map((n) => n.group)));
+  const visibleItems = NAV_ITEMS.filter((item) => canAccessAdminFeature(item.key));
+  const groups = Array.from(new Set(visibleItems.map((n) => n.group)));
+  const initials = (staffName || "A")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "A";
   const compact = collapsed && !mobileOpen;
 
   return (
@@ -94,7 +102,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               </p>
             )}
             <div className="space-y-0.5">
-              {NAV_ITEMS.filter((n) => n.group === group).map((item) => {
+              {visibleItems.filter((n) => n.group === group).map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.key;
                 const badge = badges[item.key];
@@ -166,12 +174,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-white shrink-0"
             style={{ background: "#2563eb" }}
           >
-            SA
+            {initials}
           </div>
           {!compact && (
             <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-bold truncate" style={{ color: "#1e293b" }}>Super Admin</p>
-              <p className="text-[10px] truncate" style={{ color: "#94a3b8" }}>Root Access</p>
+              <p className="text-xs font-bold truncate" style={{ color: "#1e293b" }}>{staffName || "Admin"}</p>
+              <p className="text-[10px] truncate" style={{ color: "#94a3b8" }}>{staffTitle || "Admin"}</p>
             </div>
           )}
           {!compact && (

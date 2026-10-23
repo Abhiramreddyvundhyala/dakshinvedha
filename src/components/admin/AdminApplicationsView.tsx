@@ -6,6 +6,7 @@ import { ApplicationRecord, PrimaryStatusType, SecondaryStatusType } from "@/typ
 import { listDirectory } from "@/lib/portalDb";
 import type { DirectoryAccount } from "@/lib/records";
 import { APPLICATION_STAGES, resolveTimeline } from "@/utils/tracking";
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 import {
   FileText,
@@ -103,7 +104,7 @@ export const AdminApplicationsView: React.FC = () => {
             Central Application Pipeline
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Global master view of all student self-applied and partner-managed dossiers. Adjust status, issue offers, or customize 11-stage workflows.
+            Applying sets the first stage. Progress moves when an admin saves a new status here. The assigned agent can see the file; the student sees the tracker.
           </p>
         </div>
       </div>
@@ -213,10 +214,10 @@ export const AdminApplicationsView: React.FC = () => {
 
       {/* APPLICATION STATUS & TIMELINE MODIFIER MODAL */}
       {selectedApp && (
-        <div className="fixed inset-0 z-60 bg-black/60 flex items-center justify-center p-4">
+        <ModalOverlay onClose={() => setSelectedApp(null)}>
           <form
             onSubmit={handleSaveStatus}
-            className="bg-white w-full max-w-xl rounded-3xl p-6 shadow-2xl space-y-5 text-xs max-h-[90vh] overflow-y-auto"
+            className="bg-white w-full max-w-xl rounded-3xl p-6 shadow-2xl space-y-5 text-xs max-h-[calc(100dvh-2rem)] overflow-y-auto"
           >
             <div className="flex items-center justify-between border-b pb-3">
               <div>
@@ -356,7 +357,7 @@ export const AdminApplicationsView: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

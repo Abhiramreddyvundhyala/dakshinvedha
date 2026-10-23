@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
 export const AdminDocumentsQueueView: React.FC = () => {
   const { students, verifyStudentDocument, rejectStudentDocument, requestDocumentReupload } =
@@ -213,7 +214,7 @@ export const AdminDocumentsQueueView: React.FC = () => {
 
       {/* Mandatory Reason Modal */}
       {targetAction && (
-        <div className="fixed inset-0 z-60 bg-black/60 flex items-center justify-center p-4">
+        <ModalOverlay onClose={() => setTargetAction(null)}>
           <form
             onSubmit={handleConfirmAction}
             className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-xs"
@@ -267,7 +268,7 @@ export const AdminDocumentsQueueView: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

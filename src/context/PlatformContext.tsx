@@ -34,18 +34,32 @@ import { generatePassword, readSessionValue } from "@/utils/accounts";
 import {
   flushPortalChanges,
   loadPortalBundle,
+  loadTeamFeatures,
   portalSnapshot,
   provisionAccount,
   removeAccount,
+  saveTeamFeatures,
   updateAccountStatus,
 } from "@/lib/portalDb";
 import { isUuid } from "@/lib/records";
 import { buildTimeline, createTrackingId } from "@/utils/tracking";
+import {
+  DEFAULT_TEAM_FEATURES,
+  canAccessAdminFeature as featureAllowed,
+  isSuperAdminTitle,
+  type AdminFeatureKey,
+} from "@/lib/adminAccess";
 
 interface PlatformContextType {
   // Navigation & Role
   portalRole: PortalRole;
   setPortalRole: (role: PortalRole) => void;
+  staffTitle: string;
+  staffName: string;
+  isSuperAdmin: boolean;
+  teamFeatures: AdminFeatureKey[];
+  canAccessAdminFeature: (feature: AdminFeatureKey) => boolean;
+  saveTeamAccess: (features: AdminFeatureKey[]) => Promise<{ ok: true } | { ok: false; error: string }>;
 
   // Student Authentication & Profile
   isStudentAuthenticated: boolean;
@@ -128,6 +142,7 @@ interface PlatformContextType {
   }) => Promise<B2BPartnerProfile | { error: string }>;
   updateB2BProfile: (partnerId: string, updates: Partial<B2BPartnerProfile>) => void;
   verifyB2BPartner: (partnerId: string) => void;
+  dropB2BPartner: (partnerId: string) => void;
   loginB2B: (email: string, password: string) => B2BPartnerProfile | null;
   accessRequests: B2BAccessRequest[];
   rejectB2BRequest: (requestId: string) => void;
@@ -244,6 +259,9 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [accessRequests, setAccessRequests] = useState<B2BAccessRequest[]>([]);
   const [sessionEmail, setSessionEmail] = useState("");
   const [sessionPartnerId, setSessionPartnerId] = useState("");
+  const [staffTitle, setStaffTitle] = useState("");
+  const [staffName, setStaffName] = useState("");
+  const [teamFeatures, setTeamFeatures] = useState<AdminFeatureKey[]>(DEFAULT_TEAM_FEATURES);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [dbReady, setDbReady] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -263,6 +281,11 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       setPortalRoleState(bundle.profile.role);
       setSessionEmail(bundle.profile.email);
       setSessionPartnerId(bundle.profile.partnerId);
+      setStaffTitle(bundle.profile.staffTitle);
+      setStaffName(bundle.profile.fullName || bundle.profile.email);
+      const access = await loadTeamFeatures();
+      if (cancelled) return;
+      setTeamFeatures(access.features);
       setStudents(bundle.students);
       setApplications(bundle.applications);
       setNotices(bundle.notices);
@@ -323,6 +346,20 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   const setPortalRole = useCallback((role: PortalRole) => {
     setPortalRoleState(role);
   }, []);
+
+  const isSuperAdmin = isSuperAdminTitle(staffTitle);
+  const hasAdminFeature = useCallback(
+    (feature: AdminFeatureKey) => featureAllowed(staffTitle, teamFeatures, feature),
+    [staffTitle, teamFeatures]
+  );
+
+  const saveTeamAccess = async (features: AdminFeatureKey[]): Promise<{ ok: true } | { ok: false; error: string }> => {
+    if (!isSuperAdminTitle(staffTitle)) return { ok: false, error: "Only Super Admin can change team access." };
+    const result = await saveTeamFeatures(features);
+    if (!result.ok) return result;
+    setTeamFeatures(result.features);
+    return { ok: true };
+  };
 
   const activeStudent = useMemo(() => {
     return students.find((s) => s.id === activeStudentId) || students[0] || null;
@@ -734,6 +771,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     notApplicableStages: string[] = [],
     agentAssignment?: { trackingId: string; name: string } | null
   ) => {
+    if (portalRole === "admin" && !hasAdminFeature("applications")) return;
     const today = new Date().toISOString().slice(0, 10);
     setApplications((prev) =>
       prev.map((app) => {
@@ -908,6 +946,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const addUniversity = async (univ: UniversityInfo): Promise<CatalogWriteResult> => {
+    if (!hasAdminFeature("universities")) return { ok: false, error: "Super Admin has not given this login Universities access." };
     const next = { ...univ, availableCoursesCount: 0 };
     const saved = await saveInstitution(next);
     if (!saved.ok) return saved;
@@ -916,6 +955,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const updateUniversity = async (univ: UniversityInfo): Promise<CatalogWriteResult> => {
+    if (!hasAdminFeature("universities")) return { ok: false, error: "Super Admin has not given this login Universities access." };
     const linked = coursesRef.current
       .filter((course) => course.universityId === univ.id)
       .map((course) => ({
@@ -940,6 +980,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const deleteUniversity = async (id: string): Promise<CatalogWriteResult> => {
+    if (!hasAdminFeature("universities")) return { ok: false, error: "Super Admin has not given this login Universities access." };
     const removed = await removeInstitution(id);
     if (!removed.ok) return removed;
     setUniversities((prev) => prev.filter((item) => item.id !== id));
@@ -948,6 +989,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const addCourse = async (course: CourseInfo): Promise<CatalogWriteResult> => {
+    if (!hasAdminFeature("courses")) return { ok: false, error: "Super Admin has not given this login Courses access." };
     const saved = await saveCourse(course);
     if (!saved.ok) return saved;
     rememberCourses([course, ...coursesRef.current.filter((item) => item.id !== course.id)]);
@@ -955,6 +997,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const updateCourse = async (course: CourseInfo): Promise<CatalogWriteResult> => {
+    if (!hasAdminFeature("courses")) return { ok: false, error: "Super Admin has not given this login Courses access." };
     const saved = await saveCourse(course);
     if (!saved.ok) return saved;
     rememberCourses(coursesRef.current.map((item) => (item.id === course.id ? course : item)));
@@ -962,6 +1005,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const deleteCourse = async (id: string): Promise<CatalogWriteResult> => {
+    if (!hasAdminFeature("courses")) return { ok: false, error: "Super Admin has not given this login Courses access." };
     const removed = await removeCourse(id);
     if (!removed.ok) return removed;
     rememberCourses(coursesRef.current.filter((course) => course.id !== id));
@@ -970,6 +1014,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Notices
   const publishNotice = (noticeData: Omit<NoticeItem, "id" | "dateAdded">) => {
+    if (portalRole === "admin" && !hasAdminFeature("notices")) return;
     const newNotice: NoticeItem = {
       ...noticeData,
       id: createTrackingId("NTC"),
@@ -1042,6 +1087,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     password?: string;
     organizationName?: string;
   }): Promise<B2BPartnerProfile | { error: string }> => {
+    if (!hasAdminFeature("partners")) return { error: "Super Admin has not given this login B2B Partners access." };
     const email = basic.email.trim().toLowerCase();
     if (b2bPartners.some((partner) => partner.email.toLowerCase() === email)) {
       return { error: "An account with this email already exists." };
@@ -1098,6 +1144,10 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   // Admin verifies a B2B partner
+  const dropB2BPartner = (partnerId: string) => {
+    setB2bPartners((prev) => prev.filter((partner) => partner.id !== partnerId && partner.partnerId !== partnerId));
+  };
+
   const verifyB2BPartner = (partnerId: string) => {
     setB2bPartners((prev) =>
       prev.map((p) => {
@@ -1244,6 +1294,12 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       value={{
         portalRole,
         setPortalRole,
+        staffTitle,
+        staffName,
+        isSuperAdmin,
+        teamFeatures,
+        canAccessAdminFeature: hasAdminFeature,
+        saveTeamAccess,
         isStudentAuthenticated,
         activeStudent,
         activeStudentId,
@@ -1287,6 +1343,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         createB2BAccount,
         updateB2BProfile,
         verifyB2BPartner,
+        dropB2BPartner,
         loginB2B,
         accessRequests,
         rejectB2BRequest,

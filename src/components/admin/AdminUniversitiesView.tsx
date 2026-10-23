@@ -5,6 +5,7 @@ import { usePlatform } from "@/context/PlatformContext";
 import { CatalogStatusNote } from "@/components/admin/CatalogStatusNote";
 import { UniversityInfo } from "@/types";
 import { Building, Plus, Search, MapPin, BookOpen, Calendar, User, Phone, Mail, X, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
 const CARD = { background: "#ffffff", border: "1px solid #dde1e7", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" };
 const INPUT_STYLE = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #dde1e7", background: "#ffffff", color: "#1e293b", fontSize: 13, outline: "none" };
@@ -288,8 +289,8 @@ export const AdminUniversitiesView: React.FC = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 50, padding: 16, background: "rgba(0,0,0,0.4)" }}>
-          <div style={{ width: "100%", maxWidth: 640, background: "#ffffff", border: "1px solid #dde1e7", borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "92vh" }}>
+        <ModalOverlay onClose={() => { setShowModal(false); setFormError(null); }}>
+          <div style={{ width: "100%", maxWidth: 640, background: "#ffffff", border: "1px solid #dde1e7", borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "calc(100dvh - 2rem)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #f0f2f5" }}>
               <div>
                 <p style={{ fontSize: 15, fontWeight: 800, color: "#1e293b", margin: 0 }}>{editingId ? "Edit University" : "Add University"}</p>
@@ -381,11 +382,11 @@ export const AdminUniversitiesView: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {pendingDelete && (
-        <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 60, padding: 16, background: "rgba(0,0,0,0.4)" }}>
+        <ModalOverlay onClose={() => setPendingDelete(null)} zIndex={70}>
           <div style={{ width: "100%", maxWidth: 420, background: "#fff", borderRadius: 14, padding: 20 }}>
             <p style={{ fontSize: 15, fontWeight: 800, color: "#1e293b", margin: 0 }}>Delete {pendingDelete.name}?</p>
             <p style={{ fontSize: 13, color: "#64748b", marginTop: 8 }}>This also removes every course offered by this institution.</p>
@@ -394,7 +395,7 @@ export const AdminUniversitiesView: React.FC = () => {
               <button type="button" onClick={confirmDelete} disabled={saving} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "#dc2626", color: "#fff", fontWeight: 700, cursor: "pointer" }}>{saving ? "Deleting..." : "Delete"}</button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -16,6 +16,7 @@ const TAB_LABELS: Record<AdminTabKey, string> = {
   partners:     "B2B Partners",
   agents:       "Agents",
   team:         "Team",
+  access:       "Team Access",
   notices:      "Notices",
 };
 

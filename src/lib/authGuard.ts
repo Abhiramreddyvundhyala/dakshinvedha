@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { canAccessAdminFeature, isSuperAdminTitle, parseTeamFeatures, type AdminFeatureKey } from "@/lib/adminAccess";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export type CallerProfile = {
@@ -44,4 +45,22 @@ export async function requireCaller(request: Request): Promise<{ caller: CallerP
 
 export function isGuardError(result: { caller: CallerProfile } | { error: string; status: number }): result is { error: string; status: number } {
   return "error" in result;
+}
+
+export function callerIsSuperAdmin(caller: CallerProfile): boolean {
+  return caller.role === "admin" && caller.status === "Active" && isSuperAdminTitle(caller.staff_title);
+}
+
+export async function loadCallerTeamFeatures(): Promise<AdminFeatureKey[]> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return parseTeamFeatures(null);
+  const { data } = await admin.from("portal_settings").select("team_features").eq("id", "global").maybeSingle();
+  return parseTeamFeatures(data?.team_features);
+}
+
+export async function callerCanUseFeature(caller: CallerProfile, feature: AdminFeatureKey): Promise<boolean> {
+  if (caller.role !== "admin") return false;
+  if (callerIsSuperAdmin(caller)) return true;
+  const features = await loadCallerTeamFeatures();
+  return canAccessAdminFeature(caller.staff_title, features, feature);
 }

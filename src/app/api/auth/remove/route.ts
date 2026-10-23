@@ -1,4 +1,4 @@
-import { isGuardError, requireCaller } from "@/lib/authGuard";
+import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller } from "@/lib/authGuard";
 import { partnerFromRow, partnerToRow } from "@/lib/records";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -20,7 +20,12 @@ export async function POST(request: Request) {
 
   const caller = gate.caller;
   const sameOrg = caller.role === "partner" && target.role === "team" && target.partner_id && target.partner_id === caller.partner_id;
-  if (caller.role !== "admin" && !sameOrg) {
+  const superAdmin = callerIsSuperAdmin(caller);
+  const mayRemovePartner = target.role === "partner" && (await callerCanUseFeature(caller, "partners"));
+  const mayRemoveAgent = target.role === "agent" && (await callerCanUseFeature(caller, "agents"));
+  const mayRemoveB2BTeam = target.role === "team" && (sameOrg || (await callerCanUseFeature(caller, "partners")));
+  const mayRemoveAdmin = target.role === "admin" && superAdmin;
+  if (!superAdmin && !mayRemovePartner && !mayRemoveAgent && !mayRemoveB2BTeam && !mayRemoveAdmin) {
     return Response.json({ error: "You cannot remove this account." }, { status: 403 });
   }
 
@@ -31,6 +36,14 @@ export async function POST(request: Request) {
       org.teamMembers = (org.teamMembers || []).filter((member) => member.id !== userId && member.email.toLowerCase() !== String(target.email || "").toLowerCase());
       await admin.from("partners").update(partnerToRow(org)).eq("id", org.id);
     }
+  }
+
+  if (target.role === "partner" && target.partner_id) {
+    const team = await admin.from("profiles").select("id").eq("partner_id", target.partner_id).eq("role", "team");
+    for (const row of team.data || []) {
+      await admin.auth.admin.deleteUser(row.id);
+    }
+    await admin.from("partners").delete().eq("id", target.partner_id);
   }
 
   const removed = await admin.auth.admin.deleteUser(userId);
