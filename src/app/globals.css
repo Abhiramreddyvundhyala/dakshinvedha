@@ -1,41 +1,13 @@
-@import "tailwindcss";
-
-@theme {
-  --color-emerald-50: #fef8f5;
-  --color-emerald-100: #fdf0e9;
-  --color-emerald-200: #f9dccf;
-  --color-emerald-300: #f4c0a8;
-  --color-emerald-400: #e58d5f;
-  --color-emerald-500: #d56732;
-  --color-emerald-600: #ba5322;
-  --color-emerald-700: #9e431a;
-  --color-emerald-800: #813819;
-  --color-emerald-900: #6b3118;
-  --color-emerald-950: #3c1609;
-}
+﻿@import "tailwindcss";
 
 @layer base {
   :root {
-<<<<<<< HEAD
     /* Brand tokens - orange */
     --brand-orange: #ea580c;
     --brand-orange-hover: #c2410c;
     --brand-orange-light: #fff7ed;
     --brand-orange-border: #fed7aa;
     
-=======
-    /* Brand Tokens - #D56732 Terracotta Theme */
-    --brand-copper: #D56732;
-    --brand-copper-hover: #BA5322;
-    --brand-copper-light: #FDF5F0;
-    --brand-copper-border: #F5D2C1;
-
-    --brand-emerald: #D56732;
-    --brand-emerald-hover: #BA5322;
-    --brand-emerald-light: #FDF5F0;
-    --brand-emerald-border: #F5D2C1;
-
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
     /* Warm Canvas & Card Tokens */
     --background: #FAFAF8;
     --foreground: #1E293B;
@@ -57,10 +29,7 @@
     overflow-x: hidden;
   }
 
-  h1,
-  h2,
-  h3,
-  .heading-serif {
+  h1, h2, h3, .heading-serif {
     font-family: var(--font-heading);
     letter-spacing: -0.02em;
   }
@@ -120,7 +89,6 @@
     opacity: 0;
     transform: translateY(4px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
