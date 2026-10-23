@@ -1,3 +1,4 @@
+import { parseTeamFeatures } from "@/lib/adminAccess";
 import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller } from "@/lib/authGuard";
 import { createConfirmedUser, nextTrackingCode } from "@/lib/createPortalUser";
 import { blankPartner, directoryFromProfile, partnerFromRow, partnerToRow, profileFromRow, type DirectoryAccount } from "@/lib/records";
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
     organizationName?: string;
     staffTitle?: string;
     department?: string;
+    features?: unknown;
   } | null;
 
   const role = body?.role || "";
@@ -93,19 +95,26 @@ export async function POST(request: Request) {
     }
   }
 
-  const profilePatch = {
+  const profilePatch: Record<string, unknown> = {
     role,
     full_name: fullName,
     phone,
     tracking_id: issued.code,
     partner_id: partnerRecordId,
-    staff_title: role === "admin" ? body?.staffTitle || "Admin" : null,
-    department: role === "admin" ? body?.department || "Operations" : null,
+    staff_title: role === "admin" ? "Team" : null,
+    department: null,
   };
+  if (role === "admin") {
+    profilePatch.allowed_features = parseTeamFeatures(body?.features);
+  }
   const updated = await admin.from("profiles").update(profilePatch).eq("id", userId).select("*").maybeSingle();
   if (updated.error || !updated.data) {
     await admin.auth.admin.deleteUser(userId);
-    return Response.json({ error: updated.error?.message || "Could not assign the portal role." }, { status: 500 });
+    const message = updated.error?.message || "Could not assign the portal role.";
+    if (/allowed_features/i.test(message)) {
+      return Response.json({ error: "Run supabase/member-features.sql in the Supabase SQL editor, then create the login again." }, { status: 500 });
+    }
+    return Response.json({ error: message }, { status: 500 });
   }
   await admin.from("students").delete().eq("profile_id", userId);
 

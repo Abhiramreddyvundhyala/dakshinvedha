@@ -34,7 +34,6 @@ import { generatePassword, readSessionValue } from "@/utils/accounts";
 import {
   flushPortalChanges,
   loadPortalBundle,
-  loadTeamFeatures,
   portalSnapshot,
   provisionAccount,
   removeAccount,
@@ -47,6 +46,7 @@ import {
   DEFAULT_TEAM_FEATURES,
   canAccessAdminFeature as featureAllowed,
   isSuperAdminTitle,
+  parseTeamFeatures,
   type AdminFeatureKey,
 } from "@/lib/adminAccess";
 
@@ -283,9 +283,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       setSessionPartnerId(bundle.profile.partnerId);
       setStaffTitle(bundle.profile.staffTitle);
       setStaffName(bundle.profile.fullName || bundle.profile.email);
-      const access = await loadTeamFeatures();
-      if (cancelled) return;
-      setTeamFeatures(access.features);
+      setTeamFeatures(parseTeamFeatures(bundle.profile.allowedFeatures));
       setStudents(bundle.students);
       setApplications(bundle.applications);
       setNotices(bundle.notices);

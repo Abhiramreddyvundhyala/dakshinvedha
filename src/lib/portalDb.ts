@@ -359,6 +359,7 @@ export async function provisionAccount(input: {
   organizationName?: string;
   staffTitle?: string;
   department?: string;
+  features?: string[];
 }): Promise<{ ok: true; account: DirectoryAccount | null; partner: B2BPartnerProfile | null } | { ok: false; error: string }> {
   const token = await getAccessToken();
   if (!token) return { ok: false, error: "Sign in again before creating an account." };
@@ -380,6 +381,7 @@ export async function manageAccount(input: {
   organizationName?: string;
   status?: "Active" | "Suspended";
   password?: string;
+  features?: string[];
 }): Promise<{ ok: true; password?: string; account?: DirectoryAccount | null; partner?: B2BPartnerProfile | null } | { ok: false; error: string }> {
   const token = await getAccessToken();
   if (!token) return { ok: false, error: "Sign in again before changing this account." };
@@ -437,19 +439,19 @@ export async function updateAccountProfile(input: {
   status: "Active" | "Suspended";
   staffTitle?: string;
   department?: string;
+  features?: string[];
 }): Promise<string | null> {
   const supabase = getSupabase();
   if (!supabase) return SETUP;
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      full_name: input.fullName,
-      phone: input.phone,
-      status: input.status,
-      staff_title: input.staffTitle || null,
-      department: input.department || null,
-    })
-    .eq("id", input.userId);
+  const patch: Record<string, unknown> = {
+    full_name: input.fullName,
+    phone: input.phone,
+    status: input.status,
+  };
+  if (input.staffTitle !== undefined) patch.staff_title = input.staffTitle || null;
+  if (input.department !== undefined) patch.department = input.department || null;
+  if (input.features) patch.allowed_features = parseTeamFeatures(input.features);
+  const { error } = await supabase.from("profiles").update(patch).eq("id", input.userId);
   return error ? explain(error.message) : null;
 }
 

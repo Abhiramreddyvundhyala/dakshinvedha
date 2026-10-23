@@ -104,6 +104,7 @@ create table if not exists public.profiles (
   member_kind text check (member_kind in ('owner', 'team')),
   staff_title text,
   department text,
+  allowed_features jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

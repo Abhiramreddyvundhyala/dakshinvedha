@@ -25,6 +25,7 @@ export interface SessionProfile {
   memberKind: "owner" | "team" | "";
   staffTitle: string;
   department: string;
+  allowedFeatures: string[];
 }
 
 export interface DirectoryAccount {
@@ -39,6 +40,7 @@ export interface DirectoryAccount {
   trackingId: string;
   staffTitle: string;
   department: string;
+  allowedFeatures: string[];
 }
 
 type Row = Record<string, unknown>;
@@ -134,6 +136,9 @@ export function profileFromRow(row: Row): SessionProfile | null {
     memberKind: memberKind === "owner" || memberKind === "team" ? memberKind : "",
     staffTitle: text(row.staff_title),
     department: text(row.department),
+    allowedFeatures: Array.isArray(row.allowed_features)
+      ? (row.allowed_features as unknown[]).filter((item): item is string => typeof item === "string")
+      : [],
   };
 }
 
@@ -150,6 +155,7 @@ export function directoryFromProfile(profile: SessionProfile): DirectoryAccount 
     trackingId: profile.trackingId,
     staffTitle: profile.staffTitle,
     department: profile.department,
+    allowedFeatures: profile.allowedFeatures,
   };
 }
 

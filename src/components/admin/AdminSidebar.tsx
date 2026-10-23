@@ -6,7 +6,7 @@ import { performLogout } from "@/utils/auth";
 import {
   LayoutDashboard, BarChart3, Users, FileText, Building2,
   BookOpen, FolderCheck, Building, UserCog, Megaphone,
-  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset, KeyRound,
+  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset,
 } from "lucide-react";
 import type { AdminFeatureKey } from "@/lib/adminAccess";
 
@@ -32,7 +32,6 @@ const NAV_ITEMS: { key: AdminTabKey; label: string; icon: React.ElementType; gro
   { key: "partners",    label: "B2B Partners",       icon: Building2,       group: "Operations"  },
   { key: "agents",      label: "Agents",             icon: Headset,         group: "Operations"  },
   { key: "team",        label: "Team",               icon: UserCog,         group: "Operations"  },
-  { key: "access",      label: "Team Access",        icon: KeyRound,        group: "Operations"  },
   { key: "notices",     label: "Notices",            icon: Megaphone,       group: "Operations"  },
 ];
 
@@ -179,7 +178,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           {!compact && (
             <div className="flex-1 overflow-hidden">
               <p className="text-xs font-bold truncate" style={{ color: "#1e293b" }}>{staffName || "Admin"}</p>
-              <p className="text-[10px] truncate" style={{ color: "#94a3b8" }}>{staffTitle || "Admin"}</p>
+              <p className="text-[10px] truncate" style={{ color: "#94a3b8" }}>{staffTitle === "Super Admin" ? "Super Admin" : staffTitle === "Team" ? "Team member" : staffTitle || "Admin"}</p>
             </div>
           )}
           {!compact && (

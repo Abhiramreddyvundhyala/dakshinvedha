@@ -15,7 +15,6 @@ import { AdminUniversitiesView } from "./AdminUniversitiesView";
 import { AdminTeamView } from "./AdminTeamView";
 import { AdminAgentsView } from "./AdminAgentsView";
 import { AdminAnalyticsView } from "./AdminAnalyticsView";
-import { AdminAccessView } from "./AdminAccessView";
 import { StudentProfile } from "@/types";
 import { usePlatform } from "@/context/PlatformContext";
 
@@ -71,7 +70,6 @@ export const AdminPortalRoot: React.FC = () => {
           {currentTab === "partners" && <AdminPartnersView />}
           {currentTab === "agents" && <AdminAgentsView />}
           {currentTab === "team" && <AdminTeamView />}
-          {currentTab === "access" && <AdminAccessView />}
           {currentTab === "notices" && <AdminNoticesView />}
         </main>
       </div>

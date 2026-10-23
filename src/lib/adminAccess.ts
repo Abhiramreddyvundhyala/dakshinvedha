@@ -27,13 +27,7 @@ export const GRANTABLE_ADMIN_FEATURES: AdminFeatureKey[] = [
   "notices",
 ];
 
-export const DEFAULT_TEAM_FEATURES: AdminFeatureKey[] = [
-  "dashboard",
-  "students",
-  "applications",
-  "documents",
-  "notices",
-];
+export const DEFAULT_TEAM_FEATURES: AdminFeatureKey[] = ["dashboard"];
 
 export const ADMIN_FEATURE_COPY: Record<
   AdminFeatureKey,
@@ -77,11 +71,11 @@ export const ADMIN_FEATURE_COPY: Record<
   },
   team: {
     label: "Team",
-    description: "Create and remove admin staff logins. Super Admin only.",
+    description: "Create admin team logins and choose each person's screens. Super Admin only.",
   },
   access: {
     label: "Team Access",
-    description: "This checkbox list. Super Admin only.",
+    description: "Unused. Feature access is set on each team member.",
   },
   notices: {
     label: "Notices",
@@ -96,7 +90,7 @@ export function isSuperAdminTitle(title: string | null | undefined): boolean {
 }
 
 export function parseTeamFeatures(raw: unknown): AdminFeatureKey[] {
-  const source = Array.isArray(raw) ? raw : DEFAULT_TEAM_FEATURES;
+  const source = Array.isArray(raw) ? raw : [];
   const selected = source.filter((item): item is AdminFeatureKey => typeof item === "string" && FEATURE_SET.has(item));
   const grantable = selected.filter((item) => GRANTABLE_ADMIN_FEATURES.includes(item) || item === "dashboard");
   if (!grantable.includes("dashboard")) grantable.unshift("dashboard");
@@ -114,45 +108,5 @@ export function canAccessAdminFeature(
   return teamFeatures.includes(feature);
 }
 
-export const TEAM_ACCESS_SQL = `create table if not exists public.portal_settings (
-  id text primary key,
-  team_features jsonb not null default '["dashboard","students","applications","documents","notices"]'::jsonb,
-  updated_at timestamptz not null default now(),
-  updated_by uuid
-);
-
-alter table public.portal_settings enable row level security;
-
-insert into public.portal_settings (id)
-values ('global')
-on conflict (id) do nothing;
-
-create or replace function public.is_super_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid()
-      and role = 'admin'
-      and status = 'Active'
-      and staff_title = 'Super Admin'
-  );
-$$;
-
-revoke all on function public.is_super_admin() from public;
-grant execute on function public.is_super_admin() to authenticated;
-
-drop policy if exists portal_settings_read on public.portal_settings;
-create policy portal_settings_read on public.portal_settings
-  for select to authenticated
-  using (public.is_admin());
-
-drop policy if exists portal_settings_update on public.portal_settings;
-create policy portal_settings_update on public.portal_settings
-  for update to authenticated
-  using (public.is_super_admin())
-  with check (public.is_super_admin());`;
+export const MEMBER_FEATURES_SQL = `alter table public.profiles add column if not exists allowed_features jsonb;`;
+export const TEAM_ACCESS_SQL = MEMBER_FEATURES_SQL;

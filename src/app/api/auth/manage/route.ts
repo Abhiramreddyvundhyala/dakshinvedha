@@ -1,3 +1,4 @@
+import { isSuperAdminTitle, parseTeamFeatures } from "@/lib/adminAccess";
 import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller, type CallerProfile } from "@/lib/authGuard";
 import { directoryFromProfile, partnerFromRow, partnerToRow, profileFromRow } from "@/lib/records";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
@@ -11,6 +12,7 @@ type ManageBody = {
   organizationName?: string;
   status?: "Active" | "Suspended";
   password?: string;
+  features?: unknown;
 };
 
 async function canManage(caller: CallerProfile, targetRole: string, targetPartnerId: string | null): Promise<boolean> {
@@ -115,7 +117,11 @@ export async function POST(request: Request) {
   const phone = (body?.phone || "").trim();
   if (!fullName) return Response.json({ error: "Name is required." }, { status: 400 });
 
-  const profilePatch = await admin.from("profiles").update({ full_name: fullName, phone }).eq("id", userId);
+  const patch: Record<string, unknown> = { full_name: fullName, phone };
+  if (target.role === "admin" && !isSuperAdminTitle(String(target.staff_title || "")) && body?.features !== undefined) {
+    patch.allowed_features = parseTeamFeatures(body.features);
+  }
+  const profilePatch = await admin.from("profiles").update(patch).eq("id", userId);
   if (profilePatch.error) return Response.json({ error: profilePatch.error.message }, { status: 400 });
 
   if (target.role === "partner" && partner) {

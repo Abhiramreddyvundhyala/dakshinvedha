@@ -14,6 +14,7 @@ export type CallerProfile = {
   member_kind: string | null;
   staff_title: string | null;
   department: string | null;
+  allowed_features?: unknown;
 };
 
 export async function requireCaller(request: Request): Promise<{ caller: CallerProfile } | { error: string; status: number }> {
@@ -51,16 +52,8 @@ export function callerIsSuperAdmin(caller: CallerProfile): boolean {
   return caller.role === "admin" && caller.status === "Active" && isSuperAdminTitle(caller.staff_title);
 }
 
-export async function loadCallerTeamFeatures(): Promise<AdminFeatureKey[]> {
-  const admin = getSupabaseAdmin();
-  if (!admin) return parseTeamFeatures(null);
-  const { data } = await admin.from("portal_settings").select("team_features").eq("id", "global").maybeSingle();
-  return parseTeamFeatures(data?.team_features);
-}
-
 export async function callerCanUseFeature(caller: CallerProfile, feature: AdminFeatureKey): Promise<boolean> {
   if (caller.role !== "admin") return false;
   if (callerIsSuperAdmin(caller)) return true;
-  const features = await loadCallerTeamFeatures();
-  return canAccessAdminFeature(caller.staff_title, features, feature);
+  return canAccessAdminFeature(caller.staff_title, parseTeamFeatures(caller.allowed_features), feature);
 }
