@@ -3,10 +3,6 @@
 import React, { useState } from "react";
 import { StudentHeader, StudentNavTab } from "./StudentHeader";
 import { StudentSidebar } from "./StudentSidebar";
-<<<<<<< HEAD
-=======
-import { StudentAuthView } from "./StudentAuthView";
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 import { StudentDashboardView } from "./StudentDashboardView";
 import { StudentUniversitiesView } from "./StudentUniversitiesView";
 import { StudentUniversityDetailsView } from "./StudentUniversityDetailsView";
@@ -23,10 +19,6 @@ export const StudentPortalRoot: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<StudentNavTab>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Sidebar collapse and mobile drawer state
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Selected University & target subtab ("details" | "courses")
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
@@ -73,7 +65,6 @@ export const StudentPortalRoot: React.FC = () => {
 
       <StudentSidebar
         currentTab={currentTab}
-<<<<<<< HEAD
         onSelectTab={handleSelectTab}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
@@ -94,41 +85,6 @@ export const StudentPortalRoot: React.FC = () => {
         />
 
         <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-7 space-y-6 overflow-auto">
-=======
-        onSelectTab={(tab) => {
-          if (tab === "universities") {
-            setSelectedUniversity(null);
-          }
-          setCurrentTab(tab);
-        }}
-        onOpenCompleteProfile={() => setIsOnboardingOpen(true)}
-        onToggleSidebarMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-      />
-
-      {/* Student Left Sidebar */}
-      <StudentSidebar
-        currentTab={currentTab}
-        onSelectTab={(tab) => {
-          if (tab === "universities") {
-            setSelectedUniversity(null);
-          }
-          setCurrentTab(tab);
-        }}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        isMobileOpen={isMobileSidebarOpen}
-        onCloseMobile={() => setIsMobileSidebarOpen(false)}
-        onOpenCompleteProfile={() => setIsOnboardingOpen(true)}
-      />
-
-      {/* Main Content Area */}
-      <main
-        className={`flex-1 transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
-        }`}
-      >
-        <div className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-7 space-y-6">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
         {/* TAB 1: DASHBOARD */}
         {currentTab === "dashboard" && (
           <StudentDashboardView
@@ -179,13 +135,8 @@ export const StudentPortalRoot: React.FC = () => {
 
         {/* TAB 4: PROFILE & DOCUMENTS */}
         {currentTab === "profile" && <StudentProfileView />}
-<<<<<<< HEAD
         </main>
       </div>
-=======
-        </div>
-      </main>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 
       {/* MODALS */}
       {/* 1. Onboarding / Complete Profile Wizard */}

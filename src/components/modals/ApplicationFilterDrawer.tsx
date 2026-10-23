@@ -80,11 +80,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
         {/* Header */}
         <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2">
-<<<<<<< HEAD
             <SlidersHorizontal className="w-4 h-4 text-orange-400" />
-=======
-            <SlidersHorizontal className="w-4 h-4 text-[#E58D5F]" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             <h3 className="text-sm font-bold">ALL APPLICATION FILTERS</h3>
           </div>
           <button
@@ -108,13 +104,8 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
               onChange={(e) =>
                 setLocalFilters({ ...localFilters, camsId: e.target.value })
               }
-<<<<<<< HEAD
               placeholder="e.g. DV-APP-2026-98421"
               className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c] font-mono"
-=======
-              placeholder="e.g. CAMS-98421"
-              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732] font-mono"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             />
           </div>
 
@@ -130,11 +121,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
                 setLocalFilters({ ...localFilters, studentName: e.target.value })
               }
               placeholder="Filter by student name..."
-<<<<<<< HEAD
               className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-              className="w-full p-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             />
           </div>
 
@@ -407,11 +394,7 @@ export const ApplicationFilterDrawer: React.FC<ApplicationFilterDrawerProps> = (
           <button
             type="button"
             onClick={handleApply}
-<<<<<<< HEAD
             className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-=======
-            className="px-5 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           >
             <Check className="w-4 h-4" />
             <span>APPLY FILTERS</span>

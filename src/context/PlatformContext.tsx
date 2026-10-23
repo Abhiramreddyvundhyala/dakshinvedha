@@ -230,7 +230,6 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [activeStudentId, setActiveStudentId] = useState<string>("");
 
   // 3. Shared Entities
-<<<<<<< HEAD
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [applications, setApplications] = useState<ApplicationRecord[]>([]);
   const [universities, setUniversities] = useState<UniversityInfo[]>([]);
@@ -245,15 +244,6 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [accessRequests, setAccessRequests] = useState<B2BAccessRequest[]>([]);
   const [sessionEmail, setSessionEmail] = useState("");
   const [sessionPartnerId, setSessionPartnerId] = useState("");
-=======
-  const [students, setStudents] = useState<StudentProfile[]>(SEED_STUDENTS);
-  const [applications, setApplications] = useState<ApplicationRecord[]>(MOCK_APPLICATIONS);
-  const [universities, setUniversities] = useState<UniversityInfo[]>([]);
-  const [courses, setCourses] = useState<CourseInfo[]>([]);
-  const [notices, setNotices] = useState<NoticeItem[]>(MOCK_NOTICES);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
-  const [b2bPartners, setB2bPartners] = useState<B2BPartnerProfile[]>(SEED_B2B_PARTNERS);
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [dbReady, setDbReady] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -283,7 +273,6 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         setIsStudentAuthenticated(true);
         setActiveStudentId(bundle.profile.id);
       }
-<<<<<<< HEAD
       snapshotRef.current = portalSnapshot(bundle);
       setDbReady(true);
       setIsHydrated(true);
@@ -291,60 +280,10 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     return () => {
       cancelled = true;
     };
-=======
-      const savedActiveStudent = localStorage.getItem("devgrate_active_student_id");
-      if (savedActiveStudent) {
-        setActiveStudentId(savedActiveStudent);
-      }
-      const savedStudents = localStorage.getItem("devgrate_students_data");
-      if (savedStudents) {
-        const parsed = JSON.parse(savedStudents);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setStudents(parsed);
-        }
-      }
-      const savedApps = localStorage.getItem("devgrate_portal_applications");
-      if (savedApps) {
-        const parsed = JSON.parse(savedApps);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setApplications(parsed);
-        }
-      }
-
-      // One-time migration: Clear cached dummy universities and courses
-      const isCleared = localStorage.getItem("devgrate_univ_courses_cleared_v1");
-      if (!isCleared) {
-        localStorage.removeItem("devgrate_courses_data");
-        localStorage.removeItem("devgrate_universities_data");
-        localStorage.setItem("devgrate_univ_courses_cleared_v1", "true");
-        setUniversities([]);
-        setCourses([]);
-      } else {
-        const savedUniversities = localStorage.getItem("devgrate_universities_data");
-        if (savedUniversities) {
-          const parsedUnivs = JSON.parse(savedUniversities);
-          if (Array.isArray(parsedUnivs)) {
-            setUniversities(parsedUnivs);
-          }
-        }
-        const savedCourses = localStorage.getItem("devgrate_courses_data");
-        if (savedCourses) {
-          const parsedCourses = JSON.parse(savedCourses);
-          if (Array.isArray(parsedCourses)) {
-            setCourses(parsedCourses);
-          }
-        }
-      }
-    } catch {
-      // LocalStorage error fallback
-    }
-    setIsHydrated(true);
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
   }, []);
 
   useEffect(() => {
     if (!isHydrated) return;
-<<<<<<< HEAD
     let cancelled = false;
     (async () => {
       setCatalogStatus("loading");
@@ -380,20 +319,6 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, 450);
     return () => window.clearTimeout(handle);
   }, [dbReady, students, applications, b2bPartners, notices, notifications, accessRequests]);
-=======
-    try {
-      localStorage.setItem("devgrate_portal_role", portalRole);
-      localStorage.setItem("devgrate_student_auth", String(isStudentAuthenticated));
-      localStorage.setItem("devgrate_active_student_id", activeStudentId);
-      localStorage.setItem("devgrate_students_data", JSON.stringify(students));
-      localStorage.setItem("devgrate_portal_applications", JSON.stringify(applications));
-      localStorage.setItem("devgrate_courses_data", JSON.stringify(courses));
-      localStorage.setItem("devgrate_universities_data", JSON.stringify(universities));
-    } catch {
-      // Ignore storage quota
-    }
-  }, [portalRole, isStudentAuthenticated, activeStudentId, students, applications, courses, universities, isHydrated]);
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 
   const setPortalRole = useCallback((role: PortalRole) => {
     setPortalRoleState(role);
@@ -693,44 +618,11 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     courseId: string;
     intake: string;
     notes?: string;
-<<<<<<< HEAD
   }): ApplicationRecord | null => {
     const student = activeStudent;
     const univ = universities.find((u) => u.id === data.universityId);
     const course = courses.find((c) => c.id === data.courseId);
     if (!student || !univ || !course) return null;
-=======
-  }): ApplicationRecord => {
-    const student = activeStudent || SEED_STUDENTS[0];
-    const univ = universities.find((u) => u.id === data.universityId) || universities[0] || {
-      id: data.universityId || "univ-temp",
-      name: "Selected University",
-      country: "International",
-      city: "Campus",
-      logo: "🎓",
-      image: "",
-      availableCoursesCount: 0,
-      availableIntakes: [],
-    };
-    const course = courses.find((c) => c.id === data.courseId) || courses[0] || {
-      id: data.courseId || "course-temp",
-      universityId: univ.id,
-      universityName: univ.name,
-      campus: "Main Campus",
-      city: univ.city,
-      country: univ.country,
-      courseName: "Degree Program",
-      studyLevel: "Postgraduate" as const,
-      courseType: "Full-Time" as const,
-      duration: "1 Year",
-      tuitionFee: "£0",
-      applicationFee: "£0",
-      activeIntake: data.intake || "Upcoming",
-      availableIntakes: [],
-      applicationDeadline: "TBD",
-      badges: { scholarship: false, freeToApply: true, noAppFee: true, interviewRequired: false },
-    };
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
 
     const newCamsId = createTrackingId("APP");
     const today = new Date().toISOString().slice(0, 10);

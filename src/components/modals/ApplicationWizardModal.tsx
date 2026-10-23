@@ -249,11 +249,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
         {/* Wizard Header */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between border-b border-slate-700">
           <div className="flex items-center gap-3">
-<<<<<<< HEAD
             <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
-=======
-            <div className="w-10 h-10 rounded-xl bg-[#D56732]/20 border border-[#D56732]/30 flex items-center justify-center text-[#E58D5F]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
@@ -291,30 +287,18 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 onClick={() => setStep(s.num)}
                 className={`flex items-center gap-2 pb-1 border-b-2 whitespace-nowrap transition-colors ${
                   step === s.num
-<<<<<<< HEAD
                     ? "border-[#ea580c] text-[#ea580c] font-bold"
                     : step > s.num
                     ? "border-orange-500 text-orange-700"
-=======
-                    ? "border-[#D56732] text-[#D56732] font-bold"
-                    : step > s.num
-                    ? "border-[#D56732] text-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     : "border-transparent text-slate-400 hover:text-slate-600"
                 }`}
               >
                 <div
                   className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                     step === s.num
-<<<<<<< HEAD
                       ? "bg-[#ea580c] text-white"
                       : step > s.num
                       ? "bg-orange-500 text-white"
-=======
-                      ? "bg-[#D56732] text-white"
-                      : step > s.num
-                      ? "bg-[#D56732] text-white"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       : "bg-slate-200 text-slate-500"
                   }`}
                 >
@@ -331,11 +315,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
           {/* SUCCESS SCREEN */}
           {isSuccessScreen && submittedApp ? (
             <div className="py-10 text-center space-y-4 max-w-lg mx-auto animate-fade-in">
-<<<<<<< HEAD
               <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mx-auto shadow-md">
-=======
-              <div className="w-16 h-16 rounded-full bg-[#FDF5F0] text-[#D56732] flex items-center justify-center mx-auto shadow-md">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <div>
@@ -345,11 +325,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <p className="text-xs text-slate-500 mt-1">
                   Candidate dossier has been registered into the admissions pipeline with ID:
                 </p>
-<<<<<<< HEAD
                 <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl inline-block font-mono text-base font-extrabold text-[#ea580c]">
-=======
-                <div className="mt-3 p-3 bg-[#FDF5F0] border border-[#F5D2C1] rounded-xl inline-block font-mono text-base font-extrabold text-[#D56732]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   {submittedApp.camsId}
                 </div>
               </div>
@@ -362,11 +338,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
               </div>
               <button
                 onClick={onClose}
-<<<<<<< HEAD
                 className="px-6 py-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
-=======
-                className="px-6 py-2.5 bg-[#D56732] hover:bg-[#BA5322] text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               >
                 Return to Dashboard
               </button>
@@ -388,11 +360,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         required
                       />
                     </div>
@@ -404,11 +372,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={middleName}
                         onChange={(e) => setMiddleName(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                     <div>
@@ -419,11 +383,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         required
                       />
                     </div>
@@ -435,11 +395,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="date"
                         value={dob}
                         onChange={(e) => setDob(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                     <div>
@@ -449,11 +405,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                       <select
                         value={gender}
                         onChange={(e) => setGender(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       >
                         <option value="Female">Female</option>
                         <option value="Male">Male</option>
@@ -468,11 +420,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={nationality}
                         onChange={(e) => setNationality(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                     <div>
@@ -483,11 +431,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="text"
                         value={passportNumber}
                         onChange={(e) => setPassportNumber(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c] font-mono"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732] font-mono"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                     <div>
@@ -498,11 +442,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="date"
                         value={passportExpiry}
                         onChange={(e) => setPassportExpiry(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                     <div>
@@ -513,11 +453,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                     <div>
@@ -528,11 +464,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                   </div>
@@ -615,11 +547,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                     <button
                       type="button"
                       onClick={addQualification}
-<<<<<<< HEAD
                       className="px-3 py-1.5 bg-orange-50 text-orange-800 border border-orange-200 rounded-lg font-semibold hover:bg-orange-100 flex items-center gap-1 cursor-pointer"
-=======
-                      className="px-3 py-1.5 bg-[#FDF5F0] text-[#BA5322] border border-[#F5D2C1] rounded-lg font-semibold hover:bg-[#FBE5D8] flex items-center gap-1 cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Another Qualification</span>
@@ -896,11 +824,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         onChange={(e) =>
                           setCourseSelection({ ...courseSelection, tuitionFee: e.target.value })
                         }
-<<<<<<< HEAD
                         className="w-full p-2.5 border border-slate-200 rounded-lg font-mono font-bold text-[#ea580c]"
-=======
-                        className="w-full p-2.5 border border-slate-200 rounded-lg font-mono font-bold text-[#D56732]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       />
                     </div>
                   </div>
@@ -929,15 +853,9 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                             key={cat}
                             type="button"
                             onClick={() => handleSimulateUpload(cat)}
-<<<<<<< HEAD
                             className="px-2.5 py-1 bg-white border border-slate-200 hover:border-orange-400 text-slate-700 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                           >
                             <UploadCloud className="w-3 h-3 text-[#ea580c]" />
-=======
-                            className="px-2.5 py-1 bg-white border border-slate-200 hover:border-[#E58D5F] text-slate-700 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
-                          >
-                            <UploadCloud className="w-3 h-3 text-[#D56732]" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             <span>+ {cat}</span>
                           </button>
                         )
@@ -953,11 +871,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         className="p-3 bg-white flex items-center justify-between hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-<<<<<<< HEAD
                           <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-[10px]">
-=======
-                          <div className="w-8 h-8 rounded-lg bg-[#FDF5F0] text-[#D56732] flex items-center justify-center font-bold text-[10px]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             PDF
                           </div>
                           <div>
@@ -969,11 +883,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         </div>
 
                         <div className="flex items-center gap-3">
-<<<<<<< HEAD
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 flex items-center gap-1">
-=======
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF5F0] text-[#BA5322] flex items-center gap-1">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             <Check className="w-3 h-3" /> {doc.status}
                           </span>
                           <button
@@ -1006,11 +916,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setStep(1)}
-<<<<<<< HEAD
                           className="text-[#ea580c] font-bold hover:underline"
-=======
-                          className="text-[#D56732] font-bold hover:underline"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           EDIT
                         </button>
@@ -1030,11 +936,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setStep(3)}
-<<<<<<< HEAD
                           className="text-[#ea580c] font-bold hover:underline"
-=======
-                          className="text-[#D56732] font-bold hover:underline"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           EDIT
                         </button>
@@ -1047,7 +949,6 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                     </div>
 
                     {/* Course Box */}
-<<<<<<< HEAD
                     <div className="p-4 bg-orange-50/60 border border-orange-200 rounded-xl space-y-2">
                       <div className="flex items-center justify-between pb-1 border-b border-orange-200">
                         <span className="font-bold text-orange-950">Target Destination</span>
@@ -1055,15 +956,6 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                           type="button"
                           onClick={() => setStep(5)}
                           className="text-[#ea580c] font-bold hover:underline"
-=======
-                    <div className="p-4 bg-[#FDF5F0]/60 border border-[#F5D2C1] rounded-xl space-y-2">
-                      <div className="flex items-center justify-between pb-1 border-b border-[#F5D2C1]">
-                        <span className="font-bold text-[#3C1609]">Target Destination</span>
-                        <button
-                          type="button"
-                          onClick={() => setStep(5)}
-                          className="text-[#D56732] font-bold hover:underline"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           EDIT
                         </button>
@@ -1119,11 +1011,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setStep(step + 1)}
-<<<<<<< HEAD
                   className="px-5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
-=======
-                  className="px-5 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 >
                   <span>Continue</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1132,11 +1020,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                 <button
                   type="button"
                   onClick={handleFinalSubmit}
-<<<<<<< HEAD
                   className="px-6 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl text-xs font-bold shadow-md shadow-orange-900/20 flex items-center gap-1.5 transition-all cursor-pointer"
-=======
-                  className="px-6 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white rounded-xl text-xs font-bold shadow-md shadow-[#D56732]/20 flex items-center gap-1.5 transition-all cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>SUBMIT APPLICATION</span>

@@ -116,11 +116,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
       {/* Title & Introduction */}
       <div>
-<<<<<<< HEAD
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 text-orange-800 text-xs font-bold border border-orange-200 mb-2">
-=======
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDF5F0] text-[#BA5322] text-xs font-bold border border-[#F5D2C1] mb-2">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           <Building2 className="w-3.5 h-3.5" />
           <span>Global Partner Network</span>
         </div>
@@ -142,11 +138,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
             placeholder="Search University by name, city, or country..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-<<<<<<< HEAD
             className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 transition-all bg-slate-50/50"
-=======
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#D56732]/20 focus:border-[#D56732] transition-all bg-slate-50/50"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           />
           {searchQuery && (
             <button
@@ -229,11 +221,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
                 type="checkbox"
                 checked={scholarshipOnly}
                 onChange={(e) => setScholarshipOnly(e.target.checked)}
-<<<<<<< HEAD
                 className="rounded text-orange-600 focus:ring-orange-500 w-3.5 h-3.5"
-=======
-                className="rounded text-[#D56732] focus:ring-[#D56732] w-3.5 h-3.5"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               />
               <span className="font-bold text-slate-700 text-[11px]">Scholarship Available</span>
             </label>
@@ -259,19 +247,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
       </div>
 
       {/* UNIVERSITIES GRID */}
-      {universities.length === 0 ? (
-        <div className="p-16 text-center bg-white rounded-3xl border border-slate-200/90 shadow-2xs space-y-4 max-w-xl mx-auto my-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#FDF5F0] text-[#D56732] flex items-center justify-center mx-auto border border-[#F5D2C1] shadow-xs">
-            <Building2 className="w-8 h-8" />
-          </div>
-          <div className="space-y-1.5">
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">No Universities or Courses Available</h3>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-              There are currently no universities or courses in the system. Once institutions and degree programs are added, they will appear here.
-            </p>
-          </div>
-        </div>
-      ) : filteredUniversities.length === 0 ? (
+      {filteredUniversities.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 space-y-3">
           <Building2 className="w-10 h-10 text-slate-300 mx-auto" />
           <h3 className="text-base font-extrabold text-slate-900">No Universities Found</h3>
@@ -280,11 +256,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
           </p>
           <button
             onClick={clearAllFilters}
-<<<<<<< HEAD
             className="px-4 py-2 bg-orange-700 hover:bg-orange-800 text-white font-bold text-xs rounded-xl cursor-pointer"
-=======
-            className="px-4 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white font-bold text-xs rounded-xl cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           >
             Clear All Filters
           </button>
@@ -296,11 +268,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
             return (
               <div
                 key={univ.id}
-<<<<<<< HEAD
                 className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-lg hover:border-orange-300 transition-all flex flex-col justify-between overflow-hidden group"
-=======
-                className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-lg hover:border-[#F5D2C1] transition-all flex flex-col justify-between overflow-hidden group"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               >
                 {/* University Image & Logo Header */}
                 <div>
@@ -319,11 +287,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
                     </div>
 
                     <div className="absolute bottom-3 left-3 right-3 text-white">
-<<<<<<< HEAD
                       <span className="text-[10px] font-bold text-orange-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
-=======
-                      <span className="text-[10px] font-bold text-[#F5D2C1] bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         {univ.city}
                       </span>
                       <h2 className="text-base font-black tracking-tight leading-snug mt-1 drop-shadow-xs">
@@ -336,11 +300,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
                   <div className="p-5 space-y-3">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-500 font-medium">Available Programs:</span>
-<<<<<<< HEAD
                       <span className="font-extrabold text-orange-800 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-=======
-                      <span className="font-extrabold text-[#BA5322] bg-[#FDF5F0] px-2.5 py-0.5 rounded-full border border-[#F5D2C1]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         {univCourses.length || univ.availableCoursesCount} Courses
                       </span>
                     </div>
@@ -373,11 +333,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
                   </button>
                   <button
                     onClick={() => onSelectUniversity(univ, "courses")}
-<<<<<<< HEAD
                     className="py-2.5 text-xs font-extrabold text-white bg-orange-700 hover:bg-orange-800 rounded-xl shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1 active:scale-98"
-=======
-                    className="py-2.5 text-xs font-extrabold text-white bg-[#D56732] hover:bg-[#BA5322] rounded-xl shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1 active:scale-98"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   >
                     <span>VIEW COURSES</span>
                     <ChevronRight className="w-3.5 h-3.5" />

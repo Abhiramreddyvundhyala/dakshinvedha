@@ -45,17 +45,10 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
-<<<<<<< HEAD
         <div className="p-6 bg-orange-950 border-b border-orange-900 text-white flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono font-extrabold text-orange-300 bg-orange-900/80 px-2.5 py-0.5 rounded-full border border-orange-700/60">
-=======
-        <div className="p-6 bg-[#2E1810] border-b border-[#452216] text-white flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-extrabold text-[#F5D2C1] bg-[#452216]/80 px-2.5 py-0.5 rounded-full border border-[#BA5322]/60">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 {application.camsId}
               </span>
               <span className="text-xs text-slate-300 font-bold">
@@ -94,13 +87,8 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
               onClick={() => setModalTab("offer")}
               className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
                 modalTab === "offer"
-<<<<<<< HEAD
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-orange-700 hover:text-orange-900"
-=======
-                  ? "border-[#D56732] text-[#D56732]"
-                  : "border-transparent text-[#D56732] hover:text-[#8C370F]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               }`}
             >
               <Award className="w-3.5 h-3.5" />
@@ -157,11 +145,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                       <div
                         className={`absolute -left-6 sm:-left-8 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                           isCompleted
-<<<<<<< HEAD
                             ? "bg-orange-500 border-white text-white shadow-xs"
-=======
-                            ? "bg-[#D56732] border-white text-white shadow-xs"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             : isCurrent
                             ? "bg-orange-500 border-white text-white shadow-md shadow-orange-500/30 animate-pulse"
                             : isNA
@@ -195,11 +179,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                                 Not Applicable
                               </span>
                             ) : isCompleted ? (
-<<<<<<< HEAD
                               <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-100 text-orange-800">
-=======
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FDF5F0] text-[#BA5322]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                                 Completed • {stage.date}
                               </span>
                             ) : isCurrent ? (
@@ -224,7 +204,6 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
 
           {/* TAB 2: OFFICIAL OFFER LETTER */}
           {modalTab === "offer" && (
-<<<<<<< HEAD
             <div className="p-6 bg-orange-50/50 border-2 border-orange-200 rounded-3xl space-y-5 animate-fade-in">
               <div className="flex items-center justify-between border-b border-orange-200/80 pb-4">
                 <div className="flex items-center gap-3">
@@ -233,16 +212,6 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
-=======
-            <div className="p-6 bg-[#FDF5F0]/50 border-2 border-[#F5D2C1] rounded-3xl space-y-5 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-[#F5D2C1] pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#FDF5F0] text-[#D56732] flex items-center justify-center font-bold text-xl shadow-xs">
-                    {application.university.logo}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#D56732] bg-[#FDF5F0] px-2 py-0.5 rounded-full">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       Conditional Offer Confirmed
                     </span>
                     <h3 className="text-base font-black text-slate-900 mt-0.5">
@@ -256,7 +225,6 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-<<<<<<< HEAD
                 <div className="p-3 bg-white rounded-xl border border-orange-100">
                   <span className="text-[10px] text-slate-400 font-bold block">Annual Tuition</span>
                   <strong className="text-slate-900 text-sm">{application.course.tuitionFee}</strong>
@@ -268,19 +236,6 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                   <strong className="text-orange-700 text-sm">£2,500 Merit Grant</strong>
                 </div>
                 <div className="p-3 bg-white rounded-xl border border-orange-100">
-=======
-                <div className="p-3 bg-white rounded-xl border border-[#F5D2C1]">
-                  <span className="text-[10px] text-slate-400 font-bold block">Annual Tuition</span>
-                  <strong className="text-slate-900 text-sm">{application.course.tuitionFee}</strong>
-                </div>
-                <div className="p-3 bg-white rounded-xl border border-[#F5D2C1]">
-                  <span className="text-[10px] text-slate-400 font-bold block">
-                    Scholarship Awarded
-                  </span>
-                  <strong className="text-[#D56732] text-sm">£2,500 Merit Grant</strong>
-                </div>
-                <div className="p-3 bg-white rounded-xl border border-[#F5D2C1]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   <span className="text-[10px] text-slate-400 font-bold block">
                     Acceptance Deposit
                   </span>
@@ -288,11 +243,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                 </div>
               </div>
 
-<<<<<<< HEAD
               <div className="p-4 bg-white rounded-2xl border border-orange-100 space-y-1.5 text-xs text-slate-700">
-=======
-              <div className="p-4 bg-white rounded-2xl border border-[#F5D2C1] space-y-1.5 text-xs text-slate-700">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 <p className="font-bold text-slate-900">Offer Acceptance Conditions:</p>
                 <p>• Submit final official degree certificate prior to CAS issuance.</p>
                 <p>• Maintain minimum 60% standard in final undergraduate semester.</p>
@@ -303,22 +254,14 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                 <button
                   type="button"
                   onClick={() => alert("Downloading official Offer Letter PDF.")}
-<<<<<<< HEAD
                   className="px-4 py-2 border border-orange-300 text-orange-800 font-bold text-xs rounded-xl hover:bg-orange-50 transition-colors cursor-pointer"
-=======
-                  className="px-4 py-2 border border-[#F5D2C1] text-[#BA5322] font-bold text-xs rounded-xl hover:bg-[#FDF5F0] transition-colors cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 >
                   Download Offer Letter PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => alert("Offer accepted! Our admissions counselor will contact you for deposit clearance.")}
-<<<<<<< HEAD
                   className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
-=======
-                  className="px-5 py-2 bg-[#D56732] hover:bg-[#BA5322] text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                 >
                   Accept Offer Online
                 </button>
@@ -359,11 +302,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                     <span
                       className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
                         doc.status === "Verified"
-<<<<<<< HEAD
                           ? "bg-orange-100 text-orange-800"
-=======
-                          ? "bg-[#FDF5F0] text-[#BA5322]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                           : "bg-slate-100 text-slate-700"
                       }`}
                     >

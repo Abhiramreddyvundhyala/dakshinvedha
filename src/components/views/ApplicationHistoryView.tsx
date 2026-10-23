@@ -140,11 +140,7 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
   const getPrimaryStatusBadge = (status: string) => {
     switch (status) {
       case "Offer Issued":
-<<<<<<< HEAD
         return "bg-orange-50 text-orange-700 border-orange-200";
-=======
-        return "bg-[#FDF5F0] text-[#D56732] border-[#F5D2C1]";
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
       case "Payment Done":
         return "bg-blue-50 text-blue-700 border-blue-200";
       case "CAS Processing":

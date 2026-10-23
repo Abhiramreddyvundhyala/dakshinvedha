@@ -79,13 +79,8 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
       <div className="bg-[#FAFAF8] border border-[#E7E5E0] p-6 sm:p-7 rounded-2xl shadow-xs relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
-<<<<<<< HEAD
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fff7ed] text-[#ea580c] text-xs font-semibold border border-[#fed7aa]">
               <Sparkles className="w-3.5 h-3.5 text-[#ea580c]" />
-=======
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FDF5F0] text-[#D56732] text-xs font-semibold border border-[#F5D2C1]">
-              <Sparkles className="w-3.5 h-3.5 text-[#D56732]" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               <span>Intake 2026/2027 Admissions Live</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-heading">
@@ -103,7 +98,6 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 Profile Completion
               </span>
               <div className="flex items-center gap-2.5 mt-1">
-<<<<<<< HEAD
                 <span className="text-2xl font-bold text-[#ea580c]">
                   {activeStudent?.profileCompletion || 0}%
                 </span>
@@ -111,15 +105,6 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   <div
                     className="h-full bg-[#ea580c] rounded-full"
                     style={{ width: `${activeStudent?.profileCompletion || 0}%` }}
-=======
-                <span className="text-2xl font-bold text-[#D56732]">
-                  {activeStudent?.profileCompletion || 72}%
-                </span>
-                <div className="w-24 h-2 bg-slate-100 border border-[#E7E5E0] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#D56732] rounded-full"
-                    style={{ width: `${activeStudent?.profileCompletion || 72}%` }}
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   />
                 </div>
               </div>
@@ -127,11 +112,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
 
             <button
               onClick={onOpenCompleteProfile}
-<<<<<<< HEAD
               className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-semibold rounded-[10px] shadow-xs transition-colors cursor-pointer whitespace-nowrap active:scale-[0.98]"
-=======
-              className="h-10 px-4 bg-[#D56732] hover:bg-[#BA5322] text-white text-xs font-semibold rounded-[10px] shadow-xs transition-colors cursor-pointer whitespace-nowrap active:scale-[0.98]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             >
               COMPLETE PROFILE
             </button>
@@ -167,11 +148,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* KPI 1: Applications */}
         <div
           onClick={onNavigateToApplications}
-<<<<<<< HEAD
           className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all cursor-pointer group"
-=======
-          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#F5D2C1] transition-all cursor-pointer group"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">My Applications</span>
@@ -191,7 +168,6 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* KPI 2: Offers */}
         <div
           onClick={onNavigateToApplications}
-<<<<<<< HEAD
           className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
@@ -206,22 +182,6 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <p className="text-[11px] text-[#ea580c] font-medium mt-1 flex items-center gap-1">
             <span>Conditional & Full Grants</span>
             <ChevronRight className="w-3 h-3 text-[#ea580c]" />
-=======
-          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#F5D2C1] transition-all cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">Offers Received</span>
-            <div className="w-9 h-9 rounded-lg bg-[#FDF5F0] text-[#D56732] flex items-center justify-center border border-[#F5D2C1] group-hover:scale-105 transition-transform">
-              <Award className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold text-[#D56732] mt-2 font-heading">
-            {offersCount}
-          </p>
-          <p className="text-[11px] text-[#D56732] font-medium mt-1 flex items-center gap-1">
-            <span>Conditional & Full Grants</span>
-            <ChevronRight className="w-3 h-3 text-[#D56732]" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           </p>
         </div>
 
@@ -248,34 +208,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* KPI 4: Deadlines */}
         <div
           onClick={onNavigateToUniversities}
-<<<<<<< HEAD
           className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#fed7aa] transition-all cursor-pointer group"
-=======
-          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-[#F5D2C1] transition-all cursor-pointer group"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Upcoming Deadlines</span>
             <div className="w-9 h-9 rounded-lg bg-[#FAFAF8] text-slate-700 flex items-center justify-center border border-[#E7E5E0] group-hover:scale-105 transition-transform">
-<<<<<<< HEAD
               <Clock className="w-4 h-4 text-[#ea580c]" />
-=======
-              <Clock className="w-4 h-4 text-[#D56732]" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 font-heading">
             {urgentDeadlinesCount}
           </p>
-<<<<<<< HEAD
           <p className="text-[11px] text-[#ea580c] font-medium mt-1 flex items-center gap-1">
             <span>Sept 2026 intake cutoffs</span>
             <ChevronRight className="w-3 h-3 text-[#ea580c]" />
-=======
-          <p className="text-[11px] text-[#D56732] font-medium mt-1 flex items-center gap-1">
-            <span>Sept 2026 intake cutoffs</span>
-            <ChevronRight className="w-3 h-3 text-[#D56732]" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
           </p>
         </div>
       </div>
@@ -294,11 +240,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             </div>
             <button
               onClick={onNavigateToApplications}
-<<<<<<< HEAD
               className="text-xs font-semibold text-[#ea580c] hover:text-[#c2410c] flex items-center gap-1 cursor-pointer transition-colors"
-=======
-              className="text-xs font-semibold text-[#D56732] hover:text-[#BA5322] flex items-center gap-1 cursor-pointer transition-colors"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             >
               <span>View All Applications ({studentApplications.length})</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -312,11 +254,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <div className="p-4 sm:p-5 rounded-xl bg-[#FAFAF8] border border-[#E7E5E0] space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-<<<<<<< HEAD
                     <span className="text-[10px] font-semibold text-[#ea580c] bg-[#fff7ed] px-2.5 py-0.5 rounded border border-[#fed7aa]">
-=======
-                    <span className="text-[10px] font-semibold text-[#D56732] bg-[#FDF5F0] px-2.5 py-0.5 rounded border border-[#F5D2C1]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       ID: {topApp.camsId}
                     </span>
                     <h3 className="text-sm font-bold text-slate-900 mt-1.5">
@@ -327,11 +265,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                     </p>
                   </div>
                   <div className="text-left sm:text-right">
-<<<<<<< HEAD
                     <span className="inline-block px-3 py-1 bg-[#fff7ed] text-[#ea580c] text-xs font-semibold rounded-full border border-[#fed7aa]">
-=======
-                    <span className="inline-block px-3 py-1 bg-[#FDF5F0] text-[#D56732] text-xs font-semibold rounded-full border border-[#F5D2C1]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       {topApp.primaryStatus}
                     </span>
                     <p className="text-[11px] text-slate-400 mt-1">
@@ -340,36 +274,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   </div>
                 </div>
 
-<<<<<<< HEAD
                 <ApplicationTracker application={topApp} compact />
-=======
-                {/* Progress bar */}
-                <div className="pt-2">
-                  <div className="flex justify-between text-[11px] text-slate-500 mb-1 font-medium">
-                    <span>Application Flow Progress</span>
-                    <span className="font-semibold text-slate-800">
-                      Stage {topApp.timeline.filter((t) => t.state === "completed").length} of 11
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden flex">
-                    {topApp.timeline.map((step, idx) => (
-                      <div
-                        key={idx}
-                        className={`h-full flex-1 border-r border-white/40 ${
-                          step.state === "completed"
-                            ? "bg-[#D56732]"
-                            : step.state === "current"
-                            ? "bg-[#D56732] animate-pulse"
-                            : step.state === "not_applicable"
-                            ? "bg-slate-300"
-                            : "bg-slate-200"
-                        }`}
-                        title={`${step.status} (${step.state})`}
-                      />
-                    ))}
-                  </div>
-                </div>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
               </div>
             );
           })()}

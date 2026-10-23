@@ -137,11 +137,7 @@ export const ChatView: React.FC = () => {
                       {c.avatar}
                     </div>
                     {c.isOnline && (
-<<<<<<< HEAD
                       <span className="w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white absolute bottom-0 right-0" />
-=======
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#D56732] border-2 border-white absolute bottom-0 right-0" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     )}
                   </div>
 
@@ -185,11 +181,7 @@ export const ChatView: React.FC = () => {
                       {activeConv.avatar}
                     </div>
                     {activeConv.isOnline && (
-<<<<<<< HEAD
                       <span className="w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-white absolute bottom-0 right-0" />
-=======
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#D56732] border-2 border-white absolute bottom-0 right-0" />
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     )}
                   </div>
                   <div>
@@ -202,13 +194,8 @@ export const ChatView: React.FC = () => {
                   </div>
                 </div>
 
-<<<<<<< HEAD
                 <div className="flex items-center gap-1.5 text-xs text-orange-600 font-semibold">
                   <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-=======
-                <div className="flex items-center gap-1.5 text-xs text-[#D56732] font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-[#D56732] animate-pulse"></span>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   <span>Active Session</span>
                 </div>
               </div>

@@ -190,11 +190,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                   {bankDetails.vatNumber}
                 </td>
                 <td className="py-3 px-3 text-center">
-<<<<<<< HEAD
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 border border-orange-300">
-=======
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF5F0] text-[#BA5322] border border-[#F5D2C1]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     {bankDetails.status}
                   </span>
                 </td>
@@ -295,22 +291,14 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                       <td className="py-3 px-3 font-bold text-slate-900">{a.student.name}</td>
                       <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.camsId}</td>
                       <td className="py-3 px-3 font-mono font-bold text-slate-900">{a.commission.amount}</td>
-<<<<<<< HEAD
                       <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.commission.eligibleAmount}</td>
-=======
-                      <td className="py-3 px-3 font-mono font-bold text-[#D56732]">{a.commission.eligibleAmount}</td>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                       <td className="py-3 px-3 text-center">
                         <button
                           disabled={isClaimed}
                           onClick={() => handleClaim(a.camsId)}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                             isClaimed
-<<<<<<< HEAD
                               ? "bg-orange-100 text-orange-800 cursor-not-allowed"
-=======
-                              ? "bg-[#FDF5F0] text-[#BA5322] cursor-not-allowed"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                               : "bg-orange-500 hover:bg-orange-600 text-white shadow-xs cursor-pointer active:scale-98"
                           }`}
                         >
@@ -377,11 +365,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                     <td className="py-3 px-3 font-bold text-slate-900">{a.student.name}</td>
                     <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.camsId}</td>
                     <td className="py-3 px-3 font-medium text-slate-800">{a.university.name}</td>
-<<<<<<< HEAD
                     <td className="py-3 px-3 font-mono font-bold text-orange-600">{a.commission.amount}</td>
-=======
-                    <td className="py-3 px-3 font-mono font-bold text-[#D56732]">{a.commission.amount}</td>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     <td className="py-3 px-3 text-slate-600">{a.commission.paidDate || a.dateModified}</td>
                     <td className="py-3 px-3 font-mono text-slate-700">{a.commission.referenceNumber || "—"}</td>
                   </tr>
@@ -400,17 +384,12 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                   <th className="py-3 px-3">Transaction ID</th>
                   <th className="py-3 px-3">Date</th>
                   <th className="py-3 px-3">Description</th>
-<<<<<<< HEAD
                   <th className="py-3 px-3 font-mono text-orange-700">Credit</th>
-=======
-                  <th className="py-3 px-3 font-mono text-[#D56732]">Credit</th>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   <th className="py-3 px-3 font-mono text-rose-700">Debit</th>
                   <th className="py-3 px-3 font-mono font-bold">Balance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-<<<<<<< HEAD
                 {ledger.length === 0 && (
                   <tr>
                     <td colSpan={6} className="py-6 px-3 text-slate-400">{ledgerError || "No commission ledger entries yet."}</td>
@@ -424,16 +403,6 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
                     <td className="py-3 px-3 font-mono text-orange-700">{entry.credit}</td>
                     <td className="py-3 px-3 font-mono text-rose-700">{entry.debit}</td>
                     <td className="py-3 px-3 font-mono font-bold">{entry.balance}</td>
-=======
-                {MOCK_COMMISSION_LEDGER.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3 font-mono font-bold text-slate-800">{tx.transactionId}</td>
-                    <td className="py-3 px-3 text-slate-500">{tx.date}</td>
-                    <td className="py-3 px-3 text-slate-700 max-w-[280px]">{tx.description}</td>
-                    <td className="py-3 px-3 font-mono font-semibold text-[#D56732]">{tx.credit}</td>
-                    <td className="py-3 px-3 font-mono font-semibold text-rose-700">{tx.debit}</td>
-                    <td className="py-3 px-3 font-mono font-black text-slate-900">{tx.balance}</td>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   </tr>
                 ))}
               </tbody>

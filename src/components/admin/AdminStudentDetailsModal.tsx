@@ -182,11 +182,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                           <span
                             className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                               edu.verificationStatus === "Verified"
-<<<<<<< HEAD
                                 ? "bg-orange-100 text-orange-800"
-=======
-                                ? "bg-[#FDF5F0] text-[#BA5322]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                                 : edu.verificationStatus === "Flagged"
                                 ? "bg-rose-100 text-rose-800"
                                 : "bg-amber-100 text-amber-800"
@@ -228,11 +224,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                         <button
                           type="button"
                           onClick={() => reviewStudentEducation(student.id, edu.id, "Verified")}
-<<<<<<< HEAD
                           className="px-3 py-1.5 bg-orange-600 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-=======
-                          className="px-3 py-1.5 bg-[#D56732] hover:bg-[#BA5322] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           VERIFY
                         </button>
@@ -289,11 +281,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                       key={doc.id}
                       className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                         isVerified
-<<<<<<< HEAD
                           ? "bg-orange-50/50 border-orange-200"
-=======
-                          ? "bg-[#FDF5F0]/50 border-[#F5D2C1]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                           : isRejected
                           ? "bg-rose-50/60 border-rose-200"
                           : isReupload
@@ -310,11 +298,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                           <span
                             className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                               isVerified
-<<<<<<< HEAD
                                 ? "bg-orange-100 text-orange-800"
-=======
-                                ? "bg-[#FDF5F0] text-[#BA5322]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                                 : isRejected
                                 ? "bg-rose-100 text-rose-800"
                                 : isReupload
@@ -342,11 +326,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                         <button
                           type="button"
                           onClick={() => verifyStudentDocument(student.id, doc.id)}
-<<<<<<< HEAD
                           className="px-3 py-1.5 bg-orange-600 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-=======
-                          className="px-3 py-1.5 bg-[#D56732] hover:bg-[#BA5322] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         >
                           VERIFY
                         </button>
@@ -407,11 +387,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">ACCOUNT STATUS</span>
-<<<<<<< HEAD
                     <strong className="text-orange-700">{student.accountStatus}</strong>
-=======
-                    <strong className="text-[#D56732]">{student.accountStatus}</strong>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">REGISTRATION DATE</span>
@@ -503,11 +479,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                           {Object.entries(t.subScores).map(([k, v]) => `${k}: ${v}`).join(" • ")}
                         </p>
                       </div>
-<<<<<<< HEAD
                       <span className="text-orange-700 font-bold bg-orange-100 px-2 py-0.5 rounded text-[10px]">
-=======
-                      <span className="text-[#D56732] font-bold bg-[#FDF5F0] px-2 py-0.5 rounded text-[10px]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         {t.status}
                       </span>
                     </div>
@@ -534,11 +506,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                       <p className="text-slate-500 text-[11px]">{app.university.name} • {app.course.activeIntake}</p>
                     </div>
                     <div className="text-right">
-<<<<<<< HEAD
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800">
-=======
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF5F0] text-[#BA5322]">
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                         {app.primaryStatus}
                       </span>
                       <p className="text-[10px] text-slate-400 mt-0.5">Submitted: {app.dateAdded}</p>
@@ -553,7 +521,6 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
           {/* TAB 6: OFFERS, MESSAGES & HISTORY                        */}
           {/* ======================================================== */}
           {activeTab === "offers" && (
-<<<<<<< HEAD
             <div className="p-5 bg-orange-50 border border-orange-200 rounded-2xl space-y-2">
               <span className="font-bold text-orange-950">Offers</span>
               {studentApps.filter((app) => ["Offer Issued", "Payment Pending", "Payment Done", "CAS Processing", "CAS Issued", "Visa Processing", "Completed"].includes(app.primaryStatus)).length === 0 ? (
@@ -567,13 +534,6 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                     </p>
                   ))
               )}
-=======
-            <div className="p-5 bg-[#FDF5F0] border border-[#F5D2C1] rounded-2xl space-y-2">
-              <span className="font-bold text-[#3C1609]">Active Offers:</span>
-              <p className="text-slate-700">
-                • University of Greenwich: £2,500 Vice Chancellor Grant • Deposit Due: £3,000
-              </p>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
             </div>
           )}
 

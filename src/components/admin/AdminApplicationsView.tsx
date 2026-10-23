@@ -185,11 +185,7 @@ export const AdminApplicationsView: React.FC = () => {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
                           app.primaryStatus.includes("Offer")
-<<<<<<< HEAD
                             ? "bg-orange-100 text-orange-800"
-=======
-                            ? "bg-[#FDF5F0] text-[#BA5322]"
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                             : "bg-slate-100 text-slate-800"
                         }`}
                       >
@@ -197,31 +193,7 @@ export const AdminApplicationsView: React.FC = () => {
                       </span>
                     </td>
                     <td className="p-4">
-<<<<<<< HEAD
                       <ApplicationTracker application={app} compact />
-=======
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-slate-700 text-[11px]">
-                          {completedCount} / 11
-                        </span>
-                        <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden flex">
-                          {app.timeline.map((t, idx) => (
-                            <div
-                              key={idx}
-                              className={`h-full flex-1 ${
-                                t.state === "completed"
-                                  ? "bg-[#D56732]"
-                                  : t.state === "current"
-                                  ? "bg-purple-600 animate-pulse"
-                                  : t.state === "not_applicable"
-                                  ? "bg-slate-300"
-                                  : "bg-slate-200"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
->>>>>>> 2250a838308e6f938f78268a205c2c38f5e486f2
                     </td>
                     <td className="p-4 text-right">
                       <button
