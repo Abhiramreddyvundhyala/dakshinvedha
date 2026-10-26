@@ -2,6 +2,7 @@
 
 import React from "react";
 import { usePlatform } from "@/context/PlatformContext";
+import { newestFirst } from "@/lib/recent";
 import { AdminTabKey } from "./AdminHeader";
 import {
   Users,
@@ -34,9 +35,9 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-purple-900 via-slate-900 to-indigo-950 text-white p-6 sm:p-8 rounded-3xl shadow-lg border border-purple-800/40 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800 text-white p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-700 relative overflow-hidden">
         <div className="relative z-10 space-y-2">
-          <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 uppercase tracking-wider">
+          <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-400/30 uppercase tracking-wider">
             Platform Master Console
           </span>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -52,11 +53,11 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <div
           onClick={() => onNavigateTab("students")}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all cursor-pointer group"
         >
           <span className="text-xs font-bold text-slate-500">Registered Students</span>
           <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{totalStudents}</p>
-          <p className="text-[11px] text-purple-700 font-bold mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-orange-700 font-bold mt-1 flex items-center gap-1">
             <span>Manage directory</span>
             <ArrowRight className="w-3 h-3" />
           </p>
@@ -64,11 +65,11 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
 
         <div
           onClick={() => onNavigateTab("applications")}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all cursor-pointer group"
         >
           <span className="text-xs font-bold text-slate-500">Total Applications</span>
           <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{totalApps}</p>
-          <p className="text-[11px] text-purple-700 font-bold mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-orange-700 font-bold mt-1 flex items-center gap-1">
             <span>View pipeline</span>
             <ArrowRight className="w-3 h-3" />
           </p>
@@ -107,20 +108,20 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
           </h2>
           <button
             onClick={() => onNavigateTab("applications")}
-            className="text-xs font-bold text-purple-700 hover:underline"
+            className="text-xs font-bold text-orange-700 hover:underline"
           >
             View all ({applications.length})
           </button>
         </div>
 
         <div className="space-y-3">
-          {applications.slice(0, 5).map((app) => (
+          {newestFirst(applications, (app) => app.dateModified || app.dateAdded).slice(0, 5).map((app) => (
             <div
               key={app.camsId}
               className="p-3.5 bg-slate-50 border rounded-2xl flex items-center justify-between text-xs"
             >
               <div>
-                <span className="font-mono font-bold text-purple-700">{app.camsId}</span>
+                <span className="font-mono font-bold text-orange-700">{app.camsId}</span>
                 <p className="font-extrabold text-slate-900 mt-0.5">
                   {app.student.name} • {app.course.courseName}
                 </p>

@@ -23,6 +23,7 @@ import {
   AlertCircle,
   FileCheck2,
 } from "lucide-react";
+import { StoredFileButton } from "@/components/shared/StoredFileButton";
 import { ApplicationRecord } from "@/types";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 
@@ -248,9 +249,12 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                       <p className="text-[10px] text-slate-400">{doc.category} • {doc.fileSize}</p>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-800">
-                    {doc.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <StoredFileButton bucket={doc.storageBucket || "student-documents"} path={doc.storagePath} />
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-800">
+                      {doc.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

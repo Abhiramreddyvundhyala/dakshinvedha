@@ -13,26 +13,40 @@ const CARD = {
 };
 
 // Vertical bar chart
-const VBar: React.FC<{ labels: string[]; values: number[]; color: string }> = ({ labels, values, color }) => {
-  const max = Math.max(...values, 1);
+const VBar: React.FC<{ labels: string[]; values: number[]; color: string; empty: string }> = ({ labels, values, color, empty }) => {
+  const max = Math.max(...values, 0);
+  if (max <= 0) {
+    return <p style={{ fontSize: 12, color: "#94a3b8", margin: "36px 0" }}>{empty}</p>;
+  }
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 120 }}>
       {values.map((v, i) => (
         <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
-          <div
-            style={{
-              width: "100%",
-              height: `${Math.max(Math.round((v / max) * 100), 4)}%`,
-              background: i === values.length - 1 ? color : "#e2e8f0",
-              borderRadius: "3px 3px 0 0",
-            }}
-          />
+          {v > 0 && (
+            <div
+              style={{
+                width: "100%",
+                height: `${Math.round((v / max) * 100)}%`,
+                background: color,
+                borderRadius: "3px 3px 0 0",
+              }}
+            />
+          )}
           <span style={{ fontSize: 8, color: "#94a3b8", marginTop: 3 }}>{labels[i]}</span>
         </div>
       ))}
     </div>
   );
 };
+
+function monthChange(values: number[]): string | null {
+  const month = new Date().getMonth();
+  const current = values[month] || 0;
+  const previous = month === 0 ? 0 : values[month - 1] || 0;
+  if (previous <= 0 || current === previous) return null;
+  const pct = Math.round(((current - previous) / previous) * 100);
+  return `${pct > 0 ? "+" : ""}${pct}% MoM`;
+}
 
 // Horizontal bar
 const HBar: React.FC<{ data: { label: string; value: number; color: string }[]; max: number }> = ({ data, max }) => (
@@ -76,7 +90,7 @@ const MultiBar: React.FC<{ segments: { label: string; value: number; color: stri
 
 const APP_COLORS: Record<string, string> = {
   "Application Submitted":    "#2563eb",
-  "Under Review":             "#7c3aed",
+  "Under Review":             "#f97316",
   "Submitted to University":  "#0891b2",
   "Offer Issued":             "#0284c7",
   "Payment Pending":          "#d97706",
@@ -88,7 +102,7 @@ const APP_COLORS: Record<string, string> = {
   Closed:                     "#dc2626",
 };
 
-const COUNTRY_COLORS = ["#f97316", "#2563eb", "#0284c7", "#0891b2", "#7c3aed", "#d97706"];
+const COUNTRY_COLORS = ["#f97316", "#2563eb", "#0284c7", "#0891b2", "#ea580c", "#d97706"];
 
 export const AdminAnalyticsView: React.FC = () => {
   const { students, applications, universities, courses, b2bPartners } = usePlatform();
@@ -145,7 +159,7 @@ export const AdminAnalyticsView: React.FC = () => {
     { label: "Conversion Rate", value: `${conversionRate}%`, sub: "Submitted → Completed", icon: TrendingUp, color: "#0284c7" },
     { label: "Offer Rate",      value: `${offerRate}%`,      sub: "Reaching offer stage",   icon: Award,      color: "#f97316" },
     { label: "Avg Docs",        value: avgDocs,               sub: "Documents per student",  icon: FileText,   color: "#2563eb" },
-    { label: "Avg Profile",     value: `${avgProfile}%`,     sub: "Profile completion",     icon: Users,      color: "#7c3aed" },
+    { label: "Avg Profile",     value: `${avgProfile}%`,     sub: "Profile completion",     icon: Users,      color: "#ea580c" },
   ];
 
   return (
@@ -185,10 +199,10 @@ export const AdminAnalyticsView: React.FC = () => {
             </div>
             <div style={{ textAlign: "right" }}>
               <p style={{ fontSize: 20, fontWeight: 900, color: "#1e293b", margin: 0 }}>{students.length}</p>
-              <p style={{ fontSize: 10, color: "#0284c7", fontWeight: 700 }}>+12% MoM</p>
+              {monthChange(studentMonthly) && <p style={{ fontSize: 10, color: "#0284c7", fontWeight: 700 }}>{monthChange(studentMonthly)}</p>}
             </div>
           </div>
-          <VBar labels={months} values={studentMonthly} color="#2563eb" />
+          <VBar labels={months} values={studentMonthly} color="#2563eb" empty="No student registrations yet." />
         </div>
 
         <div style={CARD}>
@@ -199,10 +213,10 @@ export const AdminAnalyticsView: React.FC = () => {
             </div>
             <div style={{ textAlign: "right" }}>
               <p style={{ fontSize: 20, fontWeight: 900, color: "#1e293b", margin: 0 }}>{applications.length}</p>
-              <p style={{ fontSize: 10, color: "#0284c7", fontWeight: 700 }}>+8% MoM</p>
+              {monthChange(appMonthly) && <p style={{ fontSize: 10, color: "#0284c7", fontWeight: 700 }}>{monthChange(appMonthly)}</p>}
             </div>
           </div>
-          <VBar labels={months} values={appMonthly} color="#f97316" />
+          <VBar labels={months} values={appMonthly} color="#f97316" empty="No applications submitted yet." />
         </div>
       </div>
 
@@ -211,11 +225,13 @@ export const AdminAnalyticsView: React.FC = () => {
         <div style={CARD}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 4px" }}>Application Pipeline</p>
           <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 14px" }}>Distribution across all statuses</p>
+          {applications.length === 0 ? <p style={{ fontSize: 12, color: "#94a3b8", margin: "24px 0" }}>No applications yet.</p> : (
           <MultiBar
             segments={Object.entries(statusGroups).map(([label, value]) => ({
               label, value, color: APP_COLORS[label] || "#94a3b8",
             }))}
           />
+          )}
           <div style={{ marginTop: 14, borderTop: "1px solid #f0f2f5", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {Object.entries(statusGroups).sort((a, b) => b[1] - a[1]).map(([status, count]) => (
               <div key={status} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -239,6 +255,7 @@ export const AdminAnalyticsView: React.FC = () => {
           <div style={CARD}>
             <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 12px" }}>Study Levels</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {courses.length === 0 && <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>No courses yet.</p>}
               {Object.entries(studyLevels).map(([level, count], i) => {
                 const colors = ["#2563eb", "#f97316", "#0284c7"];
                 const pct = Math.round((count / courses.length) * 100);
@@ -260,11 +277,13 @@ export const AdminAnalyticsView: React.FC = () => {
           {/* B2B Partners */}
           <div style={CARD}>
             <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 12px" }}>B2B Partner Status</p>
+            {b2bPartners.length === 0 ? <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>No partners yet.</p> : (
             <MultiBar
               segments={Object.entries(partnerStatuses).map(([label, value], i) => ({
                 label, value, color: ["#0284c7", "#d97706", "#2563eb", "#dc2626"][i % 4],
               }))}
             />
+            )}
           </div>
         </div>
       </div>
@@ -272,7 +291,11 @@ export const AdminAnalyticsView: React.FC = () => {
       {/* Top Universities */}
       <div style={CARD}>
         <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 14px" }}>Top Universities by Applications</p>
-        <HBar data={topUnivsByApps} max={maxUnivApps} />
+        {topUnivsByApps.every((item) => item.value === 0) ? (
+          <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>No applications yet.</p>
+        ) : (
+          <HBar data={topUnivsByApps.filter((item) => item.value > 0)} max={maxUnivApps} />
+        )}
       </div>
 
       {/* Country & Docs */}
@@ -280,6 +303,7 @@ export const AdminAnalyticsView: React.FC = () => {
         <div style={CARD}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 12px" }}>Universities by Country</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {universities.length === 0 && <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>No universities yet.</p>}
             {Object.entries(countryGroups).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([country, count], i) => {
               const pct = Math.round((count / universities.length) * 100);
               return (
@@ -299,11 +323,13 @@ export const AdminAnalyticsView: React.FC = () => {
 
         <div style={CARD}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 12px" }}>Document Status</p>
+          {Object.keys(docStatus).length === 0 ? <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>No documents yet.</p> : (
           <MultiBar
             segments={Object.entries(docStatus).map(([label, value], i) => ({
-              label, value, color: ["#0284c7", "#d97706", "#2563eb", "#dc2626", "#7c3aed"][i % 5],
+              label, value, color: ["#0284c7", "#d97706", "#2563eb", "#dc2626", "#ea580c"][i % 5],
             }))}
           />
+          )}
         </div>
       </div>
     </div>

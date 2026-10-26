@@ -20,7 +20,7 @@ import { CourseInfo } from "@/types";
 interface ProgramDetailsModalProps {
   course: CourseInfo | null;
   onClose: () => void;
-  onApplyNow: (course: CourseInfo) => void;
+  onApplyNow?: (course: CourseInfo) => void;
 }
 
 export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
@@ -199,6 +199,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
             CLOSE
           </button>
 
+          {onApplyNow && (
           <button
             onClick={() => {
               onClose();
@@ -209,6 +210,7 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
             <span>APPLY NOW</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+          )}
         </div>
       </div>
     </div>

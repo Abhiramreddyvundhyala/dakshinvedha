@@ -5,13 +5,19 @@ import { Eye, ArrowRight, BellRing, Sparkles, Clock } from "lucide-react";
 import { usePlatform } from "@/context/PlatformContext";
 import { NoticeItem } from "@/types";
 import { NoticeDetailsModal } from "@/components/modals/NoticeDetailsModal";
+import { noticeVisibleTo } from "@/lib/notices";
+import { newestFirst } from "@/lib/recent";
 
 export const ImportantNotices: React.FC = () => {
-  const { notices } = usePlatform();
+  const { notices, portalRole } = usePlatform();
   const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
   const [viewAll, setViewAll] = useState(false);
 
-  const displayedNotices = viewAll ? notices : notices.slice(0, 4);
+  const visibleNotices = newestFirst(
+    notices.filter((notice) => noticeVisibleTo(notice, portalRole)),
+    (notice) => notice.dateAdded
+  );
+  const displayedNotices = viewAll ? visibleNotices : visibleNotices.slice(0, 4);
 
   return (
     <>

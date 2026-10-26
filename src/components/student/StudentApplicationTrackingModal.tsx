@@ -103,7 +103,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
                 : "border-transparent hover:text-slate-900"
             }`}
           >
-            Dossier Documents ({application.documents.length})
+            Documents ({application.documents.length})
           </button>
         </div>
 
@@ -274,7 +274,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
             <div className="space-y-4 animate-fade-in">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-700">
-                  Application Dossier Attachments ({application.documents.length})
+                  Application documents ({application.documents.length})
                 </span>
                 {onUploadAdditionalDoc && (
                   <button

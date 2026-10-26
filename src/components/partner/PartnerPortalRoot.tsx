@@ -8,18 +8,12 @@ import { ImportantNotices } from "@/components/dashboard/ImportantNotices";
 import { UniversityDeadlines } from "@/components/dashboard/UniversityDeadlines";
 import { LatestApplications } from "@/components/dashboard/LatestApplications";
 import { ApplicationDetailsModal } from "@/components/modals/ApplicationDetailsModal";
-import { ApplyNewCourseModal } from "@/components/modals/ApplyNewCourseModal";
-import { ApplicationWizardModal } from "@/components/modals/ApplicationWizardModal";
+import { StudentApplicationWizardModal } from "@/components/student/StudentApplicationWizardModal";
 import { ApplicationHistoryView } from "@/components/views/ApplicationHistoryView";
 import { SearchProgramView } from "@/components/views/SearchProgramView";
 import { URMContactView } from "@/components/views/URMContactView";
 import { FinanceView } from "@/components/views/FinanceView";
-import { VoucherView } from "@/components/views/VoucherView";
-import { MailView } from "@/components/views/MailView";
-import { ApplyEnquiryView } from "@/components/views/ApplyEnquiryView";
-import { ChatView } from "@/components/views/ChatView";
 import { ValueAddedServicesView } from "@/components/views/ValueAddedServicesView";
-import { OtherView } from "@/components/views/OtherView";
 import { B2BProfileWizard } from "./B2BProfileWizard";
 import { B2BDashboardView } from "./B2BDashboardView";
 import { usePlatform } from "@/context/PlatformContext";
@@ -27,10 +21,10 @@ import { ApplicationRecord, CourseInfo } from "@/types";
 import { CheckCircle2, Building2 } from "lucide-react";
 import { TeamManagementView } from "@/components/views/TeamManagementView";
 import { readSessionValue } from "@/utils/accounts";
-import { saveApplicationDraft } from "@/lib/portalDb";
+import { canAccessB2BTab } from "@/lib/b2bAccess";
 
 export const PartnerPortalRoot: React.FC = () => {
-  const { applications, updateApplicationStatus, universities, activeB2BPartner, portalRole, recordApplication } = usePlatform();
+  const { applications, updateApplicationStatus, activeB2BPartner, portalRole, recordApplication } = usePlatform();
 
   // Profile completion state (once wizard is submitted in session, show dashboard)
   const [profileJustCompleted, setProfileJustCompleted] = useState(false);
@@ -42,63 +36,27 @@ export const PartnerPortalRoot: React.FC = () => {
 
   const [selectedApplication, setSelectedApplication] = useState<ApplicationRecord | null>(null);
 
-  // Two-Stage Application Creation Workflow Modals
-  const [isApplyNewCourseOpen, setIsApplyNewCourseOpen] = useState(false);
   const [isApplicationWizardOpen, setIsApplicationWizardOpen] = useState(false);
-  const [wizardCourseSelection, setWizardCourseSelection] = useState<{
-    countryToApply: string;
-    studentPassportCountry: string;
-    intake: string;
-    courseType: string;
-    university: string;
-    course: CourseInfo;
-  } | null>(null);
+  const [wizardCourse, setWizardCourse] = useState<CourseInfo | null>(null);
 
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
-  // Stage 1 -> Stage 2: Moving from "Apply For New Course" modal to the 7-step Application Wizard
-  const handleProceedToWizard = (selection: {
-    countryToApply: string;
-    studentPassportCountry: string;
-    intake: string;
-    courseType: string;
-    university: string;
-    course: CourseInfo;
-  }) => {
-    setWizardCourseSelection(selection);
-    setIsApplyNewCourseOpen(false);
+  const openStudentApply = (course?: CourseInfo) => {
+    setWizardCourse(course || null);
     setIsApplicationWizardOpen(true);
   };
 
-  // Handler: When a course is applied directly from SearchProgramView
-  const handleApplyFromSearch = (course: CourseInfo) => {
-    const universityObj = universities.find((u) => u.id === course.universityId);
-    setWizardCourseSelection({
-      countryToApply: course.country,
-      studentPassportCountry: "India",
-      intake: course.activeIntake,
-      courseType: course.studyLevel,
-      university: universityObj ? universityObj.name : course.campus,
-      course: course,
-    });
-    setIsApplicationWizardOpen(true);
-  };
-
-  // Handler: When the wizard submits the application
   const handleApplicationSubmitted = (newApp: ApplicationRecord) => {
     recordApplication({
       ...newApp,
+      counselorName: readSessionValue("dakshin_user_name") || activeB2BPartner?.name || newApp.counselorName,
       partnerTrackingId: activeB2BPartner?.partnerId,
       partnerRecordId: activeB2BPartner?.id,
+      agentTrackingId: undefined,
+      agentProfileId: undefined,
     });
     setSuccessToast(`Application ${newApp.camsId} submitted successfully for ${newApp.student.name}!`);
     setTimeout(() => setSuccessToast(null), 4500);
-  };
-
-  const handleSaveDraft = (draft: Partial<ApplicationRecord>) => {
-    void saveApplicationDraft(draft);
-    setSuccessToast("Application draft saved.");
-    setTimeout(() => setSuccessToast(null), 3000);
   };
 
   // Handler: Cancel application from ApplicationHistoryView
@@ -110,6 +68,32 @@ export const PartnerPortalRoot: React.FC = () => {
 
   const isOwner = portalRole === "partner";
   const viewerName = readSessionValue("dakshin_user_name") || activeB2BPartner?.name || "Partner";
+  const sessionEmail = readSessionValue("dakshin_user_email") || "";
+  const teamMember =
+    !isOwner && activeB2BPartner
+      ? (activeB2BPartner.teamMembers || []).find((member) => member.email.toLowerCase() === sessionEmail.toLowerCase()) || null
+      : null;
+  const canOpen = (tab: NavItemKey) => canAccessB2BTab(isOwner, teamMember, tab);
+  const retiredFinance =
+    currentTab === "finance-promotional-commission" ||
+    currentTab === "finance-accommodation-commission" ||
+    currentTab === "finance-loan-commission" ||
+    currentTab === "finance-promotional-deals";
+  const retiredTab =
+    currentTab === "mail" ||
+    currentTab === "apply-enquiry" ||
+    currentTab === "chat" ||
+    currentTab === "other" ||
+    currentTab.startsWith("voucher") ||
+    retiredFinance;
+  const visibleTab: NavItemKey = retiredFinance
+    ? canOpen("finance-account")
+      ? "finance-account"
+      : "dashboard"
+    : retiredTab || !canOpen(currentTab)
+      ? "dashboard"
+      : currentTab;
+  const canApply = canOpen("application-history");
 
   if (!activeB2BPartner) {
     return (
@@ -160,7 +144,6 @@ export const PartnerPortalRoot: React.FC = () => {
         onSelectApplication={(app) => setSelectedApplication(app)}
         onOpenURMModal={() => setCurrentTab("urm-contact")}
         onOpenFinanceQuick={() => setCurrentTab("finance-commission")}
-        onOpenSupportModal={() => setCurrentTab("chat")}
       />
 
       {/* Global Success Notification Toast */}
@@ -175,14 +158,15 @@ export const PartnerPortalRoot: React.FC = () => {
 
       {/* 2. Collapsible Left Sidebar */}
       <Sidebar
-        currentTab={currentTab}
+        currentTab={visibleTab}
         onSelectTab={(tab) => setCurrentTab(tab)}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        onOpenAddNewModal={() => setIsApplyNewCourseOpen(true)}
+        onOpenAddNewModal={() => openStudentApply()}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
         showTeam={isOwner}
+        canOpen={canOpen}
       />
 
       {/* 3. Scrollable Main Content Area */}
@@ -193,14 +177,14 @@ export const PartnerPortalRoot: React.FC = () => {
       >
         <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-7 space-y-6">
           {/* TAB: DASHBOARD — Show B2B Dashboard for b2b/agent, standard for classic agents */}
-          {currentTab === "dashboard" && (
+          {visibleTab === "dashboard" && (
             <>
               {isB2BMode ? (
                 <B2BDashboardView
                   partner={activeB2BPartner!}
                   onSelectApplication={(app) => setSelectedApplication(app)}
                   onViewAllApplications={() => setCurrentTab("application-history")}
-                  onAddNewApplication={() => setIsApplyNewCourseOpen(true)}
+                  onAddNewApplication={canApply ? () => openStudentApply() : undefined}
                 />
               ) : (
                 <div className="space-y-6 animate-fade-in">
@@ -221,7 +205,7 @@ export const PartnerPortalRoot: React.FC = () => {
 
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                       <button
-                        onClick={() => setIsApplyNewCourseOpen(true)}
+                        onClick={() => openStudentApply()}
                         className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-xl text-xs font-bold shadow-sm shadow-orange-900/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>+ Add New Application</span>
@@ -256,60 +240,33 @@ export const PartnerPortalRoot: React.FC = () => {
           )}
 
           {/* TAB: APPLICATION HISTORY */}
-          {currentTab === "application-history" && (
+          {visibleTab === "application-history" && (
             <ApplicationHistoryView
               applications={applications}
               onSelectApplication={(app) => setSelectedApplication(app)}
-              onOpenAddNewModal={() => setIsApplyNewCourseOpen(true)}
+              onOpenAddNewModal={() => openStudentApply()}
               onCancelApplication={handleCancelApplication}
             />
           )}
 
           {/* TAB: SEARCH PROGRAM */}
-          {currentTab === "search-program" && (
-            <SearchProgramView onApplyCourse={handleApplyFromSearch} />
+          {visibleTab === "search-program" && (
+            <SearchProgramView onApplyCourse={canApply ? (course) => openStudentApply(course) : undefined} />
           )}
 
           {/* TAB: URM CONTACT NUMBER */}
-          {currentTab === "urm-contact" && <URMContactView />}
+          {visibleTab === "urm-contact" && <URMContactView />}
 
           {/* TAB: VALUE ADDED SERVICES */}
-          {currentTab === "vas" && <ValueAddedServicesView />}
-
-          {/* TAB: VOUCHER (BUY / MANAGE) */}
-          {(currentTab === "voucher-buy" || currentTab === "voucher-manage") && (
-            <VoucherView subTab={currentTab === "voucher-buy" ? "buy" : "manage"} />
-          )}
+          {visibleTab === "vas" && <ValueAddedServicesView />}
 
           {/* TAB: FINANCE & COMMISSIONS */}
-          {currentTab.startsWith("finance") && (
-            <FinanceView
-              subTab={
-                currentTab.replace("finance-", "") as
-                  | "account"
-                  | "commission"
-                  | "promotional-commission"
-                  | "accommodation-commission"
-                  | "loan-commission"
-                  | "promotional-deals"
-              }
-            />
+          {visibleTab.startsWith("finance") && (
+            <FinanceView subTab={visibleTab === "finance-commission" ? "commission" : "account"} />
           )}
 
-          {/* TAB: MAIL */}
-          {currentTab === "mail" && <MailView />}
-
-          {/* TAB: APPLY ENQUIRY */}
-          {currentTab === "apply-enquiry" && <ApplyEnquiryView />}
-
-          {/* TAB: CHAT */}
-          {currentTab === "chat" && <ChatView />}
-
           {/* TAB: TEAM MANAGEMENT */}
-          {currentTab === "team" && isOwner && <TeamManagementView />}
-
-          {/* TAB: OTHER */}
-          {currentTab === "other" && <OtherView />}
+          {visibleTab === "team" && isOwner && <TeamManagementView />}
         </div>
       </main>
 
@@ -319,21 +276,18 @@ export const PartnerPortalRoot: React.FC = () => {
         onClose={() => setSelectedApplication(null)}
       />
 
-      <ApplyNewCourseModal
-        isOpen={isApplyNewCourseOpen}
-        onClose={() => setIsApplyNewCourseOpen(false)}
-        onProceedToWizard={handleProceedToWizard}
-      />
-
-      <ApplicationWizardModal
+      <StudentApplicationWizardModal
         isOpen={isApplicationWizardOpen}
         onClose={() => {
           setIsApplicationWizardOpen(false);
-          setWizardCourseSelection(null);
+          setWizardCourse(null);
         }}
-        initialCourseSelection={wizardCourseSelection}
-        onApplicationSubmitted={handleApplicationSubmitted}
-        onSaveDraft={handleSaveDraft}
+        initialCourse={wizardCourse}
+        onApplicationCompleted={handleApplicationSubmitted}
+        onGoToDashboard={() => {
+          setIsApplicationWizardOpen(false);
+          setCurrentTab("dashboard");
+        }}
       />
     </div>
   );

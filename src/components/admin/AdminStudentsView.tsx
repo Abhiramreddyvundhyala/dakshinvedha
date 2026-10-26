@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { usePlatform } from "@/context/PlatformContext";
+import { newestFirst } from "@/lib/recent";
 import { StudentProfile } from "@/types";
 import {
   Users,
@@ -25,7 +26,7 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filtered = useMemo(() => {
-    return students.filter((s) => {
+    return newestFirst(students, (student) => student.registrationDate).filter((s) => {
       if (search.trim()) {
         const q = search.toLowerCase();
         const matchesName = s.name.toLowerCase().includes(q);
@@ -49,7 +50,7 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
             Registered Students
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Complete platform directory of all registered student profiles. Click a student to review education, verify documents, and manage status.
+            Complete platform directory of all registered student profiles. Click a student to review education and documents.
           </p>
         </div>
       </div>
@@ -102,16 +103,16 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                   <tr
                     key={s.id}
                     onClick={() => onSelectStudent(s)}
-                    className="hover:bg-purple-50/50 transition-colors cursor-pointer"
+                    className="hover:bg-orange-50/50 transition-colors cursor-pointer"
                   >
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 font-extrabold flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-700 font-extrabold flex items-center justify-center shrink-0">
                           {s.firstName.charAt(0)}
                         </div>
                         <div>
                           <strong className="text-slate-900 block">{s.name}</strong>
-                          <span className="font-mono text-[10px] text-purple-700 font-bold">
+                          <span className="font-mono text-[10px] text-orange-700 font-bold">
                             {s.studentId}
                           </span>
                         </div>
@@ -164,7 +165,7 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                       <div className="flex items-center gap-2">
                         <div className="w-12 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-purple-600 rounded-full"
+                            className="h-full bg-orange-600 rounded-full"
                             style={{ width: `${s.profileCompletion}%` }}
                           />
                         </div>
@@ -186,7 +187,7 @@ export const AdminStudentsView: React.FC<AdminStudentsViewProps> = ({ onSelectSt
                           e.stopPropagation();
                           onSelectStudent(s);
                         }}
-                        className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                        className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
                       >
                         View Profile
                       </button>

@@ -26,6 +26,10 @@ import {
   DocumentUploadItem,
 } from "@/types";
 import { usePlatform } from "@/context/PlatformContext";
+import { StoredFileButton } from "@/components/shared/StoredFileButton";
+import { PDF_ACCEPT, uploadForCurrentUser } from "@/lib/storage";
+import { freshCommission } from "@/lib/commission";
+import { courseIntakes } from "@/lib/catalogOffers";
 import { buildTimeline, createTrackingId } from "@/utils/tracking";
 
 interface ApplicationWizardModalProps {
@@ -50,7 +54,9 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
   onApplicationSubmitted,
   onSaveDraft,
 }) => {
-  const { universities } = usePlatform();
+  const { universities, courses } = usePlatform();
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [isSuccessScreen, setIsSuccessScreen] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<ApplicationRecord | null>(null);
@@ -120,16 +126,26 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
   // STEP 6: Documents
   const [documents, setDocuments] = useState<DocumentUploadItem[]>([]);
 
-  const handleSimulateUpload = (category: DocumentUploadItem["category"]) => {
+  const handleUpload = async (category: DocumentUploadItem["category"], file: File) => {
+    setUploadError(null);
+    setUploadingCategory(category);
+    const result = await uploadForCurrentUser(file, `applications/${category.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`);
+    setUploadingCategory(null);
+    if (!result.ok) {
+      setUploadError(result.error);
+      return;
+    }
     const newDoc: DocumentUploadItem = {
       id: createTrackingId("DOC"),
       category,
-      fileName: `${category.replace(/\s+/g, "_")}_Document.pdf`,
-      fileSize: "1.8 MB",
+      fileName: result.fileName,
+      fileSize: result.fileSize,
+      storagePath: result.path,
+      storageBucket: result.bucket,
       progress: 100,
       status: "Uploaded",
     };
-    setDocuments([...documents, newDoc]);
+    setDocuments((current) => [...current.filter((item) => item.category !== category), newDoc]);
   };
 
   const removeDocument = (id: string) => {
@@ -143,7 +159,17 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
     const newCamsId = createTrackingId("APP");
     const today = new Date().toISOString().slice(0, 10);
     const targetUniv = universities.find((u) => u.name === courseSelection.university);
-    const selectedCourse = initialCourseSelection?.course;
+    const selectedCourse =
+      courses.find(
+        (course) =>
+          course.courseName === courseSelection.courseName &&
+          universities.find((item) => item.id === course.universityId)?.name === courseSelection.university
+      ) ||
+      (initialCourseSelection &&
+      initialCourseSelection.course.courseName === courseSelection.courseName &&
+      initialCourseSelection.university === courseSelection.university
+        ? initialCourseSelection.course
+        : undefined);
     if (!targetUniv || !selectedCourse) {
       window.alert("Select an institution and course from the catalog before submitting.");
       return;
@@ -197,12 +223,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
         netBalanceDue: courseSelection.tuitionFee || selectedCourse.tuitionFee,
         paymentStatus: "Pending",
       },
-      commission: {
-        amount: "£0",
-        eligibleAmount: "£0",
-        expectedCommission: "£0",
-        status: "Pending",
-      },
+      commission: freshCommission(selectedCourse),
       notes: [
         {
           id: `n-${Date.now()}`,
@@ -766,27 +787,62 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                       <label className="block text-slate-700 font-semibold mb-1">
                         University
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={courseSelection.university}
-                        onChange={(e) =>
-                          setCourseSelection({ ...courseSelection, university: e.target.value })
-                        }
-                        className="w-full p-2.5 border border-slate-200 rounded-lg"
-                      />
+                        onChange={(e) => {
+                          const university = universities.find((item) => item.name === e.target.value);
+                          setCourseSelection({
+                            ...courseSelection,
+                            university: e.target.value,
+                            country: university?.country || courseSelection.country,
+                            courseName: "",
+                            intake: "",
+                            tuitionFee: "",
+                          });
+                        }}
+                        className="w-full p-2.5 border border-slate-200 rounded-lg bg-white"
+                      >
+                        <option value="">Select university</option>
+                        {universities.map((item) => (
+                          <option key={item.id} value={item.name}>{item.name}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-slate-700 font-semibold mb-1">
                         Course
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={courseSelection.courseName}
-                        onChange={(e) =>
-                          setCourseSelection({ ...courseSelection, courseName: e.target.value })
-                        }
-                        className="w-full p-2.5 border border-slate-200 rounded-lg"
-                      />
+                        onChange={(e) => {
+                          const university = universities.find((item) => item.name === courseSelection.university);
+                          const course = courses.find(
+                            (item) => item.courseName === e.target.value && (!university || item.universityId === university.id)
+                          );
+                          const owner = universities.find((item) => item.id === course?.universityId);
+                          const intakes = course ? courseIntakes(course) : [];
+                          setCourseSelection({
+                            ...courseSelection,
+                            university: owner?.name || courseSelection.university,
+                            courseName: e.target.value,
+                            courseType: course?.studyLevel || courseSelection.courseType,
+                            tuitionFee: course?.tuitionFee || "",
+                            intake: intakes.length === 1 ? intakes[0] : intakes.includes(courseSelection.intake) ? courseSelection.intake : "",
+                            country: course?.country || owner?.country || courseSelection.country,
+                          });
+                        }}
+                        className="w-full p-2.5 border border-slate-200 rounded-lg bg-white"
+                      >
+                        <option value="">Select course</option>
+                        {courses
+                          .filter((item) => {
+                            const university = universities.find((entry) => entry.name === courseSelection.university);
+                            return !university || item.universityId === university.id;
+                          })
+                          .map((item) => (
+                            <option key={item.id} value={item.courseName}>{item.courseName}</option>
+                          ))}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-slate-700 font-semibold mb-1">
@@ -844,20 +900,30 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                   </div>
 
                   {/* Upload action triggers */}
+                  {uploadError && <p className="text-xs font-semibold text-rose-700">{uploadError}</p>}
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between flex-wrap gap-2">
                     <span className="text-slate-600 font-medium">Add Missing Document:</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {(["Passport", "Academic Documents", "English Test", "CV", "SOP", "Recommendation Letters", "Other Documents"] as const).map(
                         (cat) => (
-                          <button
+                          <label
                             key={cat}
-                            type="button"
-                            onClick={() => handleSimulateUpload(cat)}
                             className="px-2.5 py-1 bg-white border border-slate-200 hover:border-orange-400 text-slate-700 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                           >
                             <UploadCloud className="w-3 h-3 text-[#ea580c]" />
-                            <span>+ {cat}</span>
-                          </button>
+                            <span>{uploadingCategory === cat ? "Uploading..." : `+ ${cat}`}</span>
+                            <input
+                              type="file"
+                              accept={PDF_ACCEPT}
+                              className="sr-only"
+                              disabled={uploadingCategory === cat}
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                event.target.value = "";
+                                if (file) void handleUpload(cat, file);
+                              }}
+                            />
+                          </label>
                         )
                       )}
                     </div>
@@ -886,6 +952,7 @@ export const ApplicationWizardModal: React.FC<ApplicationWizardModalProps> = ({
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 flex items-center gap-1">
                             <Check className="w-3 h-3" /> {doc.status}
                           </span>
+                          {doc.storagePath && <StoredFileButton bucket={doc.storageBucket || "partner-documents"} path={doc.storagePath} />}
                           <button
                             type="button"
                             onClick={() => removeDocument(doc.id)}

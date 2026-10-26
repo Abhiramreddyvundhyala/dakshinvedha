@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Search,
   Building,
@@ -21,9 +21,19 @@ import {
 import { usePlatform } from "@/context/PlatformContext";
 import { CourseInfo, UniversityInfo } from "@/types";
 import { ProgramDetailsModal } from "@/components/modals/ProgramDetailsModal";
+import {
+  collegeHasScholarship,
+  compareByFee,
+  courseIntakes,
+  extremeFee,
+  type FeeSort,
+  hasScholarship,
+  intakeBounds,
+  intakeOptions,
+} from "@/lib/catalogOffers";
 
 interface SearchProgramViewProps {
-  onApplyCourse: (course: CourseInfo) => void;
+  onApplyCourse?: (course: CourseInfo) => void;
 }
 
 export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
@@ -44,7 +54,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
   const [activeIntakeOnly, setActiveIntakeOnly] = useState(false);
   const [selectedIntakes, setSelectedIntakes] = useState<string[]>([]);
   const [showMoreIntakes, setShowMoreIntakes] = useState(false);
-  const [maxTuition, setMaxTuition] = useState<number>(50000);
+  const [feeSort, setFeeSort] = useState<FeeSort>("low");
   const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
@@ -61,17 +71,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  // Intakes list
-  const allIntakeOptions = [
-    "September/October 2026",
-    "November/December 2026",
-    "January/February 2027",
-    "March/April 2027",
-    "Spring 2026",
-    "Summer 2026",
-    "Spring 2027",
-    "May/June 2027",
-  ];
+  const allIntakeOptions = useMemo(() => intakeOptions(courses), [courses]);
 
   const durationsList = [
     "1 Year",
@@ -127,10 +127,15 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
     if (selectedUniversities.length > 0 && !selectedUniversities.includes(c.universityName)) {
       return false;
     }
-    if (selectedIntakes.length > 0 && !selectedIntakes.some((i) => c.availableIntakes.includes(i))) {
+    if (activeIntakeOnly && !c.activeIntake.trim()) {
       return false;
     }
-    if (c.tuitionFeeNum > maxTuition) {
+    if (
+      selectedIntakes.length > 0 &&
+      !selectedIntakes.some((selected) =>
+        courseIntakes(c).some((offered) => offered.toLowerCase() === selected.toLowerCase())
+      )
+    ) {
       return false;
     }
     if (selectedDurations.length > 0 && !selectedDurations.includes(c.duration)) {
@@ -142,7 +147,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
     if (selectedSubjects.length > 0 && !selectedSubjects.includes(c.subject)) {
       return false;
     }
-    if (filterScholarship && !c.badges.scholarship) {
+    if (filterScholarship && !hasScholarship(c)) {
       return false;
     }
     if (filterNoAppFee && !c.badges.noAppFee) {
@@ -158,8 +163,9 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
   });
 
   // Pagination Slice
-  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;
-  const paginatedCourses = filteredCourses.slice(
+  const orderedCourses = [...filteredCourses].sort((left, right) => compareByFee(left, right, feeSort));
+  const totalPages = Math.ceil(orderedCourses.length / itemsPerPage) || 1;
+  const paginatedCourses = orderedCourses.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -319,7 +325,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 setSelectedSubjects([]);
                 setFilterScholarship(false);
                 setFilterNoAppFee(false);
-                setMaxTuition(50000);
+                setFeeSort("low");
                 setInterviewFilter("all");
               }}
               className="text-[11px] text-[#ea580c] font-bold hover:underline"
@@ -379,6 +385,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
               Course Intake
             </label>
             <div className="space-y-1.5">
+              {allIntakeOptions.length === 0 && <p className="text-slate-400">Intake not set</p>}
               {(showMoreIntakes ? allIntakeOptions : allIntakeOptions.slice(0, 4)).map((intakeName) => (
                 <label key={intakeName} className="flex items-center gap-2 cursor-pointer text-slate-700">
                   <input
@@ -391,33 +398,28 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                 </label>
               ))}
             </div>
-            <button
-              onClick={() => setShowMoreIntakes(!showMoreIntakes)}
-              className="text-[11px] text-[#ea580c] font-semibold hover:underline pt-1 block"
-            >
-              {showMoreIntakes ? "Show less" : "Show more"}
-            </button>
+            {allIntakeOptions.length > 4 && (
+              <button
+                onClick={() => setShowMoreIntakes(!showMoreIntakes)}
+                className="text-[11px] text-[#ea580c] font-semibold hover:underline pt-1 block"
+              >
+                {showMoreIntakes ? "Show less" : "Show more"}
+              </button>
+            )}
           </div>
 
-          {/* 4. TUITION PER YEAR (Range Slider) */}
           <div className="pt-2 border-t border-slate-100 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
-                Tuition Per Year
-              </label>
-              <span className="font-mono font-bold text-[#ea580c]">
-                £0 — £{maxTuition.toLocaleString()}+
-              </span>
-            </div>
-            <input
-              type="range"
-              min={10000}
-              max={50000}
-              step={2000}
-              value={maxTuition}
-              onChange={(e) => setMaxTuition(Number(e.target.value))}
-              className="w-full accent-[#ea580c] cursor-pointer"
-            />
+            <label className="font-bold text-slate-800 uppercase tracking-wider text-[10px] block">
+              Sort by tuition
+            </label>
+            <select
+              value={feeSort}
+              onChange={(event) => setFeeSort(event.target.value as FeeSort)}
+              className="w-full p-2 rounded-lg border border-slate-200 bg-white text-slate-800"
+            >
+              <option value="low">Low to high</option>
+              <option value="high">High to low</option>
+            </select>
           </div>
 
           {/* 5. DURATION */}
@@ -554,9 +556,9 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
 
                           {/* Extra Badges: Scholarship, No App fee, etc. */}
                           <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                            {c.badges.scholarship && (
+                            {hasScholarship(c) && (
                               <span className="px-1.5 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold">
-                                Scholarship
+                                Scholarship available
                               </span>
                             )}
                             {c.badges.noAppFee && (
@@ -576,7 +578,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                         <div className="p-2.5 bg-slate-50 rounded-xl space-y-1 text-xs">
                           <div className="flex justify-between">
                             <span className="text-slate-500">Tuition Fee:</span>
-                            <span className="font-bold text-slate-900 font-mono">{c.tuitionFee} / yr</span>
+                            <span className="font-bold text-slate-900 font-mono">{c.tuitionFee || "Fee not set"}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Duration:</span>
@@ -584,12 +586,12 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Active Intake:</span>
-                            <span className="font-semibold text-[#ea580c]">{c.activeIntake}</span>
+                            <span className="font-semibold text-[#ea580c]">{intakeBounds([c])}</span>
                           </div>
                         </div>
 
                         {/* Action Buttons: VIEW DETAILS & APPLY NOW */}
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                        <div className={`grid ${onApplyCourse ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-2 border-t border-slate-100`}>
                           <button
                             type="button"
                             onClick={() => setSelectedCourseForModal(c)}
@@ -599,6 +601,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                             <span>VIEW DETAILS</span>
                           </button>
 
+                          {onApplyCourse && (
                           <button
                             type="button"
                             onClick={() => onApplyCourse(c)}
@@ -607,6 +610,7 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                             <span>APPLY NOW</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -654,7 +658,16 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
           {/* TAB 2: UNIVERSITIES TAB */}
           {activeTab === "universities" && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {universities.map((u) => (
+              {[...universities]
+                .sort((left, right) => {
+                  const leftCourses = courses.filter((course) => course.universityId === left.id);
+                  const rightCourses = courses.filter((course) => course.universityId === right.id);
+                  const delta = extremeFee(leftCourses, feeSort) - extremeFee(rightCourses, feeSort);
+                  return feeSort === "low" ? delta : -delta;
+                })
+                .map((u) => {
+                const univCourses = courses.filter((course) => course.universityId === u.id);
+                return (
                 <div
                   key={u.id}
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-orange-300"
@@ -679,8 +692,13 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
 
                   <div className="p-4 space-y-3">
                     <div className="space-y-1 text-xs text-slate-600">
-                      <p>Available Courses: <strong>{u.availableCoursesCount} programs</strong></p>
-                      <p className="text-[11px]">Intakes: {u.availableIntakes.join(", ")}</p>
+                      <p>Available Courses: <strong>{univCourses.length || u.availableCoursesCount} programs</strong></p>
+                      <p className="text-[11px]">Intakes: {intakeBounds(univCourses)}</p>
+                      {collegeHasScholarship(univCourses) && (
+                        <span className="inline-flex px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-bold">
+                          Scholarship available
+                        </span>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs">
@@ -704,7 +722,8 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -714,10 +733,14 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
       <ProgramDetailsModal
         course={selectedCourseForModal}
         onClose={() => setSelectedCourseForModal(null)}
-        onApplyNow={(course) => {
-          setSelectedCourseForModal(null);
-          onApplyCourse(course);
-        }}
+        onApplyNow={
+          onApplyCourse
+            ? (course) => {
+                setSelectedCourseForModal(null);
+                onApplyCourse(course);
+              }
+            : undefined
+        }
       />
     </div>
   );

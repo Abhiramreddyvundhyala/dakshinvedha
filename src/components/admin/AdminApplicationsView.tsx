@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
-import { ApplicationRecord, PrimaryStatusType, SecondaryStatusType } from "@/types";
+import { ApplicationRecord } from "@/types";
 import { listDirectory } from "@/lib/portalDb";
 import type { DirectoryAccount } from "@/lib/records";
-import { APPLICATION_STAGES, resolveTimeline } from "@/utils/tracking";
+import { APPLICATION_STAGES, primaryForStage, resolveTimeline } from "@/utils/tracking";
+import { newestFirst } from "@/lib/recent";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 import {
@@ -32,11 +33,7 @@ export const AdminApplicationsView: React.FC = () => {
   // Selected application to modify
   const [selectedApp, setSelectedApp] = useState<ApplicationRecord | null>(null);
 
-  // Form states for status update
-  const [primaryStatus, setPrimaryStatus] = useState<PrimaryStatusType>("Application Submitted");
-  const [secondaryStatus, setSecondaryStatus] = useState<SecondaryStatusType>("Documents Pending");
-  const [timelineAdvanceStage, setTimelineAdvanceStage] = useState<string>("");
-  const [naStages, setNaStages] = useState<string[]>([]);
+  const [stage, setStage] = useState<string>(APPLICATION_STAGES[0]);
   const [agentTrackingId, setAgentTrackingId] = useState("");
   const [agents, setAgents] = useState<DirectoryAccount[]>([]);
   useEffect(() => {
@@ -45,7 +42,7 @@ export const AdminApplicationsView: React.FC = () => {
     });
   }, []);
 
-  const filteredApps = applications.filter((app) => {
+  const filteredApps = newestFirst(applications, (app) => app.dateModified || app.dateAdded).filter((app) => {
     if (search.trim()) {
       const q = search.toLowerCase();
       const match =
@@ -63,20 +60,9 @@ export const AdminApplicationsView: React.FC = () => {
 
   const handleOpenStatusManager = (app: ApplicationRecord) => {
     setSelectedApp(app);
-    setPrimaryStatus(app.primaryStatus);
-    setSecondaryStatus(app.secondaryStatus);
-    setTimelineAdvanceStage(app.primaryStatus);
+    const current = resolveTimeline(app).find((item) => item.state === "current");
+    setStage(current?.status || APPLICATION_STAGES[0]);
     setAgentTrackingId(app.agentTrackingId || "");
-    const existingNA = resolveTimeline(app)
-      .filter((t) => t.state === "not_applicable")
-      .map((t) => t.status);
-    setNaStages(existingNA);
-  };
-
-  const handleToggleNA = (stageStatus: string) => {
-    setNaStages((prev) =>
-      prev.includes(stageStatus) ? prev.filter((s) => s !== stageStatus) : [...prev, stageStatus]
-    );
   };
 
   const handleSaveStatus = (e: React.FormEvent) => {
@@ -84,12 +70,13 @@ export const AdminApplicationsView: React.FC = () => {
     if (!selectedApp) return;
 
     const chosen = agents.find((agent) => agent.trackingId === agentTrackingId);
+    const mapped = primaryForStage(stage);
     updateApplicationStatus(
       selectedApp.camsId,
-      primaryStatus,
-      secondaryStatus,
-      timelineAdvanceStage,
-      naStages,
+      mapped.primary,
+      mapped.secondary,
+      stage,
+      [],
       agentTrackingId ? { trackingId: agentTrackingId, name: chosen?.name || "Agent" } : null
     );
 
@@ -104,7 +91,7 @@ export const AdminApplicationsView: React.FC = () => {
             Central Application Pipeline
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Applying sets the first stage. Progress moves when an admin saves a new status here. The assigned agent can see the file; the student sees the tracker.
+            Applying sets stage 1. Choose the current stage once here. The student tracker uses that same stage.
           </p>
         </div>
       </div>
@@ -157,7 +144,7 @@ export const AdminApplicationsView: React.FC = () => {
                 const isStudentSelf = app.counselorName?.includes("Student");
 
                 return (
-                  <tr key={app.camsId} className="hover:bg-purple-50/40 transition-colors">
+                  <tr key={app.camsId} className="hover:bg-orange-50/40 transition-colors">
                     <td className="p-4">
                       <div className="font-mono font-bold text-orange-700">{app.camsId}</div>
                       <div className="text-[10px] text-slate-400">{app.agentTrackingId ? app.counselorName : "No agent"}</div>
@@ -199,7 +186,7 @@ export const AdminApplicationsView: React.FC = () => {
                     <td className="p-4 text-right">
                       <button
                         onClick={() => handleOpenStatusManager(app)}
-                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
                       >
                         Change Status
                       </button>
@@ -221,11 +208,11 @@ export const AdminApplicationsView: React.FC = () => {
           >
             <div className="flex items-center justify-between border-b pb-3">
               <div>
-                <span className="text-[10px] font-bold text-purple-600 uppercase font-mono">
+                <span className="text-[10px] font-bold text-orange-600 uppercase font-mono">
                   {selectedApp.camsId}
                 </span>
                 <h3 className="font-black text-sm text-slate-900">
-                  Update Application Status & Workflow
+                  Update application stage
                 </h3>
               </div>
               <button
@@ -237,41 +224,20 @@ export const AdminApplicationsView: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Primary Status</label>
-                <select
-                  value={primaryStatus}
-                  onChange={(e) => setPrimaryStatus(e.target.value as PrimaryStatusType)}
-                  className="w-full p-2 rounded-xl border border-slate-300 text-xs font-bold text-purple-900"
-                >
-                  <option value="Application Submitted">Application Submitted</option>
-                  <option value="Under Review">Under Review</option>
-                  <option value="Submitted to University">Submitted to University</option>
-                  <option value="Offer Issued">Offer Issued</option>
-                  <option value="Payment Pending">Payment Pending</option>
-                  <option value="Payment Done">Payment Done</option>
-                  <option value="CAS Processing">CAS Processing</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Closed">Closed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Secondary Status</label>
-                <select
-                  value={secondaryStatus}
-                  onChange={(e) => setSecondaryStatus(e.target.value as SecondaryStatusType)}
-                  className="w-full p-2 rounded-xl border border-slate-300 text-xs font-semibold"
-                >
-                  <option value="Documents Pending">Documents Pending</option>
-                  <option value="Documents Verified">Documents Verified</option>
-                  <option value="Conditional Offer">Conditional Offer</option>
-                  <option value="Unconditional Offer">Unconditional Offer</option>
-                  <option value="Deposit Pending">Deposit Pending</option>
-                  <option value="Deposit Paid">Deposit Paid</option>
-                </select>
-              </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Current stage</label>
+              <select
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+                className="w-full p-2 rounded-xl border border-slate-300 text-xs font-bold text-orange-900"
+              >
+                {APPLICATION_STAGES.map((status, idx) => (
+                  <option key={status} value={status}>
+                    Stage {idx + 1} of {APPLICATION_STAGES.length} — {status}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[10px] text-slate-400">This is the only place a stage is changed. Earlier stages are marked complete.</p>
             </div>
 
             <div>
@@ -291,56 +257,6 @@ export const AdminApplicationsView: React.FC = () => {
               <p className="mt-1 text-[10px] text-slate-400">Agents sign in separately. This does not add them to a B2B team.</p>
             </div>
 
-            {/* Advance Timeline Stage */}
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">
-                Advance / Complete Timeline Stage
-              </label>
-              <select
-                value={timelineAdvanceStage}
-                onChange={(e) => setTimelineAdvanceStage(e.target.value)}
-                className="w-full p-2 rounded-xl border border-slate-300 text-xs"
-              >
-                {APPLICATION_STAGES.map((status, idx) => (
-                  <option key={status} value={status}>
-                    {idx + 1}. {status}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Mark Stages as Not Applicable (CRITICAL REQUIREMENT) */}
-            <div className="space-y-2 p-4 bg-slate-50 border rounded-2xl">
-              <span className="font-black text-slate-900 block text-xs">
-                Workflow Flexibility: Mark Stages as &quot;Not Applicable&quot; (N/A)
-              </span>
-              <p className="text-[11px] text-slate-500">
-                Not every university uses the same workflow (e.g. CAS not applicable for Australia/US, or direct offers without initial review).
-              </p>
-
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                {APPLICATION_STAGES.map((status) => {
-                  const isChecked = naStages.includes(status);
-                  return (
-                    <label
-                      key={status}
-                      className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer text-[11px]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handleToggleNA(status)}
-                        className="rounded text-orange-600 focus:ring-orange-500 w-3.5 h-3.5"
-                      />
-                      <span className={isChecked ? "line-through text-slate-400 font-medium" : "text-slate-700 font-bold"}>
-                        {status}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
@@ -351,7 +267,7 @@ export const AdminApplicationsView: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl shadow-xs transition-colors cursor-pointer"
+                className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold rounded-xl shadow-xs transition-colors cursor-pointer"
               >
                 Save & Notify Student
               </button>

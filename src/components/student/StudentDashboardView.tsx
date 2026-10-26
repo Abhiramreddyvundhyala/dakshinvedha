@@ -13,6 +13,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
+import { ImportantNotices } from "@/components/dashboard/ImportantNotices";
+import { intakeBounds } from "@/lib/catalogOffers";
 
 interface StudentDashboardViewProps {
   onNavigateToUniversities: () => void;
@@ -81,7 +83,11 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fff7ed] text-[#ea580c] text-xs font-semibold border border-[#fed7aa]">
               <Sparkles className="w-3.5 h-3.5 text-[#ea580c]" />
-              <span>Intake 2026/2027 Admissions Live</span>
+              <span>
+                {intakeBounds(courses) === "Intake not set"
+                  ? "Admissions open"
+                  : `Intakes ${intakeBounds(courses)}`}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-heading">
               {greeting}, {activeStudent?.firstName || "Student"}!
@@ -142,6 +148,8 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           </button>
         </div>
       )}
+
+      <ImportantNotices />
 
       {/* 2. DASHBOARD KPI CARDS (High Visibility on White Background) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -220,7 +228,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             {urgentDeadlinesCount}
           </p>
           <p className="text-[11px] text-[#ea580c] font-medium mt-1 flex items-center gap-1">
-            <span>Sept 2026 intake cutoffs</span>
+            <span>Deadlines in the next 45 days</span>
             <ChevronRight className="w-3 h-3 text-[#ea580c]" />
           </p>
         </div>
@@ -235,7 +243,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 Active Application Progress
               </h2>
               <p className="text-xs text-slate-500">
-                Live timeline of your primary application dossier.
+                Live timeline of your application.
               </p>
             </div>
             <button

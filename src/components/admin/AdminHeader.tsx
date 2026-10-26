@@ -48,14 +48,14 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
             onClick={() => onSelectTab("overview")}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm shadow-purple-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <span className="text-sm font-black text-white tracking-tight leading-none block">
                 Dakshinvedha Admin
               </span>
-              <span className="text-[10px] font-bold text-purple-400 tracking-wider uppercase block">
+              <span className="text-[10px] font-bold text-orange-400 tracking-wider uppercase block">
                 Abroad Solutions
               </span>
             </div>
@@ -80,7 +80,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
                   onClick={() => onSelectTab(t.key as AdminTabKey)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     isSelected
-                      ? "bg-purple-600 text-white shadow-xs"
+                      ? "bg-orange-600 text-white shadow-xs"
                       : "text-slate-400 hover:text-white hover:bg-slate-800"
                   }`}
                 >
@@ -104,12 +104,12 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
         {/* Right: Admin User Profile & Logout */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
-            <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-[10px]">
+            <div className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-[10px]">
               SA
             </div>
             <div className="text-left hidden sm:block">
               <span className="font-extrabold text-white block leading-tight">Super Administrator</span>
-              <span className="text-[10px] text-purple-400 block font-mono">ROOT_LEVEL_ACCESS</span>
+              <span className="text-[10px] text-orange-400 block font-mono">ROOT_LEVEL_ACCESS</span>
             </div>
           </div>
           <button
@@ -138,7 +138,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentTab, onSelectTa
             key={t.key}
             onClick={() => onSelectTab(t.key as AdminTabKey)}
             className={`py-1.5 px-2.5 rounded-lg whitespace-nowrap font-bold ${
-              currentTab === t.key ? "bg-purple-600 text-white" : "text-slate-400"
+              currentTab === t.key ? "bg-orange-600 text-white" : "text-slate-400"
             }`}
           >
             {t.label}

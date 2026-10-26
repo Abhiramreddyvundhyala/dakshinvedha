@@ -3,14 +3,13 @@
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import { submitVasRequest } from "@/lib/portalDb";
+import { newestFirst } from "@/lib/recent";
 import {
   Sparkles,
   Building,
   PiggyBank,
-  CreditCard,
   HeartPulse,
   Plane,
-  Smartphone,
   FileCheck2,
   Car,
   CheckCircle2,
@@ -73,36 +72,6 @@ export const ValueAddedServicesView: React.FC = () => {
         processingTime: "Sanction letter within 5 to 7 business days.",
         partners: "HDFC Credila, Prodigy Finance, MPower, Avanse, ICICI Bank.",
         requirements: ["Academic transcripts", "Co-applicant income proof", "Admissions offer"],
-      },
-    },
-    {
-      id: "vas-forex",
-      name: "Forex",
-      description:
-        "Zero-markup international tuition remittance and multi-currency student travel debit cards with competitive live exchange rates and zero ATM transaction fees.",
-      commission: "0.4% per transaction",
-      icon: CreditCard,
-      badge: "Best FX Rates",
-      details: {
-        coverage: "Direct wire to university bank accounts & smart contactless travel cards.",
-        processingTime: "Same-day A2 remittance generation.",
-        partners: "Flywire, Convera, ICICI Bank, Nium, Western Union.",
-        requirements: ["University Fee Invoice / CAS Statement", "Passport & Visa Copy", "PAN / Tax ID"],
-      },
-    },
-    {
-      id: "vas-sim",
-      name: "SIM Card",
-      description:
-        "Free international student SIM card delivered pre-departure with pre-activated local phone number, unlimited domestic calling, and high-speed mobile 5G data bundles.",
-      commission: "£15 per active card",
-      icon: Smartphone,
-      badge: "Free Delivery",
-      details: {
-        coverage: "UK (Three, VOXI), Australia (Vodafone AU), USA (T-Mobile), Canada (Fido).",
-        processingTime: "Dispatched to student's home 7 days prior to flight.",
-        partners: "Three UK, VOXI by Vodafone, Lycamobile, Mint Mobile, Rogers.",
-        requirements: ["Destination country selection", "Travel date", "Delivery address"],
       },
     },
     {
@@ -401,7 +370,7 @@ export const ValueAddedServicesView: React.FC = () => {
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c]"
                 >
                   <option value="">No linked application</option>
-                  {applications.map((application) => (
+                  {newestFirst(applications, (application) => application.dateModified || application.dateAdded).map((application) => (
                     <option key={application.camsId} value={application.camsId}>
                       {application.student.name} ({application.camsId})
                     </option>

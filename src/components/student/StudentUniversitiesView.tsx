@@ -4,6 +4,14 @@ import React, { useState, useMemo } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import { UniversityInfo } from "@/types";
 import {
+  collegeHasScholarship,
+  courseIntakes,
+  extremeFee,
+  type FeeSort,
+  intakeBounds,
+  intakeOptions,
+} from "@/lib/catalogOffers";
+import {
   Search,
   Filter,
   MapPin,
@@ -31,7 +39,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedStudyLevel, setSelectedStudyLevel] = useState("all");
   const [selectedIntake, setSelectedIntake] = useState("all");
-  const [selectedTuitionRange, setSelectedTuitionRange] = useState("all");
+  const [feeSort, setFeeSort] = useState<FeeSort>("low");
   const [scholarshipOnly, setScholarshipOnly] = useState(false);
 
   // Available countries
@@ -41,9 +49,11 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
     return Array.from(set);
   }, [universities]);
 
+  const intakeChoices = useMemo(() => intakeOptions(courses), [courses]);
+
   // Filtered universities
   const filteredUniversities = useMemo(() => {
-    return universities.filter((u) => {
+    const matched = universities.filter((u) => {
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -58,39 +68,31 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
         return false;
       }
 
-      // 3. Intake
+      const univCourses = courses.filter((c) => c.universityId === u.id);
+
       if (selectedIntake !== "all") {
-        const hasIntake = u.availableIntakes.some((i) =>
-          i.toLowerCase().includes(selectedIntake.toLowerCase())
+        const hasIntake = univCourses.some((course) =>
+          courseIntakes(course).some((intake) => intake.toLowerCase() === selectedIntake.toLowerCase())
         );
         if (!hasIntake) return false;
       }
-
-      // 4. University's courses filters (Study Level, Tuition, Scholarship)
-      const univCourses = courses.filter((c) => c.universityId === u.id);
 
       if (selectedStudyLevel !== "all") {
         const hasLevel = univCourses.some((c) => c.studyLevel === selectedStudyLevel);
         if (!hasLevel) return false;
       }
 
-      if (scholarshipOnly) {
-        const hasScholarship = univCourses.some((c) => c.badges.scholarship);
-        if (!hasScholarship) return false;
-      }
-
-      if (selectedTuitionRange !== "all") {
-        const hasMatchingTuition = univCourses.some((c) => {
-          const fee = c.tuitionFeeNum || 15000;
-          if (selectedTuitionRange === "under15k") return fee < 15000;
-          if (selectedTuitionRange === "15kto22k") return fee >= 15000 && fee <= 22000;
-          if (selectedTuitionRange === "above22k") return fee > 22000;
-          return true;
-        });
-        if (!hasMatchingTuition) return false;
+      if (scholarshipOnly && !collegeHasScholarship(univCourses)) {
+        return false;
       }
 
       return true;
+    });
+    return [...matched].sort((left, right) => {
+      const leftCourses = courses.filter((course) => course.universityId === left.id);
+      const rightCourses = courses.filter((course) => course.universityId === right.id);
+      const delta = extremeFee(leftCourses, feeSort) - extremeFee(rightCourses, feeSort);
+      return (feeSort === "low" ? delta : -delta) || left.name.localeCompare(right.name);
     });
   }, [
     universities,
@@ -99,7 +101,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
     selectedCountry,
     selectedStudyLevel,
     selectedIntake,
-    selectedTuitionRange,
+    feeSort,
     scholarshipOnly,
   ]);
 
@@ -108,7 +110,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
     setSelectedCountry("all");
     setSelectedStudyLevel("all");
     setSelectedIntake("all");
-    setSelectedTuitionRange("all");
+    setFeeSort("low");
     setScholarshipOnly(false);
   };
 
@@ -193,24 +195,23 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
               className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-800"
             >
               <option value="all">All Intakes</option>
-              <option value="September">September / October</option>
-              <option value="January">January / February</option>
-              <option value="May">May / June</option>
+              {intakeChoices.map((intake) => (
+                <option key={intake} value={intake}>
+                  {intake}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Tuition Range */}
           <div>
-            <label className="text-[11px] font-bold text-slate-600 block mb-1">Tuition Range</label>
+            <label className="text-[11px] font-bold text-slate-600 block mb-1">Sort by tuition</label>
             <select
-              value={selectedTuitionRange}
-              onChange={(e) => setSelectedTuitionRange(e.target.value)}
+              value={feeSort}
+              onChange={(e) => setFeeSort(e.target.value as FeeSort)}
               className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-800"
             >
-              <option value="all">All Ranges</option>
-              <option value="under15k">Under £15,000</option>
-              <option value="15kto22k">£15,000 - £22,000</option>
-              <option value="above22k">Above £22,000</option>
+              <option value="low">Low to high</option>
+              <option value="high">High to low</option>
             </select>
           </div>
 
@@ -305,20 +306,16 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
                       </span>
                     </div>
 
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-slate-500 block">
-                        Available Intakes:
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {univ.availableIntakes.map((intake, idx) => (
-                          <span
-                            key={idx}
-                            className="text-[10px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md"
-                          >
-                            {intake.split("/")[0]}
-                          </span>
-                        ))}
+                    <div className="space-y-1 text-[11px]">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-slate-500">Intake</span>
+                        <span className="font-semibold text-slate-800 text-right">{intakeBounds(univCourses)}</span>
                       </div>
+                      {collegeHasScholarship(univCourses) && (
+                        <span className="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                          Scholarship available
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

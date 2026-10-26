@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ApplicationRecord } from "@/types";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
+import { newestFirst } from "@/lib/recent";
 
 interface LatestApplicationsProps {
   applications: ApplicationRecord[];
@@ -30,7 +31,7 @@ export const LatestApplications: React.FC<LatestApplicationsProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const filteredApps = applications.filter((app) => {
+  const filteredApps = newestFirst(applications, (app) => app.dateModified || app.dateAdded).filter((app) => {
     const matchesSearch =
       searchTerm === "" ||
       app.camsId.toLowerCase().includes(searchTerm.toLowerCase()) ||

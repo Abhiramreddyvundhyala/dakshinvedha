@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, CreditCard, Check, Building } from "lucide-react";
 import { BankAccountDetails } from "@/types";
+import { bankFieldError } from "@/lib/b2bValidation";
 
 interface BankDetailsModalProps {
   isOpen: boolean;
@@ -18,12 +19,37 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<BankAccountDetails>(bankDetails);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setFormData(bankDetails);
+    setError(null);
+  }, [isOpen, bankDetails]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    const problem = bankFieldError({
+      accountHolder: formData.businessAccountName,
+      bankName: formData.bankName,
+      ifsc: formData.ifscSortCode,
+      accountNumber: formData.accountNumber,
+      swiftCode: formData.swift,
+    });
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    onSave({
+      ...formData,
+      businessAccountName: formData.businessAccountName.trim(),
+      accountNumber: formData.accountNumber.replace(/\D/g, ""),
+      bankName: formData.bankName.trim(),
+      ifscSortCode: formData.ifscSortCode.trim().toUpperCase(),
+      swift: formData.swift.trim().toUpperCase(),
+    });
     onClose();
   };
 
@@ -52,6 +78,7 @@ export const BankDetailsModal: React.FC<BankDetailsModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-3 text-xs">
+          {error && <p className="text-xs font-semibold text-rose-700">{error}</p>}
           <div>
             <label className="block text-slate-700 font-semibold mb-1">
               Business Account Name *

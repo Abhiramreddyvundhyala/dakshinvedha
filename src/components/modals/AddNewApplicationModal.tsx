@@ -14,8 +14,10 @@ import {
   AlertCircle,
   FileText,
 } from "lucide-react";
-import { ApplicationRecord } from "@/types";
+import { ApplicationRecord, DocumentUploadItem } from "@/types";
+import { PDF_ACCEPT, uploadForCurrentUser } from "@/lib/storage";
 import { buildTimeline, createTrackingId } from "@/utils/tracking";
+import { freshCommission } from "@/lib/commission";
 
 interface AddNewApplicationModalProps {
   isOpen: boolean;
@@ -43,7 +45,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
 
     // Academics
     highestDegree: "Bachelor of Technology",
-    gpaScore: "78%",
+    gpaScore: "",
     englishTest: "IELTS",
     testScore: "7.0 (L:7.0, R:7.0, W:6.5, S:7.0)",
 
@@ -60,10 +62,9 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
     urmContactNumber: "+44 20 8331 8000",
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: string }[]>([
-    { name: "Passport_Bio_Data.pdf", size: "1.8 MB" },
-    { name: "Graduation_Transcripts.pdf", size: "3.2 MB" },
-  ]);
+  const [uploadedFiles, setUploadedFiles] = useState<DocumentUploadItem[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -181,10 +182,7 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
         listeningScore: "7.0",
         speakingScore: "7.0",
       },
-      documents: [
-        { id: "doc-1", category: "Passport", fileName: "Passport_Bio_Page.pdf", fileSize: "1.8 MB", progress: 100, status: "Uploaded" },
-        { id: "doc-2", category: "Academic Documents", fileName: "Academic_Transcripts.pdf", fileSize: "3.2 MB", progress: 100, status: "Uploaded" },
-      ],
+      documents: uploadedFiles,
       payment: {
         grossTuition: formData.tuitionFee,
         scholarship: "£1,500 (Early Submission Grant)",
@@ -192,12 +190,11 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
         netBalanceDue: formData.tuitionFee,
         paymentStatus: "Pending",
       },
-      commission: {
-        amount: "£2,625",
-        eligibleAmount: "£2,625",
-        expectedCommission: "£2,625 (15%)",
-        status: "Pending",
-      },
+      commission: freshCommission({
+        tuitionFee: formData.tuitionFee,
+        tuitionFeeNum: 17500,
+        commissionRate: "15%",
+      }),
       notes: [
         {
           id: `note-${Date.now()}`,
@@ -591,40 +588,63 @@ export const AddNewApplicationModal: React.FC<AddNewApplicationModalProps> = ({
               </div>
 
               {/* Upload Dropzone */}
-              <div className="border-2 border-dashed border-slate-200 hover:border-orange-400 rounded-xl p-5 text-center bg-slate-50/50 hover:bg-orange-50/30 transition-colors cursor-pointer">
+              <label className="border-2 border-dashed border-slate-200 hover:border-orange-400 rounded-xl p-5 text-center bg-slate-50/50 hover:bg-orange-50/30 transition-colors cursor-pointer block">
                 <Upload className="w-8 h-8 text-orange-500 mx-auto mb-2" />
                 <p className="text-xs font-bold text-slate-800">
-                  Drag & drop passport scan and academic transcripts here
+                  {uploading ? "Uploading..." : "Choose passport scan and academic transcripts"}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-0.5">
                   Supports PDF, JPG, PNG up to 10 MB per file
                 </p>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setUploadedFiles([
-                      ...uploadedFiles,
-                      { name: `Document_${uploadedFiles.length + 1}.pdf`, size: "2.1 MB" },
-                    ])
-                  }
-                  className="mt-3 px-3 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold shadow-2xs hover:bg-slate-50"
-                >
-                  Browse Files
-                </button>
-              </div>
+                {uploadError && <p className="mt-2 text-xs font-semibold text-rose-700">{uploadError}</p>}
+                <input
+                  type="file"
+                  accept={PDF_ACCEPT}
+                  className="sr-only"
+                  disabled={uploading}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    event.target.value = "";
+                    if (!file) return;
+                    setUploading(true);
+                    setUploadError(null);
+                    void uploadForCurrentUser(file, "applications").then((result) => {
+                      setUploading(false);
+                      if (!result.ok) {
+                        setUploadError(result.error);
+                        return;
+                      }
+                      setUploadedFiles((current) => [
+                        ...current,
+                        {
+                          id: createTrackingId("DOC"),
+                          category: "Other Documents",
+                          fileName: result.fileName,
+                          fileSize: result.fileSize,
+                          storagePath: result.path,
+                          storageBucket: result.bucket,
+                          progress: 100,
+                          status: "Uploaded",
+                        },
+                      ]);
+                    });
+                  }}
+                />
+              </label>
 
               {/* Attached files */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-slate-700">Attached Documents:</p>
-                {uploadedFiles.map((f, i) => (
+                {uploadedFiles.length === 0 && <p className="text-xs text-slate-400">No files uploaded yet.</p>}
+                {uploadedFiles.map((f) => (
                   <div
-                    key={i}
+                    key={f.id}
                     className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-orange-500" />
-                      <span className="font-medium text-slate-800">{f.name}</span>
-                      <span className="text-slate-400 text-[10px]">({f.size})</span>
+                      <span className="font-medium text-slate-800">{f.fileName}</span>
+                      <span className="text-slate-400 text-[10px]">({f.fileSize})</span>
                     </div>
                     <span className="text-[10px] text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded">
                       Ready

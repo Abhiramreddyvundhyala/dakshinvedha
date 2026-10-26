@@ -5,8 +5,9 @@ import { usePlatform } from "@/context/PlatformContext";
 import { AdminTabKey } from "./AdminSidebar";
 import {
   Users, FileText, Building, CheckCircle2,
-  TrendingUp, TrendingDown, AlertTriangle, ArrowRight, Award, Globe, UserCheck, Briefcase,
+  AlertTriangle, ArrowRight, Award, Globe, UserCheck, Briefcase,
 } from "lucide-react";
+import { newestFirst } from "@/lib/recent";
 
 interface AdminDashboardViewProps {
   onNavigateTab: (tab: AdminTabKey) => void;
@@ -21,7 +22,8 @@ const card = {
 
 // Simple bar chart — no gradients
 const MiniBar: React.FC<{ values: number[]; color: string }> = ({ values, color }) => {
-  const max = Math.max(...values, 1);
+  const max = Math.max(...values, 0);
+  if (max <= 0) return null;
   return (
     <div className="flex items-end gap-0.5" style={{ height: 28 }}>
       {values.map((v, i) => (
@@ -29,8 +31,8 @@ const MiniBar: React.FC<{ values: number[]; color: string }> = ({ values, color 
           key={i}
           style={{
             flex: 1,
-            height: `${Math.max(Math.round((v / max) * 100), 8)}%`,
-            background: i === values.length - 1 ? color : "#e2e8f0",
+            height: v > 0 ? `${Math.round((v / max) * 100)}%` : 0,
+            background: color,
             borderRadius: 2,
           }}
         />
@@ -38,6 +40,15 @@ const MiniBar: React.FC<{ values: number[]; color: string }> = ({ values, color 
     </div>
   );
 };
+
+function countsByMonth(dates: string[]): number[] {
+  const months = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  dates.forEach((value) => {
+    const month = new Date(value).getMonth();
+    if (!Number.isNaN(month) && month >= 0 && month < 12) months[month] += 1;
+  });
+  return months;
+}
 
 // Donut — no gradients
 const DonutChart: React.FC<{ data: { label: string; value: number; color: string }[] }> = ({ data }) => {
@@ -77,7 +88,7 @@ const DonutChart: React.FC<{ data: { label: string; value: number; color: string
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   "Application Submitted": { bg: "#eff6ff", color: "#2563eb" },
   "Under Review":          { bg: "#f0f9ff", color: "#0369a1" },
-  "Submitted to University":{ bg: "#eef2ff", color: "#4338ca" },
+  "Submitted to University":{ bg: "#fff7ed", color: "#c2410c" },
   "Offer Issued":          { bg: "#f0f9ff", color: "#0284c7" },
   "Payment Pending":       { bg: "#fffbeb", color: "#d97706" },
   "CAS Processing":        { bg: "#f0f9ff", color: "#0891b2" },
@@ -96,30 +107,34 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
   const activePartners  = b2bPartners.filter((p) => p.accountStatus === "Active").length;
   const completedApps   = applications.filter((a) => a.primaryStatus === "Completed").length;
   const visaApps        = applications.filter((a) => a.primaryStatus === "Visa Processing" || a.primaryStatus === "CAS Processing").length;
-  const underReview     = applications.filter((a) => a.primaryStatus === "Under Review").length;
 
+  const offerDates = applications
+    .filter((application) => application.primaryStatus.includes("Offer") || application.primaryStatus === "Completed")
+    .map((application) => application.dateAdded);
   const kpis = [
-    { label: "Students",     value: totalStudents,  change: "+12%", up: true,  color: "#2563eb", icon: Users,         tab: "students"     as AdminTabKey, trend: [8,12,15,11,18,22,19,25,28,24,30,totalStudents] },
-    { label: "Applications", value: totalApps,      change: "+8%",  up: true,  color: "#f97316", icon: FileText,      tab: "applications" as AdminTabKey, trend: [5,9,12,8,15,19,16,21,24,20,26,totalApps] },
-    { label: "Offers Issued",value: offersCount,    change: "+18%", up: true,  color: "#0284c7", icon: Award,         tab: "applications" as AdminTabKey, trend: [2,3,5,4,7,8,7,9,11,10,13,offersCount] },
-    { label: "Doc Queue",    value: pendingDocs,    change: "-5%",  up: false, color: "#dc2626", icon: CheckCircle2,  tab: "documents"    as AdminTabKey, trend: [10,12,9,14,11,15,13,11,9,12,10,pendingDocs] },
+    { label: "Students",     value: totalStudents,  color: "#2563eb", icon: Users,         tab: "students"     as AdminTabKey, trend: countsByMonth(students.map((student) => student.registrationDate)) },
+    { label: "Applications", value: totalApps,      color: "#f97316", icon: FileText,      tab: "applications" as AdminTabKey, trend: countsByMonth(applications.map((application) => application.dateAdded)) },
+    { label: "Offers Issued",value: offersCount,    color: "#0284c7", icon: Award,         tab: "applications" as AdminTabKey, trend: countsByMonth(offerDates) },
+    { label: "Doc Queue",    value: pendingDocs,    color: "#dc2626", icon: CheckCircle2,  tab: "documents"    as AdminTabKey, trend: [] as number[] },
   ];
 
-  const donutData = [
-    { label: "Under Review", value: underReview,   color: "#2563eb" },
-    { label: "Offer Issued", value: offersCount,   color: "#0284c7" },
-    { label: "Visa/CAS",     value: visaApps,      color: "#0891b2" },
-    { label: "Completed",    value: completedApps, color: "#f97316" },
-  ];
+  const statusColors = ["#2563eb", "#f97316", "#0284c7", "#0891b2", "#d97706", "#ea580c", "#0369a1", "#dc2626"];
+  const statusCounts = applications.reduce<Record<string, number>>((acc, application) => {
+    acc[application.primaryStatus] = (acc[application.primaryStatus] || 0) + 1;
+    return acc;
+  }, {});
+  const donutData = Object.entries(statusCounts)
+    .filter(([, value]) => value > 0)
+    .map(([label, value], index) => ({ label, value, color: statusColors[index % statusColors.length] }));
 
   const countryBreakdown = universities.reduce<Record<string, number>>((acc, u) => {
     acc[u.country] = (acc[u.country] || 0) + 1;
     return acc;
   }, {});
   const topCountries = Object.entries(countryBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const barColors = ["#f97316", "#2563eb", "#0284c7", "#0891b2", "#7c3aed"];
+  const barColors = ["#f97316", "#2563eb", "#0284c7", "#0891b2", "#ea580c"];
 
-  const recentApps = applications.slice(0, 6);
+  const recentApps = newestFirst(applications, (app) => app.dateModified || app.dateAdded).slice(0, 6);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -144,17 +159,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
                 <div style={{ width: 34, height: 34, borderRadius: 8, background: k.color + "18", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon style={{ width: 16, height: 16, color: k.color }} />
                 </div>
-                <span
-                  style={{
-                    fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
-                    background: k.up ? "#f0f9ff" : "#fef2f2",
-                    color: k.up ? "#0284c7" : "#dc2626",
-                    display: "flex", alignItems: "center", gap: 3,
-                  }}
-                >
-                  {k.up ? <TrendingUp style={{ width: 10, height: 10 }} /> : <TrendingDown style={{ width: 10, height: 10 }} />}
-                  {k.change}
-                </span>
+
               </div>
               <p style={{ fontSize: 28, fontWeight: 900, color: "#1e293b", lineHeight: 1, margin: 0 }}>{k.value}</p>
               <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>{k.label}</p>
@@ -177,7 +182,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
               View all <ArrowRight style={{ width: 11, height: 11 }} />
             </button>
           </div>
-          <DonutChart data={donutData} />
+          {totalApps === 0 ? (
+            <p style={{ fontSize: 12, color: "#94a3b8", margin: "24px 0" }}>No applications yet.</p>
+          ) : (
+            <DonutChart data={donutData} />
+          )}
           <div style={{ borderTop: "1px solid #f0f2f5", marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontSize: 11, color: "#94a3b8" }}>Total</span>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#1e293b" }}>{totalApps}</span>
@@ -193,7 +202,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
               { label: "Courses",               value: courses.length,      icon: Briefcase,  color: "#f97316" },
               { label: "Active B2B Partners",   value: activePartners,      icon: UserCheck,  color: "#0284c7" },
               { label: "Completed",             value: completedApps,       icon: Award,      color: "#0891b2" },
-              { label: "Visa Processing",       value: visaApps,            icon: Globe,      color: "#7c3aed" },
+              { label: "Visa Processing",       value: visaApps,            icon: Globe,      color: "#ea580c" },
             ].map((s) => {
               const Icon = s.icon;
               return (
@@ -213,6 +222,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
         <div style={{ ...card, padding: 18 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 14px" }}>Universities by Country</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {topCountries.length === 0 && (
+              <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>No universities yet.</p>
+            )}
             {topCountries.map(([country, count], i) => {
               const pct = Math.round((count / universities.length) * 100);
               return (
@@ -251,6 +263,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
               </tr>
             </thead>
             <tbody>
+              {recentApps.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 24, textAlign: "center", fontSize: 12, color: "#94a3b8" }}>No applications yet.</td>
+                </tr>
+              )}
               {recentApps.map((app, idx) => {
                 const s = STATUS_STYLE[app.primaryStatus] || { bg: "#f8fafc", color: "#64748b" };
                 return (

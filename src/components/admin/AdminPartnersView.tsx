@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
+import { newestFirst } from "@/lib/recent";
 import {
   Building2,
   Plus,
@@ -18,17 +19,17 @@ import {
   Search,
   KeyRound,
   Pencil,
-  Snowflake,
-  Trash2,
 } from "lucide-react";
+import { StoredFileButton } from "@/components/shared/StoredFileButton";
+import { hasStoredFile, STORAGE_BUCKETS } from "@/lib/storage";
 import { generatePassword } from "@/utils/accounts";
-import { listDirectory, manageAccount, removeAccount } from "@/lib/portalDb";
+import { listDirectory, manageAccount } from "@/lib/portalDb";
 import type { DirectoryAccount } from "@/lib/records";
 import type { B2BPartnerProfile } from "@/types";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
 export const AdminPartnersView: React.FC = () => {
-  const { b2bPartners, createB2BAccount, verifyB2BPartner, updateB2BProfile, dropB2BPartner, accessRequests, rejectB2BRequest } = usePlatform();
+  const { b2bPartners, createB2BAccount, verifyB2BPartner, updateB2BProfile, accessRequests, rejectB2BRequest } = usePlatform();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -47,10 +48,6 @@ export const AdminPartnersView: React.FC = () => {
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editOrg, setEditOrg] = useState("");
-  const [resetPartner, setResetPartner] = useState<B2BPartnerProfile | null>(null);
-  const [resetPassword, setResetPassword] = useState("");
-  const [freezePartner, setFreezePartner] = useState<B2BPartnerProfile | null>(null);
-  const [deletePartner, setDeletePartner] = useState<B2BPartnerProfile | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
 
   useEffect(() => {
@@ -62,7 +59,7 @@ export const AdminPartnersView: React.FC = () => {
   const ownerIdFor = (partner: B2BPartnerProfile) =>
     partner.ownerProfileId || owners.find((account) => account.email.toLowerCase() === partner.email.toLowerCase())?.id || "";
 
-  const filtered = b2bPartners.filter((p) => {
+  const filtered = newestFirst(b2bPartners, (partner) => partner.createdDate).filter((p) => {
     if (!searchQ.trim()) return true;
     const q = searchQ.toLowerCase();
     return (
@@ -175,76 +172,6 @@ export const AdminPartnersView: React.FC = () => {
     setEditPartner(null);
   };
 
-  const handleResetPassword = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!resetPartner) return;
-    const userId = ownerIdFor(resetPartner);
-    if (!userId) {
-      setCreateError("This organization has no owner login linked. Recreate the account.");
-      return;
-    }
-    if (resetPassword.trim().length < 6) {
-      setCreateError("Set a password of at least 6 characters.");
-      return;
-    }
-    setActionBusy(true);
-    const result = await manageAccount({ userId, action: "password", password: resetPassword.trim() });
-    setActionBusy(false);
-    if (!result.ok) {
-      setCreateError(result.error);
-      return;
-    }
-    setIssued({
-      name: resetPartner.name,
-      email: resetPartner.email,
-      password: result.password || resetPassword.trim(),
-      partnerId: resetPartner.partnerId,
-    });
-    setSuccessMsg(`New password issued for ${resetPartner.name}. Share it privately.`);
-    setResetPartner(null);
-  };
-
-  const handleFreeze = async () => {
-    if (!freezePartner) return;
-    const userId = ownerIdFor(freezePartner);
-    if (!userId) {
-      setCreateError("This organization has no owner login linked. Recreate the account.");
-      return;
-    }
-    const next = freezePartner.accountStatus === "Suspended" ? "Active" : "Suspended";
-    setActionBusy(true);
-    const result = await manageAccount({ userId, action: "status", status: next });
-    setActionBusy(false);
-    if (!result.ok) {
-      setCreateError(result.error);
-      return;
-    }
-    if (result.partner) updateB2BProfile(freezePartner.id, result.partner);
-    else updateB2BProfile(freezePartner.id, { accountStatus: next });
-    setSuccessMsg(next === "Suspended" ? `${freezePartner.name} is frozen and cannot sign in.` : `${freezePartner.name} can sign in again.`);
-    setFreezePartner(null);
-  };
-
-  const handleDeletePartner = async () => {
-    if (!deletePartner) return;
-    const userId = ownerIdFor(deletePartner);
-    if (!userId) {
-      setCreateError("This organization has no owner login linked. Recreate the account.");
-      return;
-    }
-    setActionBusy(true);
-    const result = await removeAccount(userId);
-    setActionBusy(false);
-    if (!result.ok) {
-      setCreateError(result.error);
-      return;
-    }
-    dropB2BPartner(deletePartner.id);
-    setSuccessMsg(`${deletePartner.name} and their team logins were removed.`);
-    setDeletePartner(null);
-    setViewPartner(null);
-  };
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
@@ -255,12 +182,12 @@ export const AdminPartnersView: React.FC = () => {
             B2B Partners Management
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Create B2B/Agent login credentials. Partners complete their profile after first login.
+            Create the owner login and review organization documents. Pause, reset, and delete live under Accounts.
           </p>
         </div>
         <button
           onClick={() => openCreate()}
-          className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm shadow-blue-500/20 flex items-center gap-2 cursor-pointer transition-all"
+          className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all"
         >
           <Plus className="w-4 h-4" />
           Create B2B Account
@@ -333,7 +260,7 @@ export const AdminPartnersView: React.FC = () => {
         </div>
       )}
 
-      {createError && !isCreateOpen && !editPartner && !resetPartner && (
+      {createError && !isCreateOpen && !editPartner && !viewPartner && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{createError}</span>
@@ -412,7 +339,10 @@ export const AdminPartnersView: React.FC = () => {
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center gap-1 justify-end flex-wrap">
                       <button
-                        onClick={() => setViewPartner(partner.id)}
+                        onClick={() => {
+                          setCreateError(null);
+                          setViewPartner(partner.id);
+                        }}
                         className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 cursor-pointer transition-colors"
                         title="View"
                       >
@@ -426,46 +356,7 @@ export const AdminPartnersView: React.FC = () => {
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setResetPartner(partner);
-                          setResetPassword(generatePassword());
-                          setCreateError(null);
-                        }}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 cursor-pointer"
-                        title="Reset password"
-                      >
-                        <KeyRound className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFreezePartner(partner)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 cursor-pointer"
-                        title={partner.accountStatus === "Suspended" ? "Unfreeze login" : "Freeze login"}
-                      >
-                        <Snowflake className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeletePartner(partner)}
-                        className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer"
-                        title="Remove"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      {partner.verificationStatus !== "Verified" && partner.profileCompleted && (
-                        <button
-                          onClick={() => {
-                            verifyB2BPartner(partner.id);
-                            setSuccessMsg(`Partner ${partner.name} has been verified successfully!`);
-                            setTimeout(() => setSuccessMsg(null), 4000);
-                          }}
-                          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
-                        >
-                          Verify
-                        </button>
-                      )}
+
                     </div>
                   </td>
                 </tr>
@@ -647,10 +538,11 @@ export const AdminPartnersView: React.FC = () => {
               <>
                 <h3 className="text-sm font-extrabold text-slate-900 pt-2">Documents Status</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <DocStatus label="Aadhaar" status={viewing.personalDocuments.aadhaarStatus} value={viewing.personalDocuments.aadhaarNumber} />
-                  <DocStatus label="PAN" status={viewing.personalDocuments.panStatus} value={viewing.personalDocuments.panNumber} />
-                  <DocStatus label="Org PAN" status={viewing.organizationDocuments.orgPanStatus} value={viewing.organizationDocuments.orgPanNumber} />
-                  <DocStatus label="GST" status={viewing.organizationDocuments.gstCertificateStatus} value={viewing.organizationDocuments.gstNumber} />
+                  <DocStatus label="Aadhaar" status={viewing.personalDocuments.aadhaarStatus} value={viewing.personalDocuments.aadhaarNumber} filePath={viewing.personalDocuments.aadhaarFile} />
+                  <DocStatus label="PAN" status={viewing.personalDocuments.panStatus} value={viewing.personalDocuments.panNumber} filePath={viewing.personalDocuments.panFile} />
+                  <DocStatus label="Org PAN" status={viewing.organizationDocuments.orgPanStatus} value={viewing.organizationDocuments.orgPanNumber} filePath={viewing.organizationDocuments.orgPanFile} />
+                  <DocStatus label="Registration" status={viewing.organizationDocuments.orgCertificateStatus} value={viewing.registrationNumber || "Certificate"} filePath={viewing.organizationDocuments.orgCertificateFile} />
+                  <DocStatus label="GST" status={viewing.organizationDocuments.gstCertificateStatus} value={viewing.organizationDocuments.gstNumber} filePath={viewing.organizationDocuments.gstCertificateFile} />
                 </div>
 
                 <h3 className="text-sm font-extrabold text-slate-900 pt-2">Bank Details</h3>
@@ -672,28 +564,33 @@ export const AdminPartnersView: React.FC = () => {
             </div>
 
             {/* Verify Button */}
+            {createError && <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{createError}</p>}
             {viewing.verificationStatus !== "Verified" && viewing.profileCompleted && (
               <button
                 onClick={() => {
+                  const files = [
+                    viewing.personalDocuments.aadhaarFile,
+                    viewing.personalDocuments.panFile,
+                    viewing.organizationDocuments.orgPanFile,
+                    viewing.organizationDocuments.orgCertificateFile,
+                    viewing.organizationDocuments.gstCertificateFile,
+                  ];
+                  if (files.some((file) => !hasStoredFile(file))) {
+                    setCreateError("Open each stored document before verifying. A required file is still missing.");
+                    return;
+                  }
                   verifyB2BPartner(viewing.id);
                   setSuccessMsg(`Partner ${viewing.name} verified!`);
                   setTimeout(() => setSuccessMsg(null), 4000);
                   setViewPartner(null);
                 }}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm rounded-xl shadow-sm cursor-pointer hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2"
               >
                 <ShieldCheck className="w-4 h-4" />
                 Verify This Partner
               </button>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button type="button" onClick={() => openEdit(viewing)} className="py-2 rounded-xl border text-xs font-bold">Edit</button>
-              <button type="button" onClick={() => { setResetPartner(viewing); setResetPassword(generatePassword()); setCreateError(null); }} className="py-2 rounded-xl border text-xs font-bold">Password</button>
-              <button type="button" onClick={() => setFreezePartner(viewing)} className="py-2 rounded-xl border text-xs font-bold">
-                {viewing.accountStatus === "Suspended" ? "Unfreeze" : "Freeze"}
-              </button>
-              <button type="button" onClick={() => setDeletePartner(viewing)} className="py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-bold">Remove</button>
-            </div>
+            <p className="text-[11px] text-slate-500">Pause, password reset, and delete for this login are on Accounts.</p>
           </div>
         </ModalOverlay>
       )}
@@ -724,65 +621,6 @@ export const AdminPartnersView: React.FC = () => {
         </ModalOverlay>
       )}
 
-      {resetPartner && (
-        <ModalOverlay onClose={() => setResetPartner(null)}>
-          <form onSubmit={handleResetPassword} className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-5 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-extrabold text-slate-900">Reset password</h2>
-              <button type="button" onClick={() => setResetPartner(null)} className="p-1.5"><X className="w-5 h-5 text-slate-400" /></button>
-            </div>
-            <p className="text-xs text-slate-500">{resetPartner.name} · {resetPartner.email}</p>
-            {createError && <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{createError}</p>}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700">New password</label>
-                <button type="button" onClick={() => setResetPassword(generatePassword())} className="text-[11px] font-bold text-orange-700">Generate</button>
-              </div>
-              <input value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono" />
-            </div>
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setResetPartner(null)} className="flex-1 py-2.5 rounded-xl border text-sm font-bold">Cancel</button>
-              <button type="submit" disabled={actionBusy} className="flex-1 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold disabled:opacity-70">{actionBusy ? "Saving..." : "Issue password"}</button>
-            </div>
-          </form>
-        </ModalOverlay>
-      )}
-
-      {freezePartner && (
-        <ModalOverlay onClose={() => setFreezePartner(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 space-y-4">
-            <h2 className="text-lg font-extrabold text-slate-900">
-              {freezePartner.accountStatus === "Suspended" ? "Unfreeze this login?" : "Freeze this login?"}
-            </h2>
-            <p className="text-sm text-slate-600">
-              {freezePartner.accountStatus === "Suspended"
-                ? `${freezePartner.name} and their team will be able to sign in again.`
-                : `${freezePartner.name} and their team will be blocked from signing in. Organization records stay in the portal.`}
-            </p>
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setFreezePartner(null)} className="flex-1 py-2.5 rounded-xl border text-sm font-bold">Cancel</button>
-              <button type="button" disabled={actionBusy} onClick={() => void handleFreeze()} className="flex-1 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold disabled:opacity-70">
-                {actionBusy ? "Saving..." : freezePartner.accountStatus === "Suspended" ? "Unfreeze" : "Freeze"}
-              </button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
-
-      {deletePartner && (
-        <ModalOverlay onClose={() => setDeletePartner(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 space-y-4">
-            <h2 className="text-lg font-extrabold text-slate-900">Remove {deletePartner.name}?</h2>
-            <p className="text-sm text-slate-600">This deletes the owner login and every team login for the organization. Applications stay, unlinked from the org.</p>
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setDeletePartner(null)} className="flex-1 py-2.5 rounded-xl border text-sm font-bold">Cancel</button>
-              <button type="button" disabled={actionBusy} onClick={() => void handleDeletePartner()} className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-bold disabled:opacity-70">
-                {actionBusy ? "Removing..." : "Remove"}
-              </button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
     </div>
   );
 };
@@ -794,16 +632,19 @@ const InfoBlock = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-const DocStatus = ({ label, status, value }: { label: string; status: string; value: string }) => (
-  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+const DocStatus = ({ label, status, value, filePath }: { label: string; status: string; value: string; filePath?: string }) => (
+  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between gap-3">
     <div>
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
       <p className="text-xs font-semibold text-slate-800 mt-0.5">{value || "Not uploaded"}</p>
     </div>
-    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-      status === "Verified" ? "bg-orange-100 text-orange-700" :
-      status === "Pending" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
-    }`}>{status}</span>
+    <div className="flex items-center gap-2">
+      <StoredFileButton bucket={STORAGE_BUCKETS.partner} path={filePath} />
+      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+        status === "Verified" ? "bg-orange-100 text-orange-700" :
+        status === "Pending" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+      }`}>{status}</span>
+    </div>
   </div>
 );
 

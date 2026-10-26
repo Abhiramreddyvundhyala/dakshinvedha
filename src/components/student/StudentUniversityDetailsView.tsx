@@ -5,6 +5,14 @@ import { usePlatform } from "@/context/PlatformContext";
 import { UniversityInfo, CourseInfo } from "@/types";
 import { evaluateFrontendEligibility } from "@/data/studentSeedData";
 import {
+  compareByFee,
+  courseIntakes,
+  type FeeSort,
+  hasScholarship,
+  intakeBounds,
+  intakeOptions,
+} from "@/lib/catalogOffers";
+import {
   ArrowLeft,
   Building2,
   MapPin,
@@ -27,8 +35,9 @@ interface StudentUniversityDetailsViewProps {
   university: UniversityInfo;
   initialTab?: "details" | "courses";
   onBack: () => void;
-  onApplyCourse: (course: CourseInfo) => void;
+  onApplyCourse?: (course: CourseInfo) => void;
   onOpenCourseDetails: (course: CourseInfo) => void;
+  allowApply?: boolean;
 }
 
 export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsViewProps> = ({
@@ -37,6 +46,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
   onBack,
   onApplyCourse,
   onOpenCourseDetails,
+  allowApply = true,
 }) => {
   const { courses, activeStudent } = usePlatform();
 
@@ -47,7 +57,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [intakeFilter, setIntakeFilter] = useState<string>("all");
   const [durationFilter, setDurationFilter] = useState<string>("all");
-  const [tuitionFilter, setTuitionFilter] = useState<string>("all");
+  const [feeSort, setFeeSort] = useState<FeeSort>("low");
 
   // Courses belonging to this university
   const univCourses = useMemo(() => {
@@ -63,22 +73,29 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
     return Array.from(set);
   }, [univCourses]);
 
+  const intakeChoices = useMemo(() => intakeOptions(univCourses), [univCourses]);
+  const scholarshipCourses = useMemo(() => univCourses.filter(hasScholarship), [univCourses]);
+  const campuses = useMemo(() => {
+    const names = univCourses.map((course) => (course.campus || "").trim()).filter(Boolean);
+    return [...new Set(names)];
+  }, [univCourses]);
+
   // Filtered courses
   const filteredCourses = useMemo(() => {
-    return univCourses.filter((c) => {
+    const matched = univCourses.filter((c) => {
       if (levelFilter !== "all" && c.studyLevel !== levelFilter) return false;
       if (departmentFilter !== "all" && c.department !== departmentFilter) return false;
-      if (intakeFilter !== "all" && !c.activeIntake.toLowerCase().includes(intakeFilter.toLowerCase()))
+      if (
+        intakeFilter !== "all" &&
+        !courseIntakes(c).some((intake) => intake.toLowerCase() === intakeFilter.toLowerCase())
+      ) {
         return false;
-      if (durationFilter !== "all" && !c.duration.includes(durationFilter)) return false;
-      if (tuitionFilter !== "all") {
-        const fee = c.tuitionFeeNum || 15000;
-        if (tuitionFilter === "under16k" && fee >= 16000) return false;
-        if (tuitionFilter === "above16k" && fee < 16000) return false;
       }
+      if (durationFilter !== "all" && !c.duration.includes(durationFilter)) return false;
       return true;
     });
-  }, [univCourses, levelFilter, departmentFilter, intakeFilter, durationFilter, tuitionFilter]);
+    return [...matched].sort((left, right) => compareByFee(left, right, feeSort));
+  }, [univCourses, levelFilter, departmentFilter, intakeFilter, durationFilter, feeSort]);
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
@@ -166,22 +183,18 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 <span>About {university.name}</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                {university.name} is a globally recognized public institution situated in {university.city}, {university.country}. Known for cutting-edge laboratory facilities, world-leading faculty research, and strong industry career placement links with Fortune 500 employers. The campus fosters an inclusive, multicultural student body with students from over 120 nationalities.
+                {university.about?.trim() ||
+                  `${university.name} is listed in ${university.city}, ${university.country}. Course fees and intakes below come from the programmes on file.`}
               </p>
 
-              {/* Campuses */}
               <div className="pt-2">
                 <span className="text-xs font-bold text-slate-800 block mb-1">Campuses:</span>
                 <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-700 font-medium">
-                    Main City Campus ({university.city})
-                  </span>
-                  <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-700 font-medium">
-                    Riverside Innovation Precinct
-                  </span>
-                  <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-700 font-medium">
-                    Graduate & Postgraduate Center
-                  </span>
+                  {(campuses.length > 0 ? campuses : [university.city]).map((campus) => (
+                    <span key={campus} className="px-3 py-1 bg-slate-100 rounded-lg text-slate-700 font-medium">
+                      {campus}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -192,26 +205,21 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 <Award className="w-4 h-4 text-orange-600" />
                 <span>Scholarships & Financial Aid</span>
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-4 bg-orange-50/70 border border-orange-200/80 rounded-2xl space-y-1">
-                  <span className="font-extrabold text-orange-900 block">
-                    Vice-Chancellor Merit Grant
-                  </span>
-                  <p className="text-orange-800 font-bold">Up to £3,000 / $5,000 off tuition</p>
-                  <p className="text-[11px] text-orange-700">
-                    Awarded automatically to students demonstrating 75%+ or equivalent in preceding degree.
-                  </p>
+              {scholarshipCourses.length === 0 ? (
+                <p className="text-xs text-slate-500">No scholarship is listed for this university.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  {scholarshipCourses.map((course) => (
+                    <div key={course.id} className="p-4 bg-orange-50/70 border border-orange-200/80 rounded-2xl space-y-1">
+                      <span className="font-extrabold text-orange-900 block">{course.courseName}</span>
+                      <p className="text-orange-800 font-bold">Scholarship available</p>
+                      {course.scholarshipsInfo ? (
+                        <p className="text-[11px] text-orange-700">{course.scholarshipsInfo}</p>
+                      ) : null}
+                    </div>
+                  ))}
                 </div>
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
-                  <span className="font-extrabold text-slate-900 block">
-                    Early Bird Acceptance Bursary
-                  </span>
-                  <p className="text-orange-700 font-bold">£1,000 deduction on deposit payment</p>
-                  <p className="text-[11px] text-slate-600">
-                    Applicable when tuition acceptance deposit is cleared within 21 days of offer issuance.
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Entry Requirements & English Requirements */}
@@ -276,18 +284,20 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 <Calendar className="w-4 h-4 text-orange-600" />
                 <span>Available Intakes</span>
               </h3>
+              <p className="text-[11px] text-slate-500">Intake range {intakeBounds(univCourses)}</p>
               <div className="space-y-2">
-                {university.availableIntakes.map((intake, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
-                  >
-                    <span className="font-bold text-slate-800">{intake}</span>
-                    <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
-                      Open
-                    </span>
-                  </div>
-                ))}
+                {intakeChoices.length === 0 ? (
+                  <p className="text-slate-500">Intake not set</p>
+                ) : (
+                  intakeChoices.map((intake) => (
+                    <div
+                      key={intake}
+                      className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    >
+                      <span className="font-bold text-slate-800">{intake}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -391,9 +401,11 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                   className="w-full p-2 rounded-xl border border-slate-200 text-xs"
                 >
                   <option value="all">All Intakes</option>
-                  <option value="September">September / October</option>
-                  <option value="January">January / February</option>
-                  <option value="May">May / June</option>
+                  {intakeChoices.map((intake) => (
+                    <option key={intake} value={intake}>
+                      {intake}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -413,17 +425,15 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 </select>
               </div>
 
-              {/* Tuition */}
               <div>
-                <label className="text-[10px] font-bold text-slate-500 block mb-1">Tuition Fee</label>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">Sort by tuition</label>
                 <select
-                  value={tuitionFilter}
-                  onChange={(e) => setTuitionFilter(e.target.value)}
+                  value={feeSort}
+                  onChange={(e) => setFeeSort(e.target.value as FeeSort)}
                   className="w-full p-2 rounded-xl border border-slate-200 text-xs"
                 >
-                  <option value="all">All Fees</option>
-                  <option value="under16k">Under £16,000</option>
-                  <option value="above16k">£16,000 and above</option>
+                  <option value="low">Low to high</option>
+                  <option value="high">High to low</option>
                 </select>
               </div>
             </div>
@@ -440,7 +450,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                   setDepartmentFilter("all");
                   setIntakeFilter("all");
                   setDurationFilter("all");
-                  setTuitionFilter("all");
+                  setFeeSort("low");
                 }}
                 className="text-xs text-orange-700 font-bold hover:underline cursor-pointer"
               >
@@ -462,9 +472,9 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                           {course.studyLevel}
                         </span>
-                        {course.badges.scholarship && (
+                        {hasScholarship(course) && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
-                            Scholarship Available
+                            Scholarship available
                           </span>
                         )}
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
@@ -495,12 +505,12 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[10px]">Tuition Fee</span>
-                          <strong className="text-slate-800">{course.tuitionFee}</strong>
+                          <strong className="text-slate-800">{course.tuitionFee || "Fee not set"}</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px]">Intake / Deadline</span>
+                          <span className="text-slate-400 block text-[10px]">Intake</span>
                           <strong className="text-slate-800 block truncate">
-                            {course.activeIntake.split("/")[0]}
+                            {intakeBounds([course])}
                           </strong>
                         </div>
                       </div>
@@ -530,13 +540,15 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                       >
                         VIEW DETAILS
                       </button>
-                      <button
-                        onClick={() => onApplyCourse(course)}
-                        className="flex-1 py-2 text-xs font-black text-white bg-orange-700 hover:bg-orange-800 rounded-xl shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1 active:scale-98"
-                      >
-                        <span>APPLY NOW</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
+                      {allowApply && onApplyCourse && (
+                        <button
+                          onClick={() => onApplyCourse(course)}
+                          className="flex-1 py-2 text-xs font-black text-white bg-orange-700 hover:bg-orange-800 rounded-xl shadow-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1 active:scale-98"
+                        >
+                          <span>APPLY NOW</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

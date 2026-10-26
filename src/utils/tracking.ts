@@ -1,4 +1,4 @@
-import { ApplicationRecord, B2BPartnerProfile, TimelineEntry } from "@/types";
+import { ApplicationRecord, B2BPartnerProfile, PrimaryStatusType, SecondaryStatusType, TimelineEntry } from "@/types";
 
 export type TrackingKind =
   | "APP"
@@ -114,23 +114,20 @@ function canonicalStage(status: string) {
 function progressFor(primary: string) {
   switch (primary) {
     case "Draft":
-      return { index: 0, allDone: false, closed: false };
     case "Application Submitted":
-      return { index: 1, allDone: false, closed: false };
+      return { index: 0, allDone: false, closed: false };
     case "Under Review":
-      return { index: 2, allDone: false, closed: false };
+      return { index: 1, allDone: false, closed: false };
     case "Submitted to University":
-      return { index: 4, allDone: false, closed: false };
+      return { index: 3, allDone: false, closed: false };
     case "Offer Issued":
       return { index: 5, allDone: false, closed: false };
     case "Payment Pending":
-      return { index: 7, allDone: false, closed: false };
     case "Payment Done":
-      return { index: 8, allDone: false, closed: false };
+      return { index: 7, allDone: false, closed: false };
     case "CAS Processing":
-      return { index: 8, allDone: false, closed: false };
     case "CAS Issued":
-      return { index: 9, allDone: false, closed: false };
+      return { index: 8, allDone: false, closed: false };
     case "Visa Processing":
       return { index: 9, allDone: false, closed: false };
     case "Completed":
@@ -138,8 +135,49 @@ function progressFor(primary: string) {
     case "Closed":
       return { index: 0, allDone: false, closed: true };
     default:
-      return { index: 1, allDone: false, closed: false };
+      return { index: 0, allDone: false, closed: false };
   }
+}
+
+export function primaryForStage(stage: string): { primary: PrimaryStatusType; secondary: SecondaryStatusType } {
+  switch (stage) {
+    case "Initial Review":
+      return { primary: "Under Review", secondary: "Documents Pending" };
+    case "Documents Verified":
+      return { primary: "Under Review", secondary: "Documents Verified" };
+    case "Submitted to University":
+    case "University Review":
+      return { primary: "Submitted to University", secondary: "Documents Verified" };
+    case "Offer Received":
+      return { primary: "Offer Issued", secondary: "Conditional Offer" };
+    case "Offer Accepted":
+      return { primary: "Offer Issued", secondary: "Unconditional Offer" };
+    case "Deposit / Payment":
+      return { primary: "Payment Pending", secondary: "Deposit Pending" };
+    case "Admission / CAS Processing":
+      return { primary: "CAS Processing", secondary: "Deposit Paid" };
+    case "Visa Stage":
+      return { primary: "Visa Processing", secondary: "Deposit Paid" };
+    case "Completed":
+      return { primary: "Completed", secondary: "Deposit Paid" };
+    default:
+      return { primary: "Application Submitted", secondary: "Documents Pending" };
+  }
+}
+
+export function buildTimelineAt(index: number, date: string, previous: TimelineEntry[] = []): TimelineEntry[] {
+  const current = Math.min(Math.max(index, 0), APPLICATION_STAGES.length - 1);
+  return APPLICATION_STAGES.map((status, idx) => {
+    const existing = previous.find((entry) => canonicalStage(entry.status) === status);
+    const state: TimelineEntry["state"] = idx < current ? "completed" : idx === current ? "current" : "pending";
+    const keptDate = existing?.date && existing.date !== "Pending" && existing.date !== "Not applicable" ? existing.date : date;
+    return {
+      status,
+      date: state === "pending" ? "Pending" : keptDate,
+      description: defaultDescription(status, state),
+      state,
+    };
+  });
 }
 
 function defaultDescription(status: string, state: TimelineEntry["state"]) {
@@ -172,7 +210,7 @@ export function buildTimeline(
   });
 }
 
-export function resolveTimeline(
+function storedTimeline(
   app: Pick<ApplicationRecord, "primaryStatus" | "dateModified" | "timeline">
 ): TimelineEntry[] {
   const canonical =
@@ -182,12 +220,48 @@ export function resolveTimeline(
   return buildTimeline(app.primaryStatus, app.dateModified || "Pending", app.timeline);
 }
 
+function currentStageIndex(
+  app: Pick<ApplicationRecord, "primaryStatus" | "dateModified" | "timeline">
+): number {
+  const progress = progressFor(app.primaryStatus);
+  if (progress.allDone) return APPLICATION_STAGES.length - 1;
+  if (progress.closed) return 0;
+  const stored = storedTimeline(app);
+  const storedCurrent = stored.findIndex((stage) => stage.state === "current");
+  if (storedCurrent >= 0) {
+    const stageName = APPLICATION_STAGES[storedCurrent] || stored[storedCurrent].status;
+    if (primaryForStage(stageName).primary === app.primaryStatus) return storedCurrent;
+  }
+  return progress.index;
+}
+
+export function resolveTimeline(
+  app: Pick<ApplicationRecord, "primaryStatus" | "dateModified" | "timeline">
+): TimelineEntry[] {
+  return trackerProgress(app).stages;
+}
+
 export function trackerProgress(
   app: Pick<ApplicationRecord, "primaryStatus" | "dateModified" | "timeline">
-) {
-  const stages = resolveTimeline(app);
-  const completed = stages.filter((stage) => stage.state === "completed").length;
-  return { stages, completed, total: APPLICATION_STAGES.length };
+): { stages: TimelineEntry[]; completed: number; total: number } {
+  const index = currentStageIndex(app);
+  const finished = progressFor(app.primaryStatus).allDone;
+  const stored = storedTimeline(app);
+  const stages = APPLICATION_STAGES.map((status, idx) => {
+    const existing = stored.find((entry) => entry.status === status);
+    const state: TimelineEntry["state"] = finished || idx < index ? "completed" : idx === index ? "current" : "pending";
+    return {
+      status,
+      date: state === "pending" ? "Pending" : existing?.date && existing.date !== "Pending" ? existing.date : app.dateModified || "",
+      description: defaultDescription(status, state),
+      state,
+    };
+  });
+  return {
+    stages,
+    completed: index + 1,
+    total: APPLICATION_STAGES.length,
+  };
 }
 
 export function normalizeStoredApplication(app: ApplicationRecord, index: number): ApplicationRecord {

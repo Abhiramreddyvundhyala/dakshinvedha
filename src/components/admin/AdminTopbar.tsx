@@ -16,8 +16,10 @@ const TAB_LABELS: Record<AdminTabKey, string> = {
   partners:     "B2B Partners",
   agents:       "Agents",
   team:         "Team",
+  accounts:     "Accounts",
   access:       "Team Access",
   notices:      "Notices",
+  commissions:  "Commissions",
 };
 
 interface AdminTopbarProps {

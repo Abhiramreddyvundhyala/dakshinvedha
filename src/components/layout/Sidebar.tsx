@@ -4,25 +4,15 @@ import React, { useState } from "react";
 import {
   LayoutDashboard,
   History,
-  Mail,
-  Send,
   Search,
   PhoneCall,
   Sparkles,
-  Ticket,
   DollarSign,
-  MessageSquare,
-  MoreHorizontal,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   FilePlus,
-  ShieldCheck,
   CreditCard,
-  Building,
-  PiggyBank,
-  Tag,
-  Gift,
   Users,
 } from "lucide-react";
 
@@ -55,6 +45,7 @@ interface SidebarProps {
   isMobileOpen: boolean;
   onCloseMobile: () => void;
   showTeam?: boolean;
+  canOpen?: (key: NavItemKey) => boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -66,11 +57,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   onCloseMobile,
   showTeam = true,
+  canOpen = () => true,
 }) => {
   // Expandable sections state
-  const [isVoucherExpanded, setIsVoucherExpanded] = useState(
-    currentTab.startsWith("voucher")
-  );
   const [isFinanceExpanded, setIsFinanceExpanded] = useState(
     currentTab.startsWith("finance")
   );
@@ -82,7 +71,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const isVoucherActive = currentTab.startsWith("voucher");
   const isFinanceActive = currentTab.startsWith("finance");
 
   return (
@@ -118,6 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
 
         {/* Top Prominent Button: "+ Add New Application" */}
+        {canOpen("application-history") && (
         <div className="p-3.5 border-b border-[#E7E5E0]">
           <button
             onClick={onOpenAddNewModal}
@@ -134,6 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
         </div>
+        )}
 
         {/* Sidebar Nav Items with Independent Vertical Scrollbar */}
         <div className="flex-1 overflow-y-auto sidebar-scroll py-2 px-2.5 space-y-1">
@@ -157,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && <span className="truncate">Dashboard</span>}
           </button>
 
-          {/* Application History */}
+          {canOpen("application-history") && (
           <button
             onClick={() => handleNavClick("application-history")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
@@ -176,55 +166,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
             {!isCollapsed && <span className="truncate">Application History</span>}
           </button>
+          )}
 
-          {/* Mail */}
-          <button
-            onClick={() => handleNavClick("mail")}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
-              currentTab === "mail"
-                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
-            }`}
-            title={isCollapsed ? "Mail" : undefined}
-          >
-            <div className="flex items-center gap-3">
-              <Mail
-                className={`w-4 h-4 shrink-0 transition-colors ${
-                  currentTab === "mail"
-                    ? "text-[#f97316]"
-                    : "text-slate-400 group-hover:text-slate-700"
-                }`}
-              />
-              {!isCollapsed && <span className="truncate">Mail</span>}
-            </div>
-            {!isCollapsed && (
-              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-50 text-[#f97316] rounded-full">
-                3
-              </span>
-            )}
-          </button>
-
-          {/* Apply Enquiry */}
-          <button
-            onClick={() => handleNavClick("apply-enquiry")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
-              currentTab === "apply-enquiry"
-                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
-            }`}
-            title={isCollapsed ? "Apply Enquiry" : undefined}
-          >
-            <Send
-              className={`w-4 h-4 shrink-0 transition-colors ${
-                currentTab === "apply-enquiry"
-                  ? "text-[#f97316]"
-                  : "text-slate-400 group-hover:text-slate-700"
-              }`}
-            />
-            {!isCollapsed && <span className="truncate">Apply Enquiry</span>}
-          </button>
-
-          {/* Search Program */}
+          {canOpen("search-program") && (
           <button
             onClick={() => handleNavClick("search-program")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
@@ -243,8 +187,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
             {!isCollapsed && <span className="truncate">Search Program</span>}
           </button>
+          )}
 
-          {/* URM Contact Number */}
+          {canOpen("urm-contact") && (
           <button
             onClick={() => handleNavClick("urm-contact")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
@@ -263,8 +208,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
             {!isCollapsed && <span className="truncate">URM Contact Number</span>}
           </button>
+          )}
 
-          {/* Value Added Services */}
+          {canOpen("vas") && (
           <button
             onClick={() => handleNavClick("vas")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
@@ -285,70 +231,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="truncate">Value Added Services</span>
             )}
           </button>
+          )}
 
-          {/* Voucher (Expandable) */}
-          <div>
-            <button
-              onClick={() => {
-                if (isCollapsed) onToggleCollapse();
-                setIsVoucherExpanded(!isVoucherExpanded);
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
-                isVoucherActive
-                  ? "text-[#f97316] bg-[#fff4ed] font-semibold"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-              }`}
-              title={isCollapsed ? "Voucher" : undefined}
-            >
-              <div className="flex items-center gap-3">
-                <Ticket
-                  className={`w-4 h-4 shrink-0 transition-colors ${
-                    isVoucherActive
-                      ? "text-[#f97316]"
-                      : "text-slate-400 group-hover:text-slate-700"
-                  }`}
-                />
-                {!isCollapsed && <span className="truncate">Voucher</span>}
-              </div>
-              {!isCollapsed && (
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    isVoucherExpanded ? "rotate-180" : ""
-                  }`}
-                />
-              )}
-            </button>
-
-            {/* Voucher Submenu */}
-            {!isCollapsed && isVoucherExpanded && (
-              <div className="ml-5 pl-3 border-l border-[#E7E5E0] space-y-1 my-1 animate-fade-in">
-                <button
-                  onClick={() => handleNavClick("voucher-buy")}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    currentTab === "voucher-buy"
-                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Tag className="w-3.5 h-3.5" />
-                  <span>Buy Voucher</span>
-                </button>
-                <button
-                  onClick={() => handleNavClick("voucher-manage")}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    currentTab === "voucher-manage"
-                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Gift className="w-3.5 h-3.5" />
-                  <span>Manage Voucher List</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Finance (Expandable) */}
+          {canOpen("finance-account") && (
           <div>
             <button
               onClick={() => {
@@ -406,81 +291,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <DollarSign className="w-3.5 h-3.5" />
                   <span>Commission</span>
                 </button>
-                <button
-                  onClick={() => handleNavClick("finance-promotional-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    currentTab === "finance-promotional-commission"
-                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Promotional Commission</span>
-                </button>
-                <button
-                  onClick={() => handleNavClick("finance-accommodation-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    currentTab === "finance-accommodation-commission"
-                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Building className="w-3.5 h-3.5" />
-                  <span>Accommodation Commission</span>
-                </button>
-                <button
-                  onClick={() => handleNavClick("finance-loan-commission")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    currentTab === "finance-loan-commission"
-                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <PiggyBank className="w-3.5 h-3.5" />
-                  <span>Loan Commission</span>
-                </button>
-                <button
-                  onClick={() => handleNavClick("finance-promotional-deals")}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    currentTab === "finance-promotional-deals"
-                      ? "text-[#f97316] font-semibold bg-[#fff4ed]"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Promotional Deals</span>
-                </button>
               </div>
             )}
           </div>
-
-          {/* Chat */}
-          <button
-            onClick={() => handleNavClick("chat")}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
-              currentTab === "chat"
-                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
-            }`}
-            title={isCollapsed ? "Chat" : undefined}
-          >
-            <div className="flex items-center gap-3">
-              <MessageSquare
-                className={`w-4 h-4 shrink-0 transition-colors ${
-                  currentTab === "chat"
-                    ? "text-[#f97316]"
-                    : "text-slate-400 group-hover:text-slate-700"
-                }`}
-              />
-              {!isCollapsed && <span className="truncate">Chat</span>}
-            </div>
-            {!isCollapsed && (
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-              </span>
-            )}
-          </button>
+          )}
 
           {showTeam && (
           <button
@@ -502,26 +316,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && <span className="truncate">Team Management</span>}
           </button>
           )}
-
-          {/* Other */}
-          <button
-            onClick={() => handleNavClick("other")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
-              currentTab === "other"
-                ? "bg-[#fff4ed] text-[#f97316] border-l-4 border-[#f97316] font-semibold"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent"
-            }`}
-            title={isCollapsed ? "Other" : undefined}
-          >
-            <MoreHorizontal
-              className={`w-4 h-4 shrink-0 transition-colors ${
-                currentTab === "other"
-                  ? "text-[#f97316]"
-                  : "text-slate-400 group-hover:text-slate-700"
-              }`}
-            />
-            {!isCollapsed && <span className="truncate">Other</span>}
-          </button>
         </div>
 
         {/* Sidebar Footer */}

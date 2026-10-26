@@ -45,6 +45,8 @@ export interface DocumentUploadItem {
   fileSize: string;
   progress: number;
   status: "Uploading" | "Uploaded" | "Verified" | "Action Required";
+  storagePath?: string;
+  storageBucket?: string;
 }
 
 export interface UniversityInfo {
@@ -214,6 +216,8 @@ export interface NoticeItem {
   attachmentName?: string;
   attachmentSize?: string;
   isUrgent?: boolean;
+  /** all, students, partners, or agents. Missing notices are treated as all. */
+  audience?: "all" | "students" | "partners" | "agents";
 }
 
 export interface UniversityDeadlineItem {
@@ -401,6 +405,8 @@ export interface StudentDocumentItem {
   title: string;
   fileName?: string;
   fileSize?: string;
+  storagePath?: string;
+  storageBucket?: string;
   uploadedDate?: string;
   status: DocumentStatusType;
   rejectionReason?: string;
@@ -523,6 +529,8 @@ export interface B2BTeamMember {
   createdAt: string;
   lastLogin?: string;
   trackingId?: string;
+  /** Screens the B2B owner allows. Missing means the older full menu, except Team. */
+  features?: string[];
 }
 
 export interface B2BPartnerProfile {

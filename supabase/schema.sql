@@ -437,9 +437,13 @@ create table if not exists public.notices (
   attachment_size text not null default '',
   attachment_path text not null default '',
   is_urgent boolean not null default false,
+  audience text not null default 'all'
+    check (audience in ('all', 'students', 'partners', 'agents')),
   published_by uuid references public.profiles (id),
   created_at timestamptz not null default now()
 );
+
+alter table public.notices add column if not exists audience text not null default 'all';
 
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
@@ -1192,6 +1196,27 @@ create policy drafts_own on public.application_drafts for all to authenticated
   using (owner_id = auth.uid())
   with check (owner_id = auth.uid());
 grant select, insert, update, delete on public.application_drafts to authenticated;
+
+-- History of paused and deleted logins. Inserts go through the service role.
+create table if not exists public.account_history (
+  id uuid primary key default gen_random_uuid(),
+  account_id uuid,
+  email text not null default '',
+  full_name text not null default '',
+  role text not null default '',
+  action text not null check (action in ('paused', 'resumed', 'deleted')),
+  actor_id uuid,
+  actor_name text not null default '',
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+
+alter table public.account_history enable row level security;
+drop policy if exists account_history_admin_read on public.account_history;
+create policy account_history_admin_read on public.account_history
+  for select to authenticated
+  using (public.is_admin());
+grant select on public.account_history to authenticated;
 
 -- The public B2B contact form inserts as anon. The request id default calls this function.
 grant execute on function public.next_tracking_id(text) to anon;

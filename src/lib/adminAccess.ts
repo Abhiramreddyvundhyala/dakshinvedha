@@ -9,8 +9,10 @@ export const ADMIN_FEATURE_KEYS = [
   "partners",
   "agents",
   "team",
+  "accounts",
   "access",
   "notices",
+  "commissions",
 ] as const;
 
 export type AdminFeatureKey = (typeof ADMIN_FEATURE_KEYS)[number];
@@ -73,6 +75,10 @@ export const ADMIN_FEATURE_COPY: Record<
     label: "Team",
     description: "Create admin team logins and choose each person's screens. Super Admin only.",
   },
+  accounts: {
+    label: "Accounts",
+    description: "Pause, reset, or delete any login, and review paused and deleted history.",
+  },
   access: {
     label: "Team Access",
     description: "Unused. Feature access is set on each team member.",
@@ -80,6 +86,10 @@ export const ADMIN_FEATURE_COPY: Record<
   notices: {
     label: "Notices",
     description: "Read and publish platform notices.",
+  },
+  commissions: {
+    label: "Commissions",
+    description: "Tuition booked, B2B commission, and agent commission. Shown with Applications or Analytics access.",
   },
 };
 
@@ -104,6 +114,12 @@ export function canAccessAdminFeature(
 ): boolean {
   if (isSuperAdminTitle(staffTitle)) return true;
   if (feature === "team" || feature === "access") return false;
+  if (feature === "accounts") {
+    return ["students", "partners", "agents"].some((item) => teamFeatures.includes(item));
+  }
+  if (feature === "commissions") {
+    return ["applications", "analytics", "partners", "agents"].some((item) => teamFeatures.includes(item));
+  }
   if (feature === "dashboard") return true;
   return teamFeatures.includes(feature);
 }

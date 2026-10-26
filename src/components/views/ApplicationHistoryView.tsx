@@ -17,6 +17,7 @@ import {
   FileCheck2,
 } from "lucide-react";
 import { ApplicationRecord } from "@/types";
+import { timeValue } from "@/lib/recent";
 import {
   ApplicationFilterDrawer,
   ApplicationFilterState,
@@ -96,9 +97,9 @@ export const ApplicationHistoryView: React.FC<ApplicationHistoryViewProps> = ({
 
   // Sort by Date Modified
   const sortedApps = [...filteredApps].sort((a, b) => {
-    return sortAsc
-      ? a.dateModified.localeCompare(b.dateModified)
-      : b.dateModified.localeCompare(a.dateModified);
+    const left = timeValue(a.dateModified || a.dateAdded);
+    const right = timeValue(b.dateModified || b.dateAdded);
+    return sortAsc ? left - right : right - left;
   });
 
   const handleRefresh = () => {

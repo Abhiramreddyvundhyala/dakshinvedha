@@ -52,7 +52,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({ applicat
           <p className="font-mono text-xs font-bold text-orange-700">{application.camsId}</p>
         </div>
         <p className="text-[11px] font-bold text-slate-700">
-          {completed} / {total} completed
+          Stage {completed} of {total}
         </p>
       </div>
       {bar}

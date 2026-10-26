@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { UserCog, Plus, Search, Clock, Edit3, Trash2, X, AlertCircle, CheckCircle2, Crown } from "lucide-react";
-import { generatePassword, readSessionValue } from "@/utils/accounts";
-import { listDirectory, manageAccount, provisionAccount, removeAccount } from "@/lib/portalDb";
+import { UserCog, Plus, Search, Clock, Edit3, X, AlertCircle, CheckCircle2, Crown } from "lucide-react";
+import { generatePassword } from "@/utils/accounts";
+import { listDirectory, manageAccount, provisionAccount } from "@/lib/portalDb";
 import type { DirectoryAccount } from "@/lib/records";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
 import {
@@ -61,7 +61,6 @@ export const AdminTeamView: React.FC = () => {
   const [form, setForm] = useState(emptyForm());
   const [formError, setFormError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filtered = team.filter((m) => {
     const q = searchQ.toLowerCase();
@@ -138,24 +137,7 @@ export const AdminTeamView: React.FC = () => {
         setFormError(result.error);
         return;
       }
-      const nextStatus = form.status === "Active" ? "Active" : "Suspended";
-      if ((editMember.status === "Active" ? "Active" : "Suspended") !== nextStatus) {
-        const statusResult = await manageAccount({ userId: editMember.id, action: "status", status: nextStatus });
-        if (!statusResult.ok) {
-          setFormError(statusResult.error);
-          return;
-        }
-      }
-      if (password.trim().length >= 6) {
-        const reset = await manageAccount({ userId: editMember.id, action: "password", password: password.trim() });
-        if (!reset.ok) {
-          setFormError(reset.error);
-          return;
-        }
-        setSuccessMsg(`${form.name} updated. New password ${password.trim()}.`);
-      } else {
-        setSuccessMsg(`${form.name} updated.`);
-      }
+      setSuccessMsg(`${form.name} updated.`);
     } else {
       if (password.trim().length < 6) {
         setFormError("Set a password of at least 6 characters.");
@@ -174,33 +156,11 @@ export const AdminTeamView: React.FC = () => {
         setFormError(result.ok ? "The admin login was not created." : result.error);
         return;
       }
-      if (form.status !== "Active") {
-        await manageAccount({ userId: result.account.id, action: "status", status: "Suspended" });
-      }
       setSuccessMsg(`${form.name} can sign in with ${email} / ${issued}. Tracking ID ${result.account.trackingId}.`);
     }
     setShowModal(false);
     await refresh();
     setTimeout(() => setSuccessMsg(null), 4000);
-  };
-
-  const handleDelete = async (id: string) => {
-    const member = team.find((item) => item.id === id);
-    if (id === readSessionValue("dakshin_account_id")) {
-      setSuccessMsg("You cannot remove the account you are signed in with.");
-      setConfirmDeleteId(null);
-      return;
-    }
-    const result = await removeAccount(id);
-    if (!result.ok) {
-      setSuccessMsg(result.error);
-      setConfirmDeleteId(null);
-      return;
-    }
-    setConfirmDeleteId(null);
-    setSuccessMsg(`${member?.name || "Member"} removed.`);
-    await refresh();
-    setTimeout(() => setSuccessMsg(null), 3000);
   };
 
   return (
@@ -209,7 +169,7 @@ export const AdminTeamView: React.FC = () => {
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: "#1e293b", margin: 0 }}>Team</h1>
           <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
-            Create a login for each staff member and tick the screens they may use.
+            Create a login for each staff member and tick the screens they may use. Pause, reset, and delete are on Accounts.
           </p>
         </div>
         <button onClick={openAdd} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, background: "#f97316", color: "#ffffff", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer" }}>
@@ -300,9 +260,6 @@ export const AdminTeamView: React.FC = () => {
                             <button onClick={() => openEdit(member)} style={{ padding: 6, border: "none", background: "none", cursor: "pointer", color: "#94a3b8", borderRadius: 6 }} title="Edit">
                               <Edit3 style={{ width: 14, height: 14 }} />
                             </button>
-                            <button onClick={() => setConfirmDeleteId(member.id)} style={{ padding: 6, border: "none", background: "none", cursor: "pointer", color: "#94a3b8", borderRadius: 6 }} title="Remove">
-                              <Trash2 style={{ width: 14, height: 14 }} />
-                            </button>
                           </div>
                         )}
                       </td>
@@ -314,24 +271,6 @@ export const AdminTeamView: React.FC = () => {
           </div>
         )}
       </div>
-
-      {confirmDeleteId && (
-        <ModalOverlay onClose={() => setConfirmDeleteId(null)}>
-          <div style={{ width: "100%", maxWidth: 360, background: "#ffffff", border: "1px solid #fecaca", borderRadius: 14, padding: 24, textAlign: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-              <Trash2 style={{ width: 22, height: 22, color: "#dc2626" }} />
-            </div>
-            <p style={{ fontSize: 15, fontWeight: 800, color: "#1e293b", margin: "0 0 6px" }}>Remove Member?</p>
-            <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 20px" }}>
-              This will permanently remove <strong>{team.find((m) => m.id === confirmDeleteId)?.name}</strong>.
-            </p>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setConfirmDeleteId(null)} style={{ flex: 1, padding: "9px 0", background: "#f8fafc", border: "1px solid #dde1e7", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>Cancel</button>
-              <button onClick={() => handleDelete(confirmDeleteId)} style={{ flex: 1, padding: "9px 0", background: "#dc2626", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#ffffff", cursor: "pointer" }}>Remove</button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
 
       {showModal && (
         <ModalOverlay onClose={() => setShowModal(false)}>
@@ -358,20 +297,18 @@ export const AdminTeamView: React.FC = () => {
                   <input type={type} value={key === "name" ? form.name : key === "email" ? form.email : form.phone} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={INPUT_STYLE} />
                 </div>
               ))}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                  <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>{editMember ? "New password (optional)" : "Login password *"}</label>
-                  <button type="button" onClick={() => setPassword(generatePassword())} style={{ border: "none", background: "none", color: "#ea580c", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Generate</button>
+              {!editMember && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>Login password *</label>
+                    <button type="button" onClick={() => setPassword(generatePassword())} style={{ border: "none", background: "none", color: "#ea580c", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Generate</button>
+                  </div>
+                  <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} style={INPUT_STYLE} />
                 </div>
-                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editMember ? "Leave blank to keep the current password" : ""} style={INPUT_STYLE} />
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "block", marginBottom: 4 }}>Status</label>
-                <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as "Active" | "Inactive" }))} style={{ ...INPUT_STYLE, cursor: "pointer" }}>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive (frozen)</option>
-                </select>
-              </div>
+              )}
+              {editMember && (
+                <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>Pause, password reset, and delete for this login are on Accounts.</p>
+              )}
               <div>
                 <p style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", margin: "4px 0 8px" }}>Screens this person may use</p>
                 <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 10px" }}>Dashboard stays on so they have a home page. Tick the rest for this login only.</p>

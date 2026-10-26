@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { StudentProfile, EducationQualification, StudentDocumentItem } from "@/types";
+import { StudentProfile, StudentDocumentItem } from "@/types";
+import { newestFirst } from "@/lib/recent";
 import { usePlatform } from "@/context/PlatformContext";
+import { StoredFileButton } from "@/components/shared/StoredFileButton";
+import { STORAGE_BUCKETS } from "@/lib/storage";
 import {
   X,
   User,
@@ -14,7 +17,6 @@ import {
   AlertTriangle,
   Clock,
   Flag,
-  Edit2,
   Award,
   DollarSign,
   MessageSquare,
@@ -33,11 +35,11 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
   onClose,
 }) => {
   const {
-    verifyStudentDocument,
     rejectStudentDocument,
     requestDocumentReupload,
     reviewStudentEducation,
     applications,
+    students,
   } = usePlatform();
 
   // Internal tab state
@@ -53,14 +55,14 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
   } | null>(null);
   const [actionReason, setActionReason] = useState("");
 
-  // Edit Education submodal
-  const [editingEdu, setEditingEdu] = useState<EducationQualification | null>(null);
-
   if (!student) return null;
 
-  // Student's applications
-  const studentApps = applications.filter(
-    (a) => a.student.studentId === student.studentId || a.student.email === student.email
+  const profile =
+    students.find((item) => item.id === student.id || item.studentId === student.studentId) || student;
+
+  const studentApps = newestFirst(
+    applications.filter((a) => a.student.studentId === student.studentId || a.student.email === student.email),
+    (app) => app.dateModified || app.dateAdded
   );
 
   // Submit document action with mandatory reason
@@ -89,18 +91,18 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
         {/* Header */}
         <div className="p-6 bg-slate-900 text-white flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-purple-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-orange-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-lg">
               {student.firstName.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-black text-white">{student.name}</h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-300 border border-purple-400/40">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500/30 text-orange-300 border border-orange-400/40">
                   {student.accountStatus}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                ID: <span className="font-mono text-purple-300 font-bold">{student.studentId}</span> • {student.email} • {student.mobile}
+                ID: <span className="font-mono text-orange-300 font-bold">{student.studentId}</span> • {student.email} • {student.mobile}
               </p>
             </div>
           </div>
@@ -132,7 +134,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                 onClick={() => setActiveTab(tab.key as any)}
                 className={`py-3.5 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   isSelected
-                    ? "border-purple-600 text-purple-700 font-extrabold"
+                    ? "border-orange-600 text-orange-700 font-extrabold"
                     : "border-transparent hover:text-slate-900"
                 }`}
               >
@@ -160,13 +162,13 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                 </div>
               </div>
 
-              {student.education.length === 0 ? (
+              {profile.education.length === 0 ? (
                 <div className="p-8 border-2 border-dashed rounded-2xl text-center text-slate-400">
                   No academic qualifications entered by student yet.
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {student.education.map((edu) => (
+                  {profile.education.map((edu) => (
                     <div
                       key={edu.id}
                       className="p-4 bg-slate-50 border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -205,7 +207,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                           {edu.englishMarks && (
                             <>
                               <span>•</span>
-                              <span className="text-purple-700 font-bold bg-purple-50 px-1.5 py-0.5 rounded">
+                              <span className="text-orange-700 font-bold bg-orange-50 px-1.5 py-0.5 rounded">
                                 English Marks: {edu.englishMarks}/{edu.maxEnglishMarks || 100}
                               </span>
                             </>
@@ -219,15 +221,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                         )}
                       </div>
 
-                      {/* Admin Actions: VERIFY, FLAG, EDIT */}
                       <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => reviewStudentEducation(student.id, edu.id, "Verified")}
-                          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-                        >
-                          VERIFY
-                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -239,14 +233,6 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                           className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
                         >
                           FLAG
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingEdu(edu)}
-                          className="p-1.5 border border-slate-300 hover:bg-slate-200 rounded-xl text-slate-700 cursor-pointer"
-                          title="Edit qualification details"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -311,7 +297,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                         </div>
 
                         <p className="text-[11px] text-slate-500">
-                          {doc.fileName || "File.pdf"} • Uploaded: {doc.uploadedDate || "Recent"}
+                          {doc.fileName || "No file"} • Uploaded: {doc.uploadedDate || "—"}
                         </p>
 
                         {doc.rejectionReason && (
@@ -321,15 +307,9 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                         )}
                       </div>
 
-                      {/* Admin Actions: VERIFY, REJECT, REQUEST RE-UPLOAD */}
+                      {/* View the file, request a re-upload, or reject it. */}
                       <div className="flex flex-wrap items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => verifyStudentDocument(student.id, doc.id)}
-                          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-                        >
-                          VERIFY
-                        </button>
+                        <StoredFileButton bucket={doc.storageBucket || STORAGE_BUCKETS.student} path={doc.storagePath} />
                         <button
                           type="button"
                           onClick={() =>
@@ -501,7 +481,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                 studentApps.map((app) => (
                   <div key={app.camsId} className="p-3.5 bg-slate-50 border rounded-xl flex items-center justify-between">
                     <div>
-                      <span className="font-mono text-purple-700 font-bold">{app.camsId}</span>
+                      <span className="font-mono text-orange-700 font-bold">{app.camsId}</span>
                       <p className="font-bold text-slate-900 text-xs mt-0.5">{app.course.courseName}</p>
                       <p className="text-slate-500 text-[11px]">{app.university.name} • {app.course.activeIntake}</p>
                     </div>
@@ -598,7 +578,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                 placeholder='e.g. "Uploaded transcript is unclear. Please upload a complete scanned copy."'
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-purple-500/20"
+                className="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
 

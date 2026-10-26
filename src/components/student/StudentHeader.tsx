@@ -80,11 +80,11 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             <div className="w-16 h-2 bg-[#F0EEE9] rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#ea580c] rounded-full transition-all duration-500"
-                style={{ width: `${activeStudent?.profileCompletion || 72}%` }}
+                style={{ width: `${activeStudent?.profileCompletion ?? 0}%` }}
               />
             </div>
             <span className="text-xs font-bold text-slate-800">
-              {activeStudent?.profileCompletion || 72}%
+              {activeStudent?.profileCompletion ?? 0}%
             </span>
             <button
               type="button"
@@ -215,7 +215,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
                   className="w-full text-left px-3 py-2 text-orange-700 hover:bg-orange-50 rounded-xl transition-colors flex items-center gap-2 cursor-pointer font-bold"
                 >
                   <FileText className="w-3.5 h-3.5 text-orange-500" />
-                  <span>Profile Completion ({activeStudent?.profileCompletion || 72}%)</span>
+                  <span>Profile Completion ({activeStudent?.profileCompletion ?? 0}%)</span>
                 </button>
 
                 <div className="my-1 border-t border-slate-100" />

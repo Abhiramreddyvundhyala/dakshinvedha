@@ -1,3 +1,4 @@
+import { recordAccountEvents, type AccountHistoryAction } from "@/lib/accountHistory";
 import { isSuperAdminTitle, parseTeamFeatures } from "@/lib/adminAccess";
 import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller, type CallerProfile } from "@/lib/authGuard";
 import { directoryFromProfile, partnerFromRow, partnerToRow, profileFromRow } from "@/lib/records";
@@ -17,6 +18,7 @@ type ManageBody = {
 
 async function canManage(caller: CallerProfile, targetRole: string, targetPartnerId: string | null): Promise<boolean> {
   if (callerIsSuperAdmin(caller)) return true;
+  if (targetRole === "student") return callerCanUseFeature(caller, "students");
   if (targetRole === "partner") return callerCanUseFeature(caller, "partners");
   if (targetRole === "agent") return callerCanUseFeature(caller, "agents");
   if (targetRole === "admin") return false;
@@ -104,6 +106,56 @@ export async function POST(request: Request) {
       );
       await admin.from("partners").update(partnerToRow(partner)).eq("id", partner.id);
     }
+
+    if (target.role === "student") {
+      const studentRow = await admin.from("students").select("payload").eq("profile_id", userId).maybeSingle();
+      const payload =
+        studentRow.data?.payload && typeof studentRow.data.payload === "object"
+          ? { ...(studentRow.data.payload as Record<string, unknown>) }
+          : {};
+      const accountStatus = status === "Suspended" ? "Suspended" : "Active";
+      payload.accountStatus = accountStatus;
+      await admin.from("students").update({ account_status: accountStatus, payload }).eq("profile_id", userId);
+    }
+
+    const action: AccountHistoryAction = status === "Suspended" ? "paused" : "resumed";
+    const actorName = gate.caller.full_name || gate.caller.email;
+    const events: {
+      accountId: string;
+      email: string;
+      fullName: string;
+      role: string;
+      action: AccountHistoryAction;
+      actorId: string;
+      actorName: string;
+      note: string;
+    }[] = [
+      {
+        accountId: userId,
+        email: String(target.email || ""),
+        fullName: String(target.full_name || ""),
+        role: String(target.role || ""),
+        action,
+        actorId: gate.caller.id,
+        actorName,
+        note: status === "Suspended" ? "Login paused" : "Login resumed",
+      },
+    ];
+    if (target.role === "partner" && partner) {
+      for (const member of partner.teamMembers || []) {
+        events.push({
+          accountId: member.id,
+          email: member.email,
+          fullName: member.name,
+          role: "team",
+          action,
+          actorId: gate.caller.id,
+          actorName,
+          note: status === "Suspended" ? `Paused with ${partner.name}` : `Resumed with ${partner.name}`,
+        });
+      }
+    }
+    await recordAccountEvents(admin, events);
 
     const profile = profileFromRow({ ...target, status });
     return Response.json({

@@ -2,16 +2,10 @@
 
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
-import {
-  FileText,
-  CheckCircle2,
-  AlertTriangle,
-  Search,
-  ExternalLink,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
+import { StoredFileButton } from "@/components/shared/StoredFileButton";
+import { STORAGE_BUCKETS, hasStoredFile } from "@/lib/storage";
 
 export const AdminDocumentsQueueView: React.FC = () => {
   const { students, verifyStudentDocument, rejectStudentDocument, requestDocumentReupload } =
@@ -136,10 +130,10 @@ export const AdminDocumentsQueueView: React.FC = () => {
                 </tr>
               ) : (
                 filtered.map((doc) => (
-                  <tr key={`${doc.studentId}-${doc.id}`} className="hover:bg-purple-50/40">
+                  <tr key={`${doc.studentId}-${doc.id}`} className="hover:bg-orange-50/40">
                     <td className="p-4">
                       <strong className="text-slate-900 block">{doc.studentName}</strong>
-                      <span className="font-mono text-[10px] text-purple-700 font-bold">
+                      <span className="font-mono text-[10px] text-orange-700 font-bold">
                         {doc.studentCode}
                       </span>
                     </td>
@@ -149,8 +143,8 @@ export const AdminDocumentsQueueView: React.FC = () => {
                         {doc.category}
                       </span>
                     </td>
-                    <td className="p-4 text-slate-500">{doc.fileName || "dossier_scan.pdf"}</td>
-                    <td className="p-4 text-slate-500">{doc.uploadedDate || "Recent"}</td>
+                    <td className="p-4 text-slate-500">{doc.fileName || "No file"}</td>
+                    <td className="p-4 text-slate-500">{doc.uploadedDate || "—"}</td>
                     <td className="p-4">
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
@@ -168,9 +162,12 @@ export const AdminDocumentsQueueView: React.FC = () => {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <StoredFileButton bucket={doc.storageBucket || STORAGE_BUCKETS.student} path={doc.storagePath} />
                         <button
+                          disabled={!hasStoredFile(doc.storagePath)}
+                          title={hasStoredFile(doc.storagePath) ? "Verify this file" : "Upload a file before verifying"}
                           onClick={() => verifyStudentDocument(doc.studentId, doc.id)}
-                          className="px-2.5 py-1 bg-orange-600 hover:bg-orange-600 text-white font-bold rounded-lg text-xs"
+                          className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-xs disabled:opacity-40"
                         >
                           VERIFY
                         </button>

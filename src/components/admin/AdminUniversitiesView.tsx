@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
 import { CatalogStatusNote } from "@/components/admin/CatalogStatusNote";
 import { UniversityInfo } from "@/types";
+import { MEDIA_ACCEPT, STORAGE_BUCKETS, uploadPortalFile } from "@/lib/storage";
 import { Building, Plus, Search, MapPin, BookOpen, Calendar, User, Phone, Mail, X, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
 
@@ -50,6 +51,7 @@ export const AdminUniversitiesView: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<UniversityInfo | null>(null);
+  const [imageBusy, setImageBusy] = useState<"logo" | "image" | null>(null);
 
   const courseCount = (id: string) => courses.filter((course) => course.universityId === id).length;
   const allCountries = ["All", ...Array.from(new Set(universities.map((u) => u.country))).sort()];
@@ -61,7 +63,7 @@ export const AdminUniversitiesView: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm());
+    setForm({ ...emptyForm(), id: `uni-${Date.now()}` });
     setIntakeInput("");
     setFormError(null);
     setShowModal(true);
@@ -104,7 +106,7 @@ export const AdminUniversitiesView: React.FC = () => {
     }
     const record: UniversityInfo = {
       ...form,
-      id: editingId || `uni-${Date.now()}`,
+      id: editingId || form.id || `uni-${Date.now()}`,
       name: form.name.trim(),
       country: form.country.trim(),
       city: form.city.trim(),
@@ -329,8 +331,56 @@ export const AdminUniversitiesView: React.FC = () => {
                     <input value={form.website || ""} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} placeholder="https://" style={INPUT_STYLE} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "block", marginBottom: 4 }}>Logo URL</label>
-                    <input value={form.logo} onChange={(e) => setForm((p) => ({ ...p, logo: e.target.value }))} placeholder="Optional image URL" style={INPUT_STYLE} />
+                    <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "block", marginBottom: 4 }}>Logo</label>
+                    <input
+                      type="file"
+                      accept={MEDIA_ACCEPT}
+                      disabled={imageBusy === "logo"}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        const folderId = form.id || editingId || `uni-${Date.now()}`;
+                        setImageBusy("logo");
+                        void uploadPortalFile({ bucket: STORAGE_BUCKETS.institution, folder: `${folderId}/logo`, file, kind: "media" }).then((result) => {
+                          setImageBusy(null);
+                          if (!result.ok) {
+                            setFormError(result.error);
+                            return;
+                          }
+                          setForm((current) => ({ ...current, id: current.id || folderId, logo: result.publicUrl || result.path }));
+                        });
+                      }}
+                      style={INPUT_STYLE}
+                    />
+                    {imageBusy === "logo" && <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Uploading logo...</p>}
+                    {form.logo && <img src={form.logo} alt="" style={{ width: 48, height: 48, objectFit: "contain", marginTop: 8, borderRadius: 8, background: "#f8fafc" }} />}
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "block", marginBottom: 4 }}>Campus image</label>
+                    <input
+                      type="file"
+                      accept={MEDIA_ACCEPT}
+                      disabled={imageBusy === "image"}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        const folderId = form.id || editingId || `uni-${Date.now()}`;
+                        setImageBusy("image");
+                        void uploadPortalFile({ bucket: STORAGE_BUCKETS.institution, folder: `${folderId}/image`, file, kind: "media" }).then((result) => {
+                          setImageBusy(null);
+                          if (!result.ok) {
+                            setFormError(result.error);
+                            return;
+                          }
+                          setForm((current) => ({ ...current, id: current.id || folderId, image: result.publicUrl || result.path }));
+                        });
+                      }}
+                      style={INPUT_STYLE}
+                    />
+                    {imageBusy === "image" && <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Uploading image...</p>}
+                    {form.image && <img src={form.image} alt="" style={{ width: "100%", maxHeight: 120, objectFit: "cover", marginTop: 8, borderRadius: 8 }} />}
                   </div>
                   <div style={{ gridColumn: "1 / -1" }}>
                     <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "block", marginBottom: 4 }}>About the institution</label>

@@ -17,6 +17,7 @@ import {
   Plus,
 } from "lucide-react";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
+import { newestFirst } from "@/lib/recent";
 
 interface StudentMyApplicationsViewProps {
   onSelectApplication: (app: ApplicationRecord) => void;
@@ -36,25 +37,30 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
     "All" | "Draft" | "Submitted" | "Under Review" | "Offer Received" | "Completed" | "Rejected"
   >("All");
 
+  const orderedApplications = useMemo(
+    () => newestFirst(studentApplications, (app) => app.dateModified || app.dateAdded),
+    [studentApplications]
+  );
+
   const filteredApplications = useMemo(() => {
-    if (activeTab === "All") return studentApplications;
+    if (activeTab === "All") return orderedApplications;
     if (activeTab === "Draft") {
-      return studentApplications.filter((a) => a.primaryStatus === "Draft");
+      return orderedApplications.filter((a) => a.primaryStatus === "Draft");
     }
     if (activeTab === "Submitted") {
-      return studentApplications.filter(
+      return orderedApplications.filter(
         (a) =>
           a.primaryStatus === "Application Submitted" ||
           a.primaryStatus === "Submitted to University"
       );
     }
     if (activeTab === "Under Review") {
-      return studentApplications.filter(
+      return orderedApplications.filter(
         (a) => a.primaryStatus === "Under Review" || a.secondaryStatus === "Documents Pending"
       );
     }
     if (activeTab === "Offer Received") {
-      return studentApplications.filter(
+      return orderedApplications.filter(
         (a) =>
           a.primaryStatus.includes("Offer") ||
           a.secondaryStatus.includes("Offer") ||
@@ -62,17 +68,17 @@ export const StudentMyApplicationsView: React.FC<StudentMyApplicationsViewProps>
       );
     }
     if (activeTab === "Completed") {
-      return studentApplications.filter(
+      return orderedApplications.filter(
         (a) => a.primaryStatus === "Completed" || a.primaryStatus === "Payment Done"
       );
     }
     if (activeTab === "Rejected") {
-      return studentApplications.filter(
+      return orderedApplications.filter(
         (a) => a.primaryStatus === "Closed" || a.secondaryStatus.includes("Rejected")
       );
     }
-    return studentApplications;
-  }, [studentApplications, activeTab]);
+    return orderedApplications;
+  }, [orderedApplications, activeTab]);
 
   const tabsList = [
     "All",

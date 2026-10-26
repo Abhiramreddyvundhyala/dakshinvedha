@@ -6,7 +6,7 @@ import { performLogout } from "@/utils/auth";
 import {
   LayoutDashboard, BarChart3, Users, FileText, Building2,
   BookOpen, FolderCheck, Building, UserCog, Megaphone,
-  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset,
+  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset, KeyRound, Wallet,
 } from "lucide-react";
 import type { AdminFeatureKey } from "@/lib/adminAccess";
 
@@ -31,7 +31,9 @@ const NAV_ITEMS: { key: AdminTabKey; label: string; icon: React.ElementType; gro
   { key: "documents",   label: "Documents Queue",    icon: FolderCheck,     group: "Management"  },
   { key: "partners",    label: "B2B Partners",       icon: Building2,       group: "Operations"  },
   { key: "agents",      label: "Agents",             icon: Headset,         group: "Operations"  },
+  { key: "commissions", label: "Commissions",        icon: Wallet,          group: "Operations"  },
   { key: "team",        label: "Team",               icon: UserCog,         group: "Operations"  },
+  { key: "accounts",    label: "Accounts",           icon: KeyRound,        group: "Operations"  },
   { key: "notices",     label: "Notices",            icon: Megaphone,       group: "Operations"  },
 ];
 

@@ -1,3 +1,4 @@
+import { recordAccountEvents, type AccountHistoryAction } from "@/lib/accountHistory";
 import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller } from "@/lib/authGuard";
 import { partnerFromRow, partnerToRow } from "@/lib/records";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
@@ -21,11 +22,12 @@ export async function POST(request: Request) {
   const caller = gate.caller;
   const sameOrg = caller.role === "partner" && target.role === "team" && target.partner_id && target.partner_id === caller.partner_id;
   const superAdmin = callerIsSuperAdmin(caller);
+  const mayRemoveStudent = target.role === "student" && (await callerCanUseFeature(caller, "students"));
   const mayRemovePartner = target.role === "partner" && (await callerCanUseFeature(caller, "partners"));
   const mayRemoveAgent = target.role === "agent" && (await callerCanUseFeature(caller, "agents"));
   const mayRemoveB2BTeam = target.role === "team" && (sameOrg || (await callerCanUseFeature(caller, "partners")));
   const mayRemoveAdmin = target.role === "admin" && superAdmin;
-  if (!superAdmin && !mayRemovePartner && !mayRemoveAgent && !mayRemoveB2BTeam && !mayRemoveAdmin) {
+  if (!superAdmin && !mayRemoveStudent && !mayRemovePartner && !mayRemoveAgent && !mayRemoveB2BTeam && !mayRemoveAdmin) {
     return Response.json({ error: "You cannot remove this account." }, { status: 403 });
   }
 
@@ -38,13 +40,48 @@ export async function POST(request: Request) {
     }
   }
 
+  const actorName = caller.full_name || caller.email;
+  const deleted: {
+    accountId: string;
+    email: string;
+    fullName: string;
+    role: string;
+    action: AccountHistoryAction;
+    actorId: string;
+    actorName: string;
+    note: string;
+  }[] = [
+    {
+      accountId: userId,
+      email: String(target.email || ""),
+      fullName: String(target.full_name || ""),
+      role: String(target.role || ""),
+      action: "deleted",
+      actorId: caller.id,
+      actorName,
+      note: "Login deleted",
+    },
+  ];
+
   if (target.role === "partner" && target.partner_id) {
-    const team = await admin.from("profiles").select("id").eq("partner_id", target.partner_id).eq("role", "team");
+    const team = await admin.from("profiles").select("id,email,full_name").eq("partner_id", target.partner_id).eq("role", "team");
     for (const row of team.data || []) {
+      deleted.push({
+        accountId: row.id,
+        email: String(row.email || ""),
+        fullName: String(row.full_name || ""),
+        role: "team",
+        action: "deleted",
+        actorId: caller.id,
+        actorName,
+        note: `Deleted with ${String(target.full_name || target.email || "the organization")}`,
+      });
       await admin.auth.admin.deleteUser(row.id);
     }
     await admin.from("partners").delete().eq("id", target.partner_id);
   }
+
+  await recordAccountEvents(admin, deleted);
 
   const removed = await admin.auth.admin.deleteUser(userId);
   if (removed.error) return Response.json({ error: removed.error.message }, { status: 500 });

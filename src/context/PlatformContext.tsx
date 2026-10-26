@@ -40,8 +40,10 @@ import {
   saveTeamFeatures,
   updateAccountStatus,
 } from "@/lib/portalDb";
+import { computeProfileCompletion } from "@/lib/profileCompletion";
+import { figures, freshCommission, withCommission } from "@/lib/commission";
 import { isUuid } from "@/lib/records";
-import { buildTimeline, createTrackingId } from "@/utils/tracking";
+import { APPLICATION_STAGES, buildTimeline, buildTimelineAt, createTrackingId } from "@/utils/tracking";
 import {
   DEFAULT_TEAM_FEATURES,
   canAccessAdminFeature as featureAllowed,
@@ -82,7 +84,14 @@ interface PlatformContextType {
   updatePassport: (passportData: StudentProfile["passport"]) => void;
 
   // Student Documents
-  uploadDocument: (doc: { category: DocumentCategoryType; title: string; fileName: string; fileSize?: string }) => void;
+  uploadDocument: (doc: {
+    category: DocumentCategoryType;
+    title: string;
+    fileName: string;
+    fileSize?: string;
+    storagePath?: string;
+    storageBucket?: string;
+  }) => void;
   deleteDocument: (docId: string) => void;
 
   // Applications (Shared)
@@ -116,6 +125,11 @@ interface PlatformContextType {
     status: "Verified" | "Flagged",
     feedback?: string
   ) => void;
+  updateStudentEducation: (
+    studentId: string,
+    eduId: string,
+    updates: Partial<EducationQualification>
+  ) => void;
 
   // Universities, Courses & Requirements
   universities: UniversityInfo[];
@@ -143,16 +157,27 @@ interface PlatformContextType {
   updateB2BProfile: (partnerId: string, updates: Partial<B2BPartnerProfile>) => void;
   verifyB2BPartner: (partnerId: string) => void;
   dropB2BPartner: (partnerId: string) => void;
+  syncAccountAccess: (change: {
+    userId: string;
+    role: PortalRole;
+    status?: "Active" | "Suspended";
+    partner?: B2BPartnerProfile | null;
+    removed?: boolean;
+  }) => void;
   loginB2B: (email: string, password: string) => B2BPartnerProfile | null;
   accessRequests: B2BAccessRequest[];
   rejectB2BRequest: (requestId: string) => void;
 
   // B2B Team Management
-  addB2BTeamMember: (partnerId: string, member: { name: string; email: string; password: string }) => Promise<B2BTeamMember | { error: string }>;
+  addB2BTeamMember: (
+    partnerId: string,
+    member: { name: string; email: string; password: string; features?: string[] }
+  ) => Promise<B2BTeamMember | { error: string }>;
   removeB2BTeamMember: (partnerId: string, memberId: string) => Promise<void>;
   updateB2BTeamMember: (partnerId: string, memberId: string, updates: Partial<B2BTeamMember>) => void;
   recordApplication: (application: ApplicationRecord) => void;
   claimCommission: (camsId: string) => void;
+  settleCommission: (camsId: string, next: "Approved" | "Paid") => void;
   syncError: string | null;
 
   // Notices & Notifications
@@ -196,7 +221,7 @@ function buildStudentRecord(basic: {
   const parts = basic.name.trim().split(" ");
   const firstName = parts[0] || "Student";
   const lastName = parts.slice(1).join(" ") || "User";
-  return {
+  const student: StudentProfile = {
     id: `stu-${Date.now()}`,
     studentId: createTrackingId("STU"),
     name: basic.name,
@@ -209,7 +234,7 @@ function buildStudentRecord(basic: {
     registrationDate: new Date().toISOString().slice(0, 10),
     lastLogin: new Date().toISOString().slice(0, 16).replace("T", " "),
     onboardingCompleted: false,
-    profileCompletion: 25,
+    profileCompletion: 0,
     personal: {
       dob: "",
       gender: "",
@@ -232,6 +257,8 @@ function buildStudentRecord(basic: {
     },
     documents: [],
   };
+  student.profileCompletion = computeProfileCompletion(student);
+  return student;
 }
 
 export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -363,18 +390,6 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     return students.find((s) => s.id === activeStudentId) || students[0] || null;
   }, [students, activeStudentId]);
 
-  // Recalculate Profile Completion Percentage helper
-  const computeProfileCompletion = (student: Partial<StudentProfile>): number => {
-    let score = 20; // Base registration
-    if (student.personal?.dob && student.personal?.address?.city) score += 15;
-    if (student.passport?.hasPassport === "YES" || student.passport?.hasPassport === "NO") score += 15;
-    if (student.education && student.education.length > 0) score += 20;
-    if (student.testsStatus) score += 10;
-    if (student.studyPreferences?.preferredCountries?.length) score += 10;
-    if (student.documents && student.documents.filter((d) => d.status === "Uploaded" || d.status === "Verified").length >= 2) score += 10;
-    return Math.min(score, 100);
-  };
-
   // Student Login
   const loginStudent = (identifier: string, method: "password" | "otp", codeOrPass: string): boolean => {
     const cleanId = identifier.trim().toLowerCase();
@@ -455,11 +470,9 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     setStudents((prev) =>
       prev.map((s) => {
         if (s.id === activeStudentId) {
-          return {
-            ...s,
-            onboardingCompleted: true,
-            profileCompletion: Math.max(s.profileCompletion, 70),
-          };
+          const next = { ...s, onboardingCompleted: true };
+          next.profileCompletion = computeProfileCompletion(next);
+          return next;
         }
         return s;
       })
@@ -518,8 +531,12 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     setStudents((prev) =>
       prev.map((s) => {
         if (s.id === activeStudentId) {
-          const updatedEdu = s.education.map((e) => (e.id === id ? { ...e, ...updates } : e));
-          return { ...s, education: updatedEdu };
+          const updatedEdu = s.education.map((e) =>
+            e.id === id ? { ...e, ...updates, verificationStatus: updates.verificationStatus || "Pending" } : e
+          );
+          const updatedStudent = { ...s, education: updatedEdu };
+          updatedStudent.profileCompletion = computeProfileCompletion(updatedStudent);
+          return updatedStudent;
         }
         return s;
       })
@@ -532,7 +549,9 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       prev.map((s) => {
         if (s.id === activeStudentId) {
           const updatedEdu = s.education.filter((e) => e.id !== id);
-          return { ...s, education: updatedEdu };
+          const updatedStudent = { ...s, education: updatedEdu };
+          updatedStudent.profileCompletion = computeProfileCompletion(updatedStudent);
+          return updatedStudent;
         }
         return s;
       })
@@ -590,6 +609,8 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     title: string;
     fileName: string;
     fileSize?: string;
+    storagePath?: string;
+    storageBucket?: string;
   }) => {
     if (!activeStudentId) return;
     setStudents((prev) =>
@@ -602,6 +623,8 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
             title: doc.title,
             fileName: doc.fileName,
             fileSize: doc.fileSize || "1.8 MB",
+            storagePath: doc.storagePath,
+            storageBucket: doc.storageBucket,
             uploadedDate: new Date().toISOString().slice(0, 10),
             status: "Uploaded" as const,
           };
@@ -715,6 +738,8 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         category: d.category as any,
         fileName: d.fileName || `${d.category}.pdf`,
         fileSize: d.fileSize || "1.5 MB",
+        storagePath: d.storagePath,
+        storageBucket: d.storageBucket,
         progress: 100,
         status: (d.status === "Verified" ? "Verified" : "Uploaded") as any,
       })),
@@ -726,12 +751,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         netBalanceDue: course.tuitionFee,
         paymentStatus: "Pending",
       },
-      commission: {
-        amount: "£0",
-        eligibleAmount: "£0",
-        expectedCommission: "£0",
-        status: "Pending",
-      },
+      commission: freshCommission(course),
       notes: [
         {
           id: `note-${Date.now()}`,
@@ -774,17 +794,12 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     setApplications((prev) =>
       prev.map((app) => {
         if (app.camsId === camsId) {
-          const updatedTimeline = buildTimeline(primaryStatus, today, app.timeline).map((stage) => {
-            if (notApplicableStages.includes(stage.status)) {
-              return { ...stage, state: "not_applicable" as const, date: "Not applicable" };
-            }
-            if (timelineStatus && stage.status === timelineStatus) {
-              return { ...stage, state: "completed" as const, date: today };
-            }
-            return stage;
-          });
+          const stageIndex = APPLICATION_STAGES.indexOf(timelineStatus as (typeof APPLICATION_STAGES)[number]);
+          const updatedTimeline = stageIndex >= 0
+            ? buildTimelineAt(stageIndex, today, app.timeline)
+            : buildTimeline(primaryStatus, today, app.timeline);
 
-          return {
+          return withCommission({
             ...app,
             primaryStatus,
             secondaryStatus,
@@ -793,7 +808,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
             agentTrackingId:
               agentAssignment === undefined ? app.agentTrackingId : agentAssignment?.trackingId || undefined,
             counselorName: agentAssignment ? agentAssignment.name : app.counselorName,
-          };
+          });
         }
         return app;
       })
@@ -928,6 +943,22 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
           return { ...s, education: updatedEdu };
         }
         return s;
+      })
+    );
+  };
+
+  const updateStudentEducation = (
+    studentId: string,
+    eduId: string,
+    updates: Partial<EducationQualification>
+  ) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId && s.studentId !== studentId) return s;
+        const education = s.education.map((item) => (item.id === eduId ? { ...item, ...updates } : item));
+        const next = { ...s, education };
+        next.profileCompletion = computeProfileCompletion(next);
+        return next;
       })
     );
   };
@@ -1146,6 +1177,39 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     setB2bPartners((prev) => prev.filter((partner) => partner.id !== partnerId && partner.partnerId !== partnerId));
   };
 
+  const syncAccountAccess = (change: {
+    userId: string;
+    role: PortalRole;
+    status?: "Active" | "Suspended";
+    partner?: B2BPartnerProfile | null;
+    removed?: boolean;
+  }) => {
+    if (change.removed) {
+      if (change.role === "student") {
+        setStudents((prev) => prev.filter((student) => student.id !== change.userId));
+      }
+      if (change.role === "partner") {
+        setB2bPartners((prev) => prev.filter((partner) => partner.ownerProfileId !== change.userId && partner.id !== change.userId));
+      }
+      if (change.role === "team") {
+        setB2bPartners((prev) =>
+          prev.map((partner) => ({
+            ...partner,
+            teamMembers: (partner.teamMembers || []).filter((member) => member.id !== change.userId),
+          }))
+        );
+      }
+      return;
+    }
+    if (change.role === "student" && change.status) {
+      const accountStatus = change.status === "Suspended" ? "Suspended" : "Active";
+      setStudents((prev) => prev.map((student) => (student.id === change.userId ? { ...student, accountStatus } : student)));
+    }
+    if (change.partner) {
+      setB2bPartners((prev) => prev.map((partner) => (partner.id === change.partner!.id ? change.partner! : partner)));
+    }
+  };
+
   const verifyB2BPartner = (partnerId: string) => {
     setB2bPartners((prev) =>
       prev.map((p) => {
@@ -1189,7 +1253,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   // ==========================================
   const addB2BTeamMember = async (
     partnerId: string,
-    member: { name: string; email: string; password: string }
+    member: { name: string; email: string; password: string; features?: string[] }
   ): Promise<B2BTeamMember | { error: string }> => {
     const partner = b2bPartners.find((p) => p.id === partnerId || p.partnerId === partnerId);
     if (!partner) return { error: "Partner not found" };
@@ -1222,6 +1286,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       status: "Active",
       createdAt: new Date().toISOString().slice(0, 10),
       trackingId: result.account.trackingId,
+      features: member.features,
     };
     setB2bPartners((prev) =>
       prev.map((p) => {
@@ -1275,15 +1340,50 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const claimCommission = (camsId: string) => {
     setApplications((prev) =>
-      prev.map((app) =>
-        app.camsId === camsId
-          ? {
-              ...app,
-              commission: { ...app.commission, status: "Claimed" },
-              secondaryStatus: app.secondaryStatus === "Commission Paid" ? app.secondaryStatus : "Commission Pending",
-            }
-          : app
-      )
+      prev.map((app) => {
+        if (app.camsId !== camsId) return app;
+        const prepared = withCommission(app);
+        const snapshot = figures(prepared);
+        if (prepared.commission.status !== "Pending" || !snapshot.ready || snapshot.eligible <= 0) return app;
+        return {
+          ...prepared,
+          commission: {
+            ...prepared.commission,
+            status: "Claimed",
+            amount: snapshot.eligibleLabel,
+            eligibleAmount: snapshot.eligibleLabel,
+          },
+          secondaryStatus: prepared.secondaryStatus === "Commission Paid" ? prepared.secondaryStatus : "Commission Pending",
+        };
+      })
+    );
+  };
+
+  const settleCommission = (camsId: string, next: "Approved" | "Paid") => {
+    if (portalRole === "admin" && !hasAdminFeature("applications")) return;
+    const today = new Date().toISOString().slice(0, 10);
+    setApplications((prev) =>
+      prev.map((app) => {
+        if (app.camsId !== camsId) return app;
+        const prepared = withCommission(app);
+        const status = prepared.commission.status;
+        const placed = app.primaryStatus === "Completed";
+        if (next === "Approved" && status === "Pending" && !placed) return app;
+        if (next === "Approved" && status !== "Pending" && status !== "Claimed") return app;
+        if (next === "Paid" && status !== "Claimed" && status !== "Approved") return app;
+        return {
+          ...prepared,
+          secondaryStatus: next === "Paid" ? "Commission Paid" : prepared.secondaryStatus,
+          dateModified: today,
+          commission: {
+            ...prepared.commission,
+            status: next,
+            paidDate: next === "Paid" ? today : prepared.commission.paidDate,
+            referenceNumber:
+              next === "Paid" ? prepared.commission.referenceNumber || `Recorded ${today}` : prepared.commission.referenceNumber,
+          },
+        };
+      })
     );
   };
 
@@ -1325,6 +1425,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         rejectStudentDocument,
         requestDocumentReupload,
         reviewStudentEducation,
+        updateStudentEducation,
         universities,
         courses,
         catalogStatus,
@@ -1342,6 +1443,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         updateB2BProfile,
         verifyB2BPartner,
         dropB2BPartner,
+        syncAccountAccess,
         loginB2B,
         accessRequests,
         rejectB2BRequest,
@@ -1350,6 +1452,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         updateB2BTeamMember,
         recordApplication,
         claimCommission,
+        settleCommission,
         syncError,
         notices,
         publishNotice,

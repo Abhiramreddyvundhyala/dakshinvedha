@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
+import { computeProfileCompletion } from "@/lib/profileCompletion";
+import { acceptFor, uploadStudentFile } from "@/lib/storage";
+import type { DocumentCategoryType } from "@/types";
 import {
   StudentProfile,
   EducationQualification,
@@ -20,6 +23,7 @@ import {
   Sparkles,
   Plus,
   Trash2,
+  Pencil,
   Upload,
   Calendar,
   MapPin,
@@ -42,6 +46,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
     activeStudent,
     updateActiveStudentProfile,
     addEducation,
+    updateEducation,
     deleteEducation,
     addOrUpdateTest,
     updatePassport,
@@ -50,9 +55,11 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
   } = usePlatform();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [uploadingCat, setUploadingCat] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // STEP 1: Personal Details Local States
-  const [dob, setDob] = useState(activeStudent?.personal.dob || "2003-05-14");
+  const [dob, setDob] = useState(activeStudent?.personal.dob || "");
   const [gender, setGender] = useState(activeStudent?.personal.gender || "Male");
   const [nationality, setNationality] = useState(activeStudent?.personal.nationality || "Indian");
   const [countryOfResidence, setCountryOfResidence] = useState(
@@ -61,9 +68,9 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
   const [streetAddress, setStreetAddress] = useState(
     activeStudent?.personal.address.street || ""
   );
-  const [city, setCity] = useState(activeStudent?.personal.address.city || "Mumbai");
-  const [stateName, setStateName] = useState(activeStudent?.personal.address.state || "Maharashtra");
-  const [postalCode, setPostalCode] = useState(activeStudent?.personal.address.postalCode || "400001");
+  const [city, setCity] = useState(activeStudent?.personal.address.city || "");
+  const [stateName, setStateName] = useState(activeStudent?.personal.address.state || "");
+  const [postalCode, setPostalCode] = useState(activeStudent?.personal.address.postalCode || "");
 
   // Passport state
   const [hasPassport, setHasPassport] = useState<"YES" | "NO">(
@@ -73,12 +80,11 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
   const [passportCountry, setPassportCountry] = useState(
     activeStudent?.passport.passportCountry || "India"
   );
-  const [passportExpiry, setPassportExpiry] = useState(
-    activeStudent?.passport.expiryDate || "2032-06-15"
-  );
+  const [passportExpiry, setPassportExpiry] = useState(activeStudent?.passport.expiryDate || "");
 
   // STEP 2: Education Modal / Add State
   const [showAddEduModal, setShowAddEduModal] = useState(false);
+  const [editingEduId, setEditingEduId] = useState<string | null>(null);
   const [eduLevel, setEduLevel] = useState<EducationLevelType>("Bachelor");
   const [eduInstitution, setEduInstitution] = useState("");
   const [eduBoard, setEduBoard] = useState("");
@@ -86,11 +92,11 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
   const [eduDegree, setEduDegree] = useState("");
   const [eduCourse, setEduCourse] = useState("");
   const [eduSpecialization, setEduSpecialization] = useState("");
-  const [eduStartYear, setEduStartYear] = useState("2021");
-  const [eduPassYear, setEduPassYear] = useState("2025");
-  const [eduScore, setEduScore] = useState("8.2");
+  const [eduStartYear, setEduStartYear] = useState("");
+  const [eduPassYear, setEduPassYear] = useState("");
+  const [eduScore, setEduScore] = useState("");
   const [eduCgpaScale, setEduCgpaScale] = useState("10");
-  const [eduEnglishMarks, setEduEnglishMarks] = useState("85");
+  const [eduEnglishMarks, setEduEnglishMarks] = useState("");
   const [eduMaxEnglishMarks, setEduMaxEnglishMarks] = useState("100");
   const [eduBacklogs, setEduBacklogs] = useState(0);
 
@@ -99,28 +105,26 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
     activeStudent?.testsStatus || "YES"
   );
   const [selectedTestType, setSelectedTestType] = useState<"IELTS" | "TOEFL" | "PTE" | "Duolingo" | "GRE" | "GMAT">("IELTS");
-  const [overallTestScore, setOverallTestScore] = useState("7.0");
-  const [subScoreL, setSubScoreL] = useState("7.5");
-  const [subScoreR, setSubScoreR] = useState("7.0");
-  const [subScoreW, setSubScoreW] = useState("6.5");
-  const [subScoreS, setSubScoreS] = useState("7.0");
+  const [overallTestScore, setOverallTestScore] = useState("");
+  const [subScoreL, setSubScoreL] = useState("");
+  const [subScoreR, setSubScoreR] = useState("");
+  const [subScoreW, setSubScoreW] = useState("");
+  const [subScoreS, setSubScoreS] = useState("");
 
   // STEP 4: Study Preferences States
   const [prefLevel, setPrefLevel] = useState<"Undergraduate" | "Postgraduate" | "Doctorate" | "Other">(
     activeStudent?.studyPreferences.preferredStudyLevel || "Postgraduate"
   );
   const [prefCountries, setPrefCountries] = useState<string[]>(
-    activeStudent?.studyPreferences.preferredCountries || ["United Kingdom", "Australia"]
+    activeStudent?.studyPreferences.preferredCountries || []
   );
   const [prefIntake, setPrefIntake] = useState(
     activeStudent?.studyPreferences.preferredIntake || "September"
   );
   const [prefSubject, setPrefSubject] = useState(
-    activeStudent?.studyPreferences.preferredCourseSubject || "Computer Science / Software Engineering"
+    activeStudent?.studyPreferences.preferredCourseSubject || ""
   );
-  const [prefBudget, setPrefBudget] = useState(
-    activeStudent?.studyPreferences.budgetRange || "£14,000 - £22,000"
-  );
+  const [prefBudget, setPrefBudget] = useState(activeStudent?.studyPreferences.budgetRange || "");
   const [prefScholarship, setPrefScholarship] = useState<"YES" | "NO">(
     activeStudent?.studyPreferences.scholarshipRequired || "YES"
   );
@@ -150,28 +154,72 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
     });
   };
 
-  // Add education handler
+  const resetEduForm = () => {
+    setEditingEduId(null);
+    setEduLevel("Bachelor");
+    setEduInstitution("");
+    setEduBoard("");
+    setEduStream("MPC");
+    setEduDegree("");
+    setEduCourse("");
+    setEduSpecialization("");
+    setEduStartYear("");
+    setEduPassYear("");
+    setEduScore("");
+    setEduCgpaScale("10");
+    setEduEnglishMarks("");
+    setEduMaxEnglishMarks("100");
+    setEduBacklogs(0);
+  };
+
+  const openAddQualification = () => {
+    resetEduForm();
+    setShowAddEduModal(true);
+  };
+
+  const openEditQualification = (edu: EducationQualification) => {
+    setEditingEduId(edu.id);
+    setEduLevel(edu.level);
+    setEduInstitution(edu.institutionName || "");
+    setEduBoard(edu.boardOrUniversity || "");
+    setEduStream(edu.stream || "MPC");
+    setEduDegree(edu.degree || "");
+    setEduCourse(edu.course || "");
+    setEduSpecialization(edu.specialization || "");
+    setEduStartYear(edu.startYear || "");
+    setEduPassYear(edu.passOutYear || "");
+    setEduScore(edu.percentageOrCgpa || "");
+    setEduCgpaScale(edu.cgpaScale || "10");
+    setEduEnglishMarks(edu.englishMarks || "");
+    setEduMaxEnglishMarks(edu.maxEnglishMarks || "100");
+    setEduBacklogs(edu.numberOfBacklogs || 0);
+    setShowAddEduModal(true);
+  };
+
   const handleAddQualification = (e: React.FormEvent) => {
     e.preventDefault();
-    addEducation({
+    const payload = {
       level: eduLevel,
-      institutionName: eduInstitution || "Institution Name",
-      boardOrUniversity: eduBoard || "State Board / University",
+      institutionName: eduInstitution.trim(),
+      boardOrUniversity: eduBoard.trim(),
       stream: eduLevel === "12th" ? eduStream : undefined,
-      degree: eduDegree || (eduLevel === "Bachelor" ? "B.Tech" : eduLevel),
-      course: eduCourse || "Computer Science",
-      specialization: eduSpecialization,
-      startYear: eduStartYear,
-      passOutYear: eduPassYear,
-      percentageOrCgpa: eduScore,
-      cgpaScale: eduLevel === "Bachelor" ? eduCgpaScale : undefined,
-      englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduEnglishMarks : undefined,
-      maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduMaxEnglishMarks : undefined,
+      degree: eduDegree.trim(),
+      course: eduCourse.trim(),
+      specialization: eduSpecialization.trim(),
+      startYear: eduStartYear.trim(),
+      passOutYear: eduPassYear.trim(),
+      percentageOrCgpa: eduScore.trim(),
+      cgpaScale: eduLevel === "Bachelor" || eduLevel === "Master" ? eduCgpaScale : undefined,
+      englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduEnglishMarks.trim() : undefined,
+      maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduMaxEnglishMarks.trim() : undefined,
       hasBacklogs: eduBacklogs > 0,
       numberOfBacklogs: eduBacklogs,
       activeBacklogs: 0,
-    });
+    };
+    if (editingEduId) updateEducation(editingEduId, payload);
+    else addEducation(payload);
     setShowAddEduModal(false);
+    resetEduForm();
   };
 
   // Save tests
@@ -180,15 +228,14 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
     if (testStatus === "YES") {
       addOrUpdateTest({
         type: selectedTestType,
-        testDate: "2026-05-15",
-        overallScore: overallTestScore,
+        testDate: "",
+        overallScore: overallTestScore.trim(),
         subScores: {
-          listening: subScoreL,
-          reading: subScoreR,
-          writing: subScoreW,
-          speaking: subScoreS,
+          listening: subScoreL.trim(),
+          reading: subScoreR.trim(),
+          writing: subScoreW.trim(),
+          speaking: subScoreS.trim(),
         },
-        reportUrl: `${selectedTestType}_Score_Report.pdf`,
       });
     }
   };
@@ -201,7 +248,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
         preferredCountries: prefCountries,
         preferredIntake: prefIntake,
         preferredCourseSubject: prefSubject,
-        preferredUniversity: "Open to Recommendations",
+        preferredUniversity: activeStudent?.studyPreferences.preferredUniversity || "",
         budgetRange: prefBudget,
         scholarshipRequired: prefScholarship,
       },
@@ -242,6 +289,14 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
     { num: 5, label: "Documents" },
     { num: 6, label: "Complete" },
   ];
+
+  const completion = computeProfileCompletion(activeStudent || {});
+  const englishRecord = activeStudent?.education.find(
+    (item) => item.level === "12th" || item.level === "Diploma"
+  );
+  const englishSummary = englishRecord?.englishMarks
+    ? `${englishRecord.englishMarks} / ${englishRecord.maxEnglishMarks || 100}`
+    : "Not added";
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
@@ -465,7 +520,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowAddEduModal(true)}
+                  onClick={openAddQualification}
                   className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs self-start"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -527,6 +582,14 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                       <div className="flex items-center gap-2 self-end sm:self-center">
                         <button
                           type="button"
+                          onClick={() => openEditQualification(edu)}
+                          className="p-1.5 text-slate-400 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                          title="Edit qualification"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => deleteEducation(edu.id)}
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete qualification"
@@ -564,7 +627,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                     High School / 12th English Marks:
                   </span>
                   <span className="text-xs font-black text-orange-900 bg-white px-2.5 py-1 rounded-lg border border-orange-200">
-                    82 / 100 (Waiver Eligible)
+                    {englishSummary}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500">
@@ -818,51 +881,72 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                 </p>
               </div>
 
+              {uploadError && <p className="text-xs font-semibold text-rose-700">{uploadError}</p>}
               <div className="space-y-3">
                 {[
-                  { cat: "Passport", title: "Passport Bio-Page", status: hasPassport === "YES" ? "Verified" : "Not Uploaded" },
-                  { cat: "Profile Photograph", title: "Passport Size Photograph", status: "Verified" },
-                  { cat: "10th Certificate", title: "10th Marks Certificate", status: "Verified" },
-                  { cat: "12th Certificate", title: "12th / Intermediate Certificate", status: "Verified" },
-                  { cat: "Bachelor Degree", title: "Bachelor Degree / Provisional", status: "Uploaded" },
-                  { cat: "CV / Resume", title: "Academic & Professional CV", status: "Uploaded" },
-                ].map((doc, idx) => (
+                  { cat: "Passport" as DocumentCategoryType, title: "Passport Bio-Page" },
+                  { cat: "Profile Photograph" as DocumentCategoryType, title: "Passport Size Photograph" },
+                  { cat: "10th Certificate" as DocumentCategoryType, title: "10th Marks Certificate" },
+                  { cat: "12th Certificate" as DocumentCategoryType, title: "12th / Intermediate Certificate" },
+                  { cat: "Bachelor Degree" as DocumentCategoryType, title: "Bachelor Degree / Provisional" },
+                  { cat: "CV / Resume" as DocumentCategoryType, title: "Academic & Professional CV" },
+                ].map((doc) => {
+                  const existing = activeStudent?.documents.find((item) => item.category === doc.cat);
+                  const status = existing?.status || "Not Uploaded";
+                  return (
                   <div
-                    key={idx}
+                    key={doc.cat}
                     className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 text-xs"
                   >
                     <div>
                       <p className="font-bold text-slate-900">{doc.title}</p>
-                      <p className="text-[11px] text-slate-500">{doc.cat}</p>
+                      <p className="text-[11px] text-slate-500">{existing?.fileName || doc.cat}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          doc.status === "Verified"
-                            ? "bg-orange-100 text-orange-700"
-                            : doc.status === "Uploaded"
+                          existing
                             ? "bg-orange-100 text-orange-700"
                             : "bg-slate-200 text-slate-600"
                         }`}
                       >
-                        {doc.status}
+                        {status}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          uploadDocument({
-                            category: doc.cat as any,
-                            title: doc.title,
-                            fileName: `${doc.cat.replace(/\s+/g, "_")}.pdf`,
-                          })
-                        }
-                        className="px-2.5 py-1 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-700 font-semibold text-[11px] cursor-pointer"
-                      >
-                        Upload
-                      </button>
+                      <label className="px-2.5 py-1 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-700 font-semibold text-[11px] cursor-pointer">
+                        {uploadingCat === doc.cat ? "Uploading..." : existing ? "Replace" : "Upload"}
+                        <input
+                          type="file"
+                          accept={acceptFor(doc.cat)}
+                          className="sr-only"
+                          disabled={uploadingCat === doc.cat}
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            if (!file) return;
+                            setUploadError(null);
+                            setUploadingCat(doc.cat);
+                            void uploadStudentFile(file, doc.cat).then((result) => {
+                              setUploadingCat(null);
+                              if (!result.ok) {
+                                setUploadError(result.error);
+                                return;
+                              }
+                              uploadDocument({
+                                category: doc.cat,
+                                title: doc.title,
+                                fileName: result.fileName,
+                                fileSize: result.fileSize,
+                                storagePath: result.path,
+                                storageBucket: result.bucket,
+                              });
+                            });
+                          }}
+                        />
+                      </label>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -884,9 +968,9 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
 
               <div className="inline-flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl">
                 <div className="w-24 h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-orange-600 w-[78%]" />
+                  <div className="h-full bg-orange-600" style={{ width: `${completion}%` }} />
                 </div>
-                <span className="text-sm font-extrabold text-slate-900">78% Complete</span>
+                <span className="text-sm font-extrabold text-slate-900">{completion}% Complete</span>
               </div>
 
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-left max-w-lg mx-auto text-xs space-y-1.5">
@@ -943,7 +1027,9 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
             className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 text-xs"
           >
             <div className="flex items-center justify-between border-b pb-2">
-              <h3 className="font-extrabold text-sm text-slate-900">Add Education Qualification</h3>
+              <h3 className="font-extrabold text-sm text-slate-900">
+                {editingEduId ? "Edit Education Qualification" : "Add Education Qualification"}
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowAddEduModal(false)}
@@ -1080,7 +1166,10 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
-                onClick={() => setShowAddEduModal(false)}
+                onClick={() => {
+                  setShowAddEduModal(false);
+                  resetEduForm();
+                }}
                 className="px-4 py-2 border rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
               >
                 Cancel
@@ -1089,7 +1178,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                 type="submit"
                 className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold cursor-pointer"
               >
-                Add Qualification
+                {editingEduId ? "Save Changes" : "Add Qualification"}
               </button>
             </div>
           </form>

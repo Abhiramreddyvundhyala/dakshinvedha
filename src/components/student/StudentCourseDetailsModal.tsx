@@ -4,6 +4,7 @@ import React from "react";
 import { CourseInfo } from "@/types";
 import { usePlatform } from "@/context/PlatformContext";
 import { evaluateFrontendEligibility } from "@/data/studentSeedData";
+import { hasScholarship, intakeBounds } from "@/lib/catalogOffers";
 import {
   X,
   GraduationCap,
@@ -24,13 +25,15 @@ import {
 interface StudentCourseDetailsModalProps {
   course: CourseInfo | null;
   onClose: () => void;
-  onApplyNow: (course: CourseInfo) => void;
+  onApplyNow?: (course: CourseInfo) => void;
+  allowApply?: boolean;
 }
 
 export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps> = ({
   course,
   onClose,
   onApplyNow,
+  allowApply = true,
 }) => {
   const { activeStudent } = usePlatform();
 
@@ -75,7 +78,7 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
             </div>
             <div>
               <span className="text-slate-400 block text-[10px] font-bold uppercase">Tuition Fee</span>
-              <strong className="text-slate-900 text-xs">{course.tuitionFee}</strong>
+              <strong className="text-slate-900 text-xs">{course.tuitionFee || "Fee not set"}</strong>
             </div>
             <div>
               <span className="text-slate-400 block text-[10px] font-bold uppercase">Application Fee</span>
@@ -84,8 +87,8 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
               </strong>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px] font-bold uppercase">Active Intake</span>
-              <strong className="text-slate-900 text-xs">{course.activeIntake}</strong>
+              <span className="text-slate-400 block text-[10px] font-bold uppercase">Intake</span>
+              <strong className="text-slate-900 text-xs">{intakeBounds([course])}</strong>
             </div>
           </div>
 
@@ -178,7 +181,7 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
               {/* Required Documents List */}
               <div className="pt-2 border-t border-slate-100">
                 <span className="font-bold text-slate-700 block mb-1">
-                  Required Dossier Documents:
+                  Required documents:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {req.requiredDocuments.map((doc, idx) => (
@@ -195,13 +198,17 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
           )}
 
           {/* Scholarships Info */}
-          {course.scholarshipsInfo && (
+          {hasScholarship(course) && (
             <div className="p-4 bg-orange-50/70 border border-orange-200 rounded-2xl space-y-1">
               <span className="font-bold text-orange-900 flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-orange-600" />
-                <span>Scholarship Details</span>
+                <span>Scholarship available</span>
               </span>
-              <p className="text-xs text-orange-800">{course.scholarshipsInfo}</p>
+              {course.scholarshipsInfo ? (
+                <p className="text-xs text-orange-800">{course.scholarshipsInfo}</p>
+              ) : (
+                <p className="text-xs text-orange-800">This course lists a scholarship.</p>
+              )}
             </div>
           )}
         </div>
@@ -214,16 +221,18 @@ export const StudentCourseDetailsModal: React.FC<StudentCourseDetailsModalProps>
           >
             Close
           </button>
-          <button
-            onClick={() => {
-              onClose();
-              onApplyNow(course);
-            }}
-            className="px-6 py-2.5 bg-orange-700 hover:bg-orange-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
-          >
-            <span>APPLY NOW FOR THIS COURSE</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          {allowApply && onApplyNow && (
+            <button
+              onClick={() => {
+                onClose();
+                onApplyNow(course);
+              }}
+              className="px-6 py-2.5 bg-orange-700 hover:bg-orange-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+            >
+              <span>APPLY NOW FOR THIS COURSE</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

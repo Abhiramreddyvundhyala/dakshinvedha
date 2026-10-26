@@ -7,6 +7,9 @@ import {
   FileText, Loader2, CheckCircle2, XCircle, Plus, ArrowRight, Users, TrendingUp,
 } from "lucide-react";
 import { readSessionValue } from "@/utils/accounts";
+import { currencyMark, money } from "@/lib/catalogOffers";
+import { figures, partnerApplications } from "@/lib/commission";
+import { timeValue } from "@/lib/recent";
 import { ImportantNotices } from "@/components/dashboard/ImportantNotices";
 import { LatestApplications } from "@/components/dashboard/LatestApplications";
 import { ApplicationDetailsModal } from "@/components/modals/ApplicationDetailsModal";
@@ -34,18 +37,33 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
   const { applications } = usePlatform();
   const [localSelectedApp, setLocalSelectedApp] = useState<ApplicationRecord | null>(null);
 
-  const m = partner.metrics;
   const viewerName = readSessionValue("dakshin_user_name") || partner.name;
   const initials = viewerName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
+  const mine = useMemo(() => partnerApplications(applications, partner), [applications, partner]);
+
   const sortedApplications = useMemo(() => {
-    return [...applications].sort((a, b) => {
-      const dateA = new Date(a.dateAdded).getTime() || 0;
-      const dateB = new Date(b.dateAdded).getTime() || 0;
+    return [...mine].sort((a, b) => {
+      const dateA = timeValue(a.dateModified || a.dateAdded);
+      const dateB = timeValue(b.dateModified || b.dateAdded);
       if (dateB !== dateA) return dateB - dateA;
       return b.camsId.localeCompare(a.camsId);
     });
-  }, [applications]);
+  }, [mine]);
+
+  const totals = useMemo(() => {
+    const rows = mine.map((app) => figures(app));
+    const mark = currencyMark(mine.map((app) => ({ tuitionFee: app.course.tuitionFee })));
+    return {
+      total: mine.length,
+      processing: mine.filter((app) => app.primaryStatus !== "Completed" && app.primaryStatus !== "Closed").length,
+      completed: mine.filter((app) => app.primaryStatus === "Completed").length,
+      closed: mine.filter((app) => app.primaryStatus === "Closed").length,
+      expected: money(rows.reduce((sum, row) => sum + row.eligible, 0), mark),
+      pending: money(rows.filter((row) => row.awaiting).reduce((sum, row) => sum + row.eligible, 0), mark),
+      paid: money(rows.filter((row) => row.paid).reduce((sum, row) => sum + row.eligible, 0), mark),
+    };
+  }, [mine]);
 
   const handleSelectApp = (app: ApplicationRecord) => {
     if (onSelectApplication) {
@@ -58,16 +76,16 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
   const kpiCards = [
     {
       label: "Total Applications",
-      value: m.totalApplications,
+      value: totals.total,
       icon: FileText,
       iconColor: "#2563eb",
       iconBg: "#eff6ff",
-      note: "+12 this month",
-      noteColor: "#0284c7",
+      note: "On file",
+      noteColor: "#64748b",
     },
     {
       label: "Processing",
-      value: m.processingApplications,
+      value: totals.processing,
       icon: Loader2,
       iconColor: "#f97316",
       iconBg: "#fff4ed",
@@ -76,16 +94,16 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
     },
     {
       label: "Completed",
-      value: m.completedApplications,
+      value: totals.completed,
       icon: CheckCircle2,
       iconColor: "#0284c7",
       iconBg: "#f0f9ff",
-      note: "+8 this month",
-      noteColor: "#0284c7",
+      note: "Finished",
+      noteColor: "#64748b",
     },
     {
-      label: "Rejected",
-      value: m.rejectedApplications,
+      label: "Closed",
+      value: totals.closed,
       icon: XCircle,
       iconColor: "#dc2626",
       iconBg: "#fef2f2",
@@ -149,9 +167,9 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
       {/* Partner Stats Row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
         {[
-          { label: "Commission Earned", value: m.commissionAmount, color: "#f97316" },
-          { label: "Commission Pending", value: m.commissionPending, color: "#2563eb" },
-          { label: "Commission Paid", value: m.commissionPaid, color: "#0284c7" },
+          { label: "Commission recorded", value: totals.expected, color: "#f97316" },
+          { label: "Awaiting payout", value: totals.pending, color: "#2563eb" },
+          { label: "Commission paid", value: totals.paid, color: "#0284c7" },
         ].map((s) => (
           <div key={s.label} style={{ ...CARD, padding: 16 }}>
             <p style={{ fontSize: 24, fontWeight: 900, color: s.color, margin: 0 }}>{s.value}</p>

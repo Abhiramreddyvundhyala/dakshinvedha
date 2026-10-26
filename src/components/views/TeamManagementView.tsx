@@ -21,6 +21,7 @@ import { usePlatform } from "@/context/PlatformContext";
 import { B2BTeamMember } from "@/types";
 import { generatePassword } from "@/utils/accounts";
 import { manageAccount } from "@/lib/portalDb";
+import { B2B_FEATURE_COPY, B2B_GRANTABLE_FEATURES, B2BFeatureKey, normalizeB2BFeatures } from "@/lib/b2bAccess";
 
 export const TeamManagementView: React.FC = () => {
   const { activeB2BPartner, addB2BTeamMember, removeB2BTeamMember, updateB2BTeamMember } = usePlatform();
@@ -43,6 +44,9 @@ export const TeamManagementView: React.FC = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [resetId, setResetId] = useState<string | null>(null);
   const [resetPassword, setResetPassword] = useState("");
+  const [features, setFeatures] = useState<B2BFeatureKey[]>(normalizeB2BFeatures(undefined, true));
+  const [accessMemberId, setAccessMemberId] = useState<string | null>(null);
+  const [accessFeatures, setAccessFeatures] = useState<B2BFeatureKey[]>(normalizeB2BFeatures(undefined, true));
 
   if (!activeB2BPartner) {
     return (
@@ -72,7 +76,12 @@ export const TeamManagementView: React.FC = () => {
       return;
     }
     setIsSubmitting(true);
-    const result = await addB2BTeamMember(activeB2BPartner.id, { name: name.trim(), email: email.trim(), password });
+    const result = await addB2BTeamMember(activeB2BPartner.id, {
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      features: normalizeB2BFeatures(features, false),
+    });
     setIsSubmitting(false);
 
     if ("error" in result) {
@@ -83,6 +92,7 @@ export const TeamManagementView: React.FC = () => {
       setName("");
       setEmail("");
       setPassword("");
+      setFeatures(normalizeB2BFeatures(undefined, true));
       setIsAddingMember(false);
     }
   };
@@ -269,6 +279,36 @@ export const TeamManagementView: React.FC = () => {
               </div>
             </div>
 
+            <div className="mt-5 rounded-xl border border-slate-200 p-4">
+              <p className="text-sm font-bold text-slate-900">Screens this person may use</p>
+              <p className="text-[11px] text-slate-500 mt-1">Dashboard stays on. Untick any screen this login should not open. Team management stays with the owner.</p>
+              <label className="mt-3 flex items-start gap-2 text-xs text-slate-500">
+                <input type="checkbox" checked disabled className="mt-0.5" />
+                <span>
+                  <span className="block font-bold text-slate-800">{B2B_FEATURE_COPY.dashboard.label}</span>
+                  {B2B_FEATURE_COPY.dashboard.description}
+                </span>
+              </label>
+              {B2B_GRANTABLE_FEATURES.map((feature) => (
+                <label key={feature} className="mt-2 flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 accent-orange-600"
+                    checked={features.includes(feature)}
+                    onChange={() =>
+                      setFeatures((current) =>
+                        current.includes(feature) ? current.filter((item) => item !== feature) : [...current, feature]
+                      )
+                    }
+                  />
+                  <span>
+                    <span className="block font-bold text-slate-800">{B2B_FEATURE_COPY[feature].label}</span>
+                    {B2B_FEATURE_COPY[feature].description}
+                  </span>
+                </label>
+              ))}
+            </div>
+
             <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-100">
               <button
                 type="submit"
@@ -406,6 +446,16 @@ export const TeamManagementView: React.FC = () => {
                       <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
                         {/* Toggle Credentials */}
                         <button
+                          onClick={() => {
+                            setAccessMemberId(accessMemberId === member.id ? null : member.id);
+                            setAccessFeatures(normalizeB2BFeatures(member.features, !Array.isArray(member.features)));
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Access
+                        </button>
+
+                        <button
                           onClick={() => toggleReveal(member.id)}
                           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                           title="View credentials"
@@ -476,6 +526,48 @@ export const TeamManagementView: React.FC = () => {
                       </div>
                     )}
                   </div>
+
+                  {accessMemberId === member.id && (
+                    <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50/40 p-4">
+                      <p className="text-xs font-bold text-slate-900">Screens for {member.name}</p>
+                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {B2B_GRANTABLE_FEATURES.map((feature) => (
+                          <label key={feature} className="flex items-start gap-2 text-xs text-slate-700">
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 accent-orange-600"
+                              checked={accessFeatures.includes(feature)}
+                              onChange={() =>
+                                setAccessFeatures((current) =>
+                                  current.includes(feature) ? current.filter((item) => item !== feature) : [...current, feature]
+                                )
+                              }
+                            />
+                            <span>{B2B_FEATURE_COPY[feature].label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateB2BTeamMember(activeB2BPartner.id, member.id, {
+                              features: normalizeB2BFeatures(accessFeatures, false),
+                            });
+                            setSuccessMsg(`Updated screen access for ${member.name}.`);
+                            setTimeout(() => setSuccessMsg(""), 4000);
+                            setAccessMemberId(null);
+                          }}
+                          className="px-3 py-1.5 bg-[#ea580c] text-white text-xs font-bold rounded-lg"
+                        >
+                          Save access
+                        </button>
+                        <button type="button" onClick={() => setAccessMemberId(null)} className="px-3 py-1.5 text-xs font-semibold text-slate-600">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Credentials Panel */}
                   {isRevealed && (

@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
+import { PDF_ACCEPT, STORAGE_BUCKETS, storedFileName, uploadPortalFile } from "@/lib/storage";
+import { bankFieldError, organizationFieldError, organizationKycError, personalKycError } from "@/lib/b2bValidation";
 import { B2BPartnerProfile } from "@/types";
 import {
   Building2,
@@ -44,10 +46,16 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
   // Step 2: Personal Documents
   const [aadhaarNum, setAadhaarNum] = useState(partner.personalDocuments.aadhaarNumber);
   const [panNum, setPanNum] = useState(partner.personalDocuments.panNumber);
+  const [aadhaarFile, setAadhaarFile] = useState(partner.personalDocuments.aadhaarFile || "");
+  const [panFile, setPanFile] = useState(partner.personalDocuments.panFile || "");
 
   // Step 3: Organization Documents
   const [orgPanNum, setOrgPanNum] = useState(partner.organizationDocuments.orgPanNumber);
   const [gstNum, setGstNum] = useState(partner.organizationDocuments.gstNumber);
+  const [orgPanFile, setOrgPanFile] = useState(partner.organizationDocuments.orgPanFile || "");
+  const [certificateFile, setCertificateFile] = useState(partner.organizationDocuments.orgCertificateFile || "");
+  const [gstFile, setGstFile] = useState(partner.organizationDocuments.gstCertificateFile || "");
+  const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
 
   // Step 4: Bank Details
   const [ifsc, setIfsc] = useState(partner.bankDetails.ifsc);
@@ -61,30 +69,70 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
   const validateStep = (): boolean => {
     setError(null);
     if (step === 1) {
-      if (!orgName.trim() || !orgEmail.trim() || !orgPhone.trim() || !incorporationNum.trim()) {
-        setError("Please fill in all required organization details.");
+      const message = organizationFieldError({
+        orgName,
+        orgEmail,
+        orgPhone,
+        incorporationNumber: incorporationNum,
+        registrationNumber: registrationNum,
+      });
+      if (message) {
+        setError(message);
         return false;
       }
     }
     if (step === 2) {
-      if (!aadhaarNum.trim() || !panNum.trim()) {
-        setError("Please enter both Aadhaar Number and PAN Number.");
+      const message = personalKycError(aadhaarNum, panNum);
+      if (message) {
+        setError(message);
+        return false;
+      }
+      if (!aadhaarFile.includes("/") || !panFile.includes("/")) {
+        setError("Upload the Aadhaar and PAN documents.");
         return false;
       }
     }
     if (step === 3) {
-      if (!orgPanNum.trim() || !gstNum.trim()) {
-        setError("Please enter Organization PAN and GST Number.");
+      const message = organizationKycError(orgPanNum, gstNum);
+      if (message) {
+        setError(message);
+        return false;
+      }
+      if (!orgPanFile.includes("/") || !certificateFile.includes("/") || !gstFile.includes("/")) {
+        setError("Upload the organization PAN, incorporation certificate, and GST certificate.");
         return false;
       }
     }
     if (step === 4) {
-      if (!ifsc.trim() || !bankName.trim() || !accountNum.trim()) {
-        setError("Please fill in all required bank details.");
+      const message = bankFieldError({
+        accountHolder,
+        bankName,
+        ifsc,
+        accountNumber: accountNum,
+        swiftCode,
+      });
+      if (message) {
+        setError(message);
         return false;
       }
     }
     return true;
+  };
+
+  const storePartnerFile = async (slot: string, file: File, save: (path: string) => void) => {
+    setError(null);
+    setUploadingSlot(slot);
+    const result = await uploadPortalFile({
+      bucket: STORAGE_BUCKETS.partner,
+      folder: `${partner.id}/${slot}`,
+      file,
+    });
+    setUploadingSlot(null);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    save(result.path);
   };
 
   const handleNext = () => {
@@ -104,6 +152,8 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
         ...partner.personalDocuments,
         aadhaarNumber: aadhaarNum,
         panNumber: panNum,
+        aadhaarFile,
+        panFile,
         aadhaarStatus: "Under Review",
         panStatus: "Under Review",
       };
@@ -113,6 +163,9 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
         ...partner.organizationDocuments,
         orgPanNumber: orgPanNum,
         gstNumber: gstNum,
+        orgPanFile,
+        orgCertificateFile: certificateFile,
+        gstCertificateFile: gstFile,
         orgPanStatus: "Under Review",
         orgCertificateStatus: "Under Review",
         gstCertificateStatus: "Under Review",
@@ -144,12 +197,17 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
         personalDocuments: {
           aadhaarNumber: aadhaarNum,
           panNumber: panNum,
+          aadhaarFile,
+          panFile,
           aadhaarStatus: "Under Review",
           panStatus: "Under Review",
         },
         organizationDocuments: {
           orgPanNumber: orgPanNum,
           gstNumber: gstNum,
+          orgPanFile,
+          orgCertificateFile: certificateFile,
+          gstCertificateFile: gstFile,
           orgPanStatus: "Under Review",
           orgCertificateStatus: "Under Review",
           gstCertificateStatus: "Under Review",
@@ -289,7 +347,8 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                     type="text"
                     placeholder="e.g. U74999TS2020PTC123456"
                     value={incorporationNum}
-                    onChange={(e) => setIncorporationNum(e.target.value)}
+                    onChange={(e) => setIncorporationNum(e.target.value.toUpperCase())}
+                    maxLength={21}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -302,7 +361,8 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                     type="text"
                     placeholder="e.g. PROP-2020-HYD-4567"
                     value={registrationNum}
-                    onChange={(e) => setRegistrationNum(e.target.value)}
+                    onChange={(e) => setRegistrationNum(e.target.value.toUpperCase())}
+                    maxLength={30}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -327,7 +387,7 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                     type="text"
                     placeholder="XXXX XXXX XXXX"
                     value={aadhaarNum}
-                    onChange={(e) => setAadhaarNum(e.target.value)}
+                    onChange={(e) => setAadhaarNum(e.target.value.replace(/[^\d\s]/g, "").slice(0, 14))}
                     maxLength={14}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
@@ -339,7 +399,7 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                   </label>
                   <input
                     type="text"
-                    placeholder="ABCDE1234F"
+                    placeholder="ABCPD1234F"
                     value={panNum}
                     onChange={(e) => setPanNum(e.target.value.toUpperCase())}
                     maxLength={10}
@@ -351,24 +411,20 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
               {/* Document Upload Placeholders */}
               <div className="space-y-3">
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Upload Documents</p>
-                {[
-                  { label: "Aadhaar Card (Front & Back)", required: true },
-                  { label: "PAN Card", required: true },
-                ].map((doc) => (
-                  <div
-                    key={doc.label}
-                    className="flex items-center gap-3 p-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/40 transition-all cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center">
-                      <Upload className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-700">{doc.label}</p>
-                      <p className="text-[11px] text-slate-400">PDF, JPG or PNG — Max 5MB</p>
-                    </div>
-                    <span className="px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-lg">Upload</span>
-                  </div>
-                ))}
+                <UploadSlot
+                  label="Aadhaar Card (Front & Back)"
+                  hint="PDF, JPG or PNG — Max 10MB"
+                  fileName={storedFileName(aadhaarFile)}
+                  busy={uploadingSlot === "aadhaar"}
+                  onFile={(file) => void storePartnerFile("aadhaar", file, setAadhaarFile)}
+                />
+                <UploadSlot
+                  label="PAN Card"
+                  hint="PDF, JPG or PNG — Max 10MB"
+                  fileName={storedFileName(panFile)}
+                  busy={uploadingSlot === "pan"}
+                  onFile={(file) => void storePartnerFile("pan", file, setPanFile)}
+                />
               </div>
             </div>
           )}
@@ -414,25 +470,27 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
               {/* Document Upload Placeholders */}
               <div className="space-y-3">
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Upload Organization Documents</p>
-                {[
-                  { label: "Organization PAN Card", required: true },
-                  { label: "Certificate of Incorporation / Registration", required: true },
-                  { label: "GST Certificate", required: true },
-                ].map((doc) => (
-                  <div
-                    key={doc.label}
-                    className="flex items-center gap-3 p-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/40 transition-all cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center">
-                      <Upload className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-700">{doc.label}</p>
-                      <p className="text-[11px] text-slate-400">PDF — Max 10MB</p>
-                    </div>
-                    <span className="px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-lg">Upload</span>
-                  </div>
-                ))}
+                <UploadSlot
+                  label="Organization PAN Card"
+                  hint="PDF, JPG or PNG — Max 10MB"
+                  fileName={storedFileName(orgPanFile)}
+                  busy={uploadingSlot === "org-pan"}
+                  onFile={(file) => void storePartnerFile("org-pan", file, setOrgPanFile)}
+                />
+                <UploadSlot
+                  label="Certificate of Incorporation / Registration"
+                  hint="PDF, JPG or PNG — Max 10MB"
+                  fileName={storedFileName(certificateFile)}
+                  busy={uploadingSlot === "certificate"}
+                  onFile={(file) => void storePartnerFile("certificate", file, setCertificateFile)}
+                />
+                <UploadSlot
+                  label="GST Certificate"
+                  hint="PDF, JPG or PNG — Max 10MB"
+                  fileName={storedFileName(gstFile)}
+                  busy={uploadingSlot === "gst"}
+                  onFile={(file) => void storePartnerFile("gst", file, setGstFile)}
+                />
               </div>
             </div>
           )}
@@ -499,7 +557,8 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
                     type="text"
                     placeholder="e.g. 50100123456789"
                     value={accountNum}
-                    onChange={(e) => setAccountNum(e.target.value)}
+                    onChange={(e) => setAccountNum(e.target.value.replace(/\D/g, "").slice(0, 18))}
+                    maxLength={18}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -554,3 +613,41 @@ export const B2BProfileWizard: React.FC<B2BProfileWizardProps> = ({ partner, onC
     </div>
   );
 };
+
+function UploadSlot({
+  label,
+  hint,
+  fileName,
+  busy,
+  onFile,
+}: {
+  label: string;
+  hint: string;
+  fileName: string;
+  busy: boolean;
+  onFile: (file: File) => void;
+}) {
+  return (
+    <label className="flex items-center gap-3 p-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-orange-300 hover:bg-orange-50/40 transition-all cursor-pointer">
+      <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center">
+        <Upload className="w-4 h-4" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-semibold text-slate-700">{label}</p>
+        <p className="text-[11px] text-slate-400">{fileName || hint}</p>
+      </div>
+      <span className="px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-lg">{busy ? "Uploading..." : fileName ? "Replace" : "Upload"}</span>
+      <input
+        type="file"
+        accept={PDF_ACCEPT}
+        className="sr-only"
+        disabled={busy}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) onFile(file);
+        }}
+      />
+    </label>
+  );
+}

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { MailItem } from "@/types";
 import { loadMails, saveMail, updateMail } from "@/lib/portalDb";
+import { newestFirst } from "@/lib/recent";
 import { readSessionValue } from "@/utils/accounts";
 
 export const MailView: React.FC = () => {
@@ -45,7 +46,7 @@ export const MailView: React.FC = () => {
     });
   }, []);
 
-  const filteredMails = mails.filter((m) => {
+  const filteredMails = newestFirst(mails, (mail) => mail.date).filter((m) => {
     if (m.folder !== activeFolder) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();

@@ -1,3 +1,4 @@
+import { computeProfileCompletion } from "@/lib/profileCompletion";
 import type {
   ApplicationRecord,
   B2BAccessRequest,
@@ -169,7 +170,7 @@ export function blankStudent(input: {
   const parts = input.name.trim().split(/\s+/).filter(Boolean);
   const firstName = parts[0] || "Student";
   const lastName = parts.slice(1).join(" ");
-  return {
+  const student: StudentProfile = {
     id: input.id,
     studentId: input.studentId,
     name: input.name.trim() || firstName,
@@ -181,7 +182,7 @@ export function blankStudent(input: {
     registrationDate: new Date().toISOString().slice(0, 10),
     lastLogin: "",
     onboardingCompleted: false,
-    profileCompletion: 25,
+    profileCompletion: 0,
     personal: {
       dob: "",
       gender: "",
@@ -204,6 +205,8 @@ export function blankStudent(input: {
     },
     documents: [],
   };
+  student.profileCompletion = computeProfileCompletion(student);
+  return student;
 }
 
 export function stripStudent(student: StudentProfile): StudentProfile {
@@ -481,6 +484,9 @@ export function noticeFromRow(row: Row): NoticeItem {
     attachmentName: text(row.attachment_name) || undefined,
     attachmentSize: text(row.attachment_size) || undefined,
     isUrgent: Boolean(row.is_urgent),
+    audience: (["all", "students", "partners", "agents"].includes(text(row.audience))
+      ? text(row.audience)
+      : "all") as NoticeItem["audience"],
   };
 }
 
@@ -496,6 +502,7 @@ export function noticeToRow(notice: NoticeItem): Row {
     attachment_name: notice.attachmentName || "",
     attachment_size: notice.attachmentSize || "",
     is_urgent: Boolean(notice.isUrgent),
+    audience: notice.audience || "all",
   };
 }
 

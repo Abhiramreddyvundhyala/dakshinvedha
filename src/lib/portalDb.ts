@@ -12,6 +12,7 @@ import type {
   VoucherItem,
 } from "@/types";
 import { DEFAULT_TEAM_FEATURES, parseTeamFeatures, type AdminFeatureKey } from "@/lib/adminAccess";
+import { newestFirst } from "@/lib/recent";
 import { getSupabase } from "@/lib/supabase";
 import {
   applicationFromRow,
@@ -144,9 +145,9 @@ export async function loadPortalBundle(): Promise<DbResult<PortalBundle>> {
   const profileResult = await fetchMyProfile();
   if (!profileResult.ok) return profileResult;
   const [studentsRes, appsRes, partnersRes, noticesRes, notifRes, requestsRes] = await Promise.all([
-    supabase.from("students").select("*"),
-    supabase.from("applications").select("*"),
-    supabase.from("partners").select("*"),
+    supabase.from("students").select("*").order("created_at", { ascending: false }),
+    supabase.from("applications").select("*").order("created_at", { ascending: false }),
+    supabase.from("partners").select("*").order("created_at", { ascending: false }),
     supabase.from("notices").select("*").order("created_at", { ascending: false }),
     supabase.from("notifications").select("*").order("created_at", { ascending: false }),
     supabase.from("b2b_access_requests").select("*").order("created_at", { ascending: false }),
@@ -157,12 +158,24 @@ export async function loadPortalBundle(): Promise<DbResult<PortalBundle>> {
     ok: true,
     data: {
       profile: profileResult.data,
-      students: (studentsRes.data || []).map((row) => studentFromRow(row as Record<string, unknown>)),
-      applications: (appsRes.data || [])
-        .map((row) => applicationFromRow(row as Record<string, unknown>))
-        .filter((row): row is ApplicationRecord => Boolean(row)),
-      partners: (partnersRes.data || []).map((row) => partnerFromRow(row as Record<string, unknown>)),
-      notices: (noticesRes.data || []).map((row) => noticeFromRow(row as Record<string, unknown>)),
+      students: newestFirst(
+        (studentsRes.data || []).map((row) => studentFromRow(row as Record<string, unknown>)),
+        (student) => student.registrationDate
+      ),
+      applications: newestFirst(
+        (appsRes.data || [])
+          .map((row) => applicationFromRow(row as Record<string, unknown>))
+          .filter((row): row is ApplicationRecord => Boolean(row)),
+        (app) => app.dateModified || app.dateAdded
+      ),
+      partners: newestFirst(
+        (partnersRes.data || []).map((row) => partnerFromRow(row as Record<string, unknown>)),
+        (partner) => partner.createdDate
+      ),
+      notices: newestFirst(
+        (noticesRes.data || []).map((row) => noticeFromRow(row as Record<string, unknown>)),
+        (notice) => notice.dateAdded
+      ),
       notifications: (notifRes.data || []).map((row) => notificationFromRow(row as Record<string, unknown>)),
       requests: (requestsRes.data || []).map((row) => requestFromRow(row as Record<string, unknown>)),
     },
@@ -225,8 +238,16 @@ async function writePartner(partner: B2BPartnerProfile): Promise<string | null> 
 async function writeNotice(notice: NoticeItem): Promise<string | null> {
   const supabase = getSupabase();
   if (!supabase) return SETUP;
-  const { error } = await supabase.from("notices").upsert(noticeToRow(notice), { onConflict: "id" });
-  return error ? explain(error.message) : null;
+  const row = noticeToRow(notice);
+  const first = await supabase.from("notices").upsert(row, { onConflict: "id" });
+  if (first.error && /audience/i.test(first.error.message)) {
+    const rest = { ...row };
+    delete rest.audience;
+    const retry = await supabase.from("notices").upsert(rest, { onConflict: "id" });
+    if (retry.error) return explain(retry.error.message);
+    return "This notice was saved for everyone. Run supabase/notice-audience.sql to choose students, B2B, or agents.";
+  }
+  return first.error ? explain(first.error.message) : null;
 }
 
 async function writeRequest(request: B2BAccessRequest): Promise<string | null> {
@@ -413,10 +434,47 @@ export async function removeAccount(userId: string): Promise<{ ok: true } | { ok
   return { ok: true };
 }
 
+export async function listAccountHistory(): Promise<{
+  events: {
+    id: string;
+    accountId: string;
+    email: string;
+    fullName: string;
+    role: string;
+    action: "paused" | "resumed" | "deleted";
+    actorName: string;
+    note: string;
+    createdAt: string;
+  }[];
+  error: string | null;
+}> {
+  const token = await getAccessToken();
+  if (!token) return { events: [], error: "Sign in again before opening account history." };
+  const response = await fetch("/api/auth/history", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const payload = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    events?: {
+      id: string;
+      accountId: string;
+      email: string;
+      fullName: string;
+      role: string;
+      action: "paused" | "resumed" | "deleted";
+      actorName: string;
+      note: string;
+      createdAt: string;
+    }[];
+  };
+  if (!response.ok) return { events: [], error: payload.error || "Could not load account history." };
+  return { events: payload.events || [], error: payload.error || null };
+}
+
 export async function listDirectory(): Promise<{ accounts: DirectoryAccount[]; error: string | null }> {
   const supabase = getSupabase();
   if (!supabase) return { accounts: [], error: SETUP };
-  const { data, error } = await supabase.from("profiles").select("*").order("full_name");
+  const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
   if (error) return { accounts: [], error: explain(error.message) };
   const accounts = (data || [])
     .map((row) => profileFromRow(row as Record<string, unknown>))

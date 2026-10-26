@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
-import { Megaphone, Plus, Calendar, Building2, CheckCircle2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
+import { NOTICE_AUDIENCES, NoticeAudience, audienceLabel } from "@/lib/notices";
+import { newestFirst } from "@/lib/recent";
 
 export const AdminNoticesView: React.FC = () => {
   const { notices, publishNotice } = usePlatform();
@@ -16,6 +18,8 @@ export const AdminNoticesView: React.FC = () => {
   const [description, setDescription] = useState("");
   const [fullContent, setFullContent] = useState("");
   const [isUrgent, setIsUrgent] = useState(false);
+  const [audience, setAudience] = useState<NoticeAudience>("all");
+  const ordered = newestFirst(notices, (notice) => notice.dateAdded);
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +31,13 @@ export const AdminNoticesView: React.FC = () => {
       description,
       fullContent: fullContent || description,
       isUrgent,
+      audience,
     });
     setShowAddNotice(false);
     setTitle("");
     setDescription("");
     setFullContent("");
+    setAudience("all");
   };
 
   return (
@@ -57,11 +63,11 @@ export const AdminNoticesView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {notices.map((n) => (
+        {ordered.map((n) => (
           <div key={n.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fff4ed", color: "#ea580c" }}>
-                {n.category}
+                {n.category} · {audienceLabel(n.audience)}
               </span>
               <span className="text-slate-400 text-[11px]">{n.dateAdded}</span>
             </div>
@@ -138,12 +144,26 @@ export const AdminNoticesView: React.FC = () => {
               />
             </div>
 
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Send to</label>
+              <select
+                value={audience}
+                onChange={(e) => setAudience(e.target.value as NoticeAudience)}
+                className="w-full p-2 rounded-xl border border-slate-300 text-xs"
+              >
+                {NOTICE_AUDIENCES.map((item) => (
+                  <option key={item.value} value={item.value}>{item.label}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-slate-500 mt-1">All users sends it to students, B2B partners, and agents.</p>
+            </div>
+
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isUrgent}
                 onChange={(e) => setIsUrgent(e.target.checked)}
-                className="rounded text-purple-600 w-4 h-4"
+                className="rounded text-orange-600 w-4 h-4"
               />
               <span className="font-bold text-slate-800">Mark as Urgent Notice</span>
             </label>

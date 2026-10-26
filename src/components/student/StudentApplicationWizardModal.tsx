@@ -2,12 +2,18 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { usePlatform } from "@/context/PlatformContext";
+import { acceptFor, uploadForCurrentUser, uploadStudentFile } from "@/lib/storage";
+import { courseIntakes, currencyMark, money } from "@/lib/catalogOffers";
+import { freshCommission } from "@/lib/commission";
+import { buildTimeline, createTrackingId } from "@/utils/tracking";
 import {
   CourseInfo,
   EducationQualification,
   EducationLevelType,
   DocumentCategoryType,
+  DocumentUploadItem,
   ApplicationRecord,
+  StudentProfile,
 } from "@/types";
 import { evaluateFrontendEligibility } from "@/data/studentSeedData";
 import {
@@ -24,6 +30,7 @@ import {
   Upload,
   Sparkles,
   Trash2,
+  Pencil,
   Calendar,
   Building2,
   MapPin,
@@ -32,6 +39,15 @@ import {
   School,
   Check,
 } from "lucide-react";
+
+function documentCategory(category: string): DocumentUploadItem["category"] {
+  if (category === "Passport") return "Passport";
+  if (category === "IELTS") return "English Test";
+  if (category === "CV / Resume") return "CV";
+  if (category === "Statement of Purpose") return "SOP";
+  if (category === "Letter of Recommendation") return "Recommendation Letters";
+  return "Academic Documents";
+}
 
 interface StudentApplicationWizardModalProps {
   isOpen: boolean;
@@ -54,23 +70,19 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
     courses,
     submitStudentApplication,
     addEducation,
+    updateEducation,
     deleteEducation,
     uploadDocument,
   } = usePlatform();
 
   // Wizard Step: 1 to 8
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
 
-  // Selected University & Course state
-  const [selectedUnivId, setSelectedUnivId] = useState<string>(
-    initialCourse?.universityId || universities[0]?.id || ""
-  );
-  const [selectedCourseId, setSelectedCourseId] = useState<string>(
-    initialCourse?.id || courses[0]?.id || ""
-  );
-  const [selectedIntake, setSelectedIntake] = useState<string>(
-    initialCourse?.activeIntake || "September / October 2026"
-  );
+  // Selected University & Course state. A course card can preselect; Start Application does not.
+  const [selectedUnivId, setSelectedUnivId] = useState<string>(initialCourse?.universityId || "");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>(initialCourse?.id || "");
+  const [selectedIntake, setSelectedIntake] = useState<string>(initialCourse?.activeIntake || "");
 
   // STEP 1: Personal Details
   const [firstName, setFirstName] = useState("");
@@ -84,35 +96,36 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
   const [nationality, setNationality] = useState("Indian");
   const [countryOfResidence, setCountryOfResidence] = useState("India");
   const [streetAddress, setStreetAddress] = useState("");
-  const [city, setCity] = useState("Mumbai");
-  const [stateName, setStateName] = useState("Maharashtra");
-  const [postalCode, setPostalCode] = useState("400001");
+  const [city, setCity] = useState("");
+  const [stateName, setStateName] = useState("");
+  const [postalCode, setPostalCode] = useState("");
 
   // STEP 2: Passport
   const [hasPassport, setHasPassport] = useState<"YES" | "NO">("YES");
   const [passportNumber, setPassportNumber] = useState("");
   const [passportCountry, setPassportCountry] = useState("India");
-  const [dateOfIssue, setDateOfIssue] = useState("2022-04-10");
-  const [expiryDate, setExpiryDate] = useState("2032-04-09");
-  const [placeOfIssue, setPlaceOfIssue] = useState("Mumbai");
+  const [dateOfIssue, setDateOfIssue] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [placeOfIssue, setPlaceOfIssue] = useState("");
 
   // STEP 3: Education Qualifications
   const [qualificationsList, setQualificationsList] = useState<EducationQualification[]>([]);
   const [showAddEduModal, setShowAddEduModal] = useState(false);
+  const [editingEduId, setEditingEduId] = useState<string | null>(null);
   const [eduLevel, setEduLevel] = useState<EducationLevelType>("Bachelor");
   const [eduInstitution, setEduInstitution] = useState("");
   const [eduBoard, setEduBoard] = useState("");
   const [eduStream, setEduStream] = useState("MPC");
-  const [eduDegree, setEduDegree] = useState("Bachelor of Technology");
-  const [eduCourse, setEduCourse] = useState("Computer Science Engineering");
-  const [eduSpecialization, setEduSpecialization] = useState("Artificial Intelligence");
-  const [eduStartYear, setEduStartYear] = useState("2021");
-  const [eduPassYear, setEduPassYear] = useState("2025");
-  const [eduScore, setEduScore] = useState("8.5");
+  const [eduDegree, setEduDegree] = useState("");
+  const [eduCourse, setEduCourse] = useState("");
+  const [eduSpecialization, setEduSpecialization] = useState("");
+  const [eduStartYear, setEduStartYear] = useState("");
+  const [eduPassYear, setEduPassYear] = useState("");
+  const [eduScore, setEduScore] = useState("");
   const [eduCgpaScale, setEduCgpaScale] = useState("10");
   const [eduBacklogs, setEduBacklogs] = useState(0);
   const [eduActiveBacklogs, setEduActiveBacklogs] = useState(0);
-  const [eduEnglishMarks, setEduEnglishMarks] = useState("85");
+  const [eduEnglishMarks, setEduEnglishMarks] = useState("");
   const [eduMaxEnglishMarks, setEduMaxEnglishMarks] = useState("100");
 
   // STEP 4: English Proficiency & Tests
@@ -120,14 +133,14 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
   const [selectedTestType, setSelectedTestType] = useState<
     "IELTS" | "TOEFL" | "PTE" | "Duolingo" | "GRE" | "GMAT"
   >("IELTS");
-  const [testScoreOverall, setTestScoreOverall] = useState("7.0");
-  const [testSubL, setTestSubL] = useState("7.5");
-  const [testSubR, setTestSubR] = useState("7.0");
-  const [testSubW, setTestSubW] = useState("6.5");
-  const [testSubS, setTestSubS] = useState("7.0");
-  const [greVerbal, setGreVerbal] = useState("155");
-  const [greQuant, setGreQuant] = useState("165");
-  const [greAwa, setGreAwa] = useState("4.0");
+  const [testScoreOverall, setTestScoreOverall] = useState("");
+  const [testSubL, setTestSubL] = useState("");
+  const [testSubR, setTestSubR] = useState("");
+  const [testSubW, setTestSubW] = useState("");
+  const [testSubS, setTestSubS] = useState("");
+  const [greVerbal, setGreVerbal] = useState("");
+  const [greQuant, setGreQuant] = useState("");
+  const [greAwa, setGreAwa] = useState("");
 
   // STEP 5: Study Details & Preferences
   const [prefStudyLevel, setPrefStudyLevel] = useState("Postgraduate");
@@ -136,8 +149,18 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // STEP 6: Documents
   const [uploadedDocs, setUploadedDocs] = useState<
-    { category: DocumentCategoryType; title: string; fileName: string; status: string }[]
+    {
+      category: DocumentCategoryType;
+      title: string;
+      fileName: string;
+      status: string;
+      storagePath?: string;
+      storageBucket?: string;
+      fileSize?: string;
+    }[]
   >([]);
+  const [uploadingCat, setUploadingCat] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // STEP 7: Review & Declaration
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
@@ -147,22 +170,21 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // Reset or initialize on open
   useEffect(() => {
-    if (isOpen) {
-      setCurrentStep(1);
-      setSubmittedApp(null);
-      setDeclarationAccepted(false);
-
-      if (initialCourse) {
-        setSelectedUnivId(initialCourse.universityId);
-        setSelectedCourseId(initialCourse.id);
-        setSelectedIntake(initialCourse.activeIntake || "September / October 2026");
-      } else if (universities.length > 0 && courses.length > 0) {
-        if (!selectedUnivId) setSelectedUnivId(universities[0].id);
-        const matchingCourse = courses.find((c) => c.universityId === universities[0].id) || courses[0];
-        if (!selectedCourseId && matchingCourse) setSelectedCourseId(matchingCourse.id);
-      }
+    if (!isOpen) return;
+    setCurrentStep(1);
+    setSubmittedApp(null);
+    setDeclarationAccepted(false);
+    setSelectionError(null);
+    if (initialCourse) {
+      setSelectedUnivId(initialCourse.universityId);
+      setSelectedCourseId(initialCourse.id);
+      setSelectedIntake(initialCourse.activeIntake || "");
+    } else {
+      setSelectedUnivId("");
+      setSelectedCourseId("");
+      setSelectedIntake("");
     }
-  }, [isOpen, initialCourse, universities, courses]);
+  }, [isOpen, initialCourse]);
 
   // Pre-fill profile fields from activeStudent
   useEffect(() => {
@@ -195,11 +217,11 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
       if (activeStudent.standardizedTests && activeStudent.standardizedTests.length > 0) {
         const firstTest = activeStudent.standardizedTests[0];
         setSelectedTestType(firstTest.type as any);
-        setTestScoreOverall(firstTest.overallScore || "7.0");
-        setTestSubL(firstTest.subScores?.listening || "7.5");
-        setTestSubR(firstTest.subScores?.reading || "7.0");
-        setTestSubW(firstTest.subScores?.writing || "6.5");
-        setTestSubS(firstTest.subScores?.speaking || "7.0");
+        setTestScoreOverall(firstTest.overallScore || "");
+        setTestSubL(firstTest.subScores?.listening || "");
+        setTestSubR(firstTest.subScores?.reading || "");
+        setTestSubW(firstTest.subScores?.writing || "");
+        setTestSubS(firstTest.subScores?.speaking || "");
       }
 
       setPrefStudyLevel(activeStudent.studyPreferences.preferredStudyLevel || "Postgraduate");
@@ -210,6 +232,9 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
           title: d.title,
           fileName: d.fileName || `${d.category}.pdf`,
           status: d.status || "Uploaded",
+          storagePath: d.storagePath,
+          storageBucket: d.storageBucket,
+          fileSize: d.fileSize,
         }))
       );
     }
@@ -217,18 +242,70 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // Derived current University and Course objects
   const currentUniv = useMemo(() => {
-    return universities.find((u) => u.id === selectedUnivId) || universities[0];
+    return universities.find((u) => u.id === selectedUnivId) || null;
   }, [universities, selectedUnivId]);
 
   const currentCourse = useMemo(() => {
-    return courses.find((c) => c.id === selectedCourseId) || courses[0];
+    return courses.find((c) => c.id === selectedCourseId) || null;
   }, [courses, selectedCourseId]);
 
-  // Available courses under the selected university
   const availableCoursesForUniv = useMemo(() => {
-    const list = courses.filter((c) => c.universityId === selectedUnivId);
-    return list.length > 0 ? list : courses;
+    if (!selectedUnivId) return [];
+    return courses.filter((c) => c.universityId === selectedUnivId);
   }, [courses, selectedUnivId]);
+
+  const intakeChoices = useMemo(() => (currentCourse ? courseIntakes(currentCourse) : []), [currentCourse]);
+
+  const requiredDocumentCategories = useMemo(() => {
+    const categories = ["Profile Photograph", "10th Certificate", "12th Certificate", "CV / Resume", "Statement of Purpose"];
+    if (hasPassport === "YES") categories.unshift("Passport");
+    if (qualificationsList.some((item) => item.level === "Bachelor")) {
+      categories.push("Bachelor Degree", "Bachelor Transcripts");
+    }
+    if (testsStatus === "YES") categories.push("IELTS");
+    return categories;
+  }, [hasPassport, qualificationsList, testsStatus]);
+
+  const stepFilled = (step: number) => {
+    if (step === 1) {
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+      return Boolean(
+        firstName.trim() &&
+          lastName.trim() &&
+          dob.trim() &&
+          gender.trim() &&
+          nationality.trim() &&
+          emailOk &&
+          mobile.trim() &&
+          city.trim() &&
+          postalCode.trim()
+      );
+    }
+    if (step === 2) return hasPassport === "NO" || Boolean(passportNumber.trim());
+    if (step === 3) return qualificationsList.length > 0;
+    if (step === 4) return testsStatus !== "YES" || Boolean(testScoreOverall.trim());
+    if (step === 5) return Boolean(currentUniv && currentCourse && selectedIntake.trim());
+    if (step === 6) {
+      return requiredDocumentCategories.every((category) =>
+        uploadedDocs.some((doc) => doc.category === category && (doc.storagePath || doc.fileName))
+      );
+    }
+    if (step === 7) return declarationAccepted;
+    return Boolean(submittedApp);
+  };
+
+  const stepGap = (step: number) => {
+    if (step === 1) return "Fill the required personal and contact fields before this section is complete.";
+    if (step === 2) return "Enter the passport number, or choose NO if you do not hold one yet.";
+    if (step === 3) return "Add at least one qualification before this section is complete.";
+    if (step === 4) return "Enter the test score, or choose that you do not have a test yet.";
+    if (step === 5) return "Select a university, a course, and an intake.";
+    if (step === 6) return "Upload each required document before this section is complete.";
+    if (step === 7) return "Accept the declaration before this section is complete.";
+    return "";
+  };
+
+  const filledCount = [1, 2, 3, 4, 5, 6, 7, 8].filter((step) => stepFilled(step)).length;
 
   // Derived Academic English marks
   const academicEnglishMarks = useMemo(() => {
@@ -240,73 +317,239 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
     if (diploma?.englishMarks) {
       return `${diploma.englishMarks} / ${diploma.maxEnglishMarks || 100}`;
     }
-    return "82 / 100 (Standard 12th Intermediate)";
+    return "Not added";
   }, [qualificationsList]);
 
   // Frontend Eligibility check
+  const eligibilityProfile = useMemo((): StudentProfile | null => {
+    if (activeStudent) return activeStudent;
+    const tests =
+      testsStatus === "YES"
+        ? [
+            {
+              id: "draft-test",
+              type: selectedTestType,
+              overallScore: testScoreOverall,
+              subScores: {
+                listening: testSubL,
+                reading: testSubR,
+                writing: testSubW,
+                speaking: testSubS,
+              },
+            },
+          ]
+        : [];
+    return {
+      education: qualificationsList,
+      standardizedTests: tests,
+      testsStatus,
+      passport: { hasPassport, passportNumber },
+    } as unknown as StudentProfile;
+  }, [
+    activeStudent,
+    qualificationsList,
+    testsStatus,
+    selectedTestType,
+    testScoreOverall,
+    testSubL,
+    testSubR,
+    testSubW,
+    testSubS,
+    hasPassport,
+    passportNumber,
+  ]);
+
   const eligibility = useMemo(() => {
-    if (!currentCourse) {
-      return evaluateFrontendEligibility(activeStudent, null);
-    }
-    return evaluateFrontendEligibility(activeStudent, currentCourse);
-  }, [activeStudent, currentCourse]);
+    return evaluateFrontendEligibility(eligibilityProfile, currentCourse);
+  }, [eligibilityProfile, currentCourse]);
 
   // Handle adding qualification
+  const resetEduForm = () => {
+    setEditingEduId(null);
+    setEduLevel("Bachelor");
+    setEduInstitution("");
+    setEduBoard("");
+    setEduStream("MPC");
+    setEduDegree("");
+    setEduCourse("");
+    setEduSpecialization("");
+    setEduStartYear("");
+    setEduPassYear("");
+    setEduScore("");
+    setEduEnglishMarks("");
+    setEduMaxEnglishMarks("100");
+    setEduBacklogs(0);
+    setEduActiveBacklogs(0);
+  };
+
+  const openAddQualification = () => {
+    resetEduForm();
+    setShowAddEduModal(true);
+  };
+
+  const openEditQualification = (item: EducationQualification) => {
+    setEditingEduId(item.id);
+    setEduLevel(item.level);
+    setEduInstitution(item.institutionName || "");
+    setEduBoard(item.boardOrUniversity || "");
+    setEduStream(item.stream || "MPC");
+    setEduDegree(item.degree || "");
+    setEduCourse(item.course || "");
+    setEduSpecialization(item.specialization || "");
+    setEduStartYear(item.startYear || "");
+    setEduPassYear(item.passOutYear || "");
+    setEduScore(item.percentageOrCgpa || "");
+    setEduCgpaScale(item.cgpaScale || "10");
+    setEduEnglishMarks(item.englishMarks || "");
+    setEduMaxEnglishMarks(item.maxEnglishMarks || "100");
+    setEduBacklogs(item.numberOfBacklogs || 0);
+    setEduActiveBacklogs(item.activeBacklogs || 0);
+    setShowAddEduModal(true);
+  };
+
   const handleAddQualification = (e: React.FormEvent) => {
     e.preventDefault();
-    const newQ: EducationQualification = {
-      id: `edu-${Date.now()}`,
+    const payload = {
       level: eduLevel,
-      institutionName: eduInstitution.trim() || "University / College",
-      boardOrUniversity: eduBoard.trim() || "Board / University",
+      institutionName: eduInstitution.trim(),
+      boardOrUniversity: eduBoard.trim(),
       stream: eduLevel === "12th" ? eduStream : undefined,
-      degree:
-        eduLevel === "Bachelor"
-          ? eduDegree || "Bachelor's Degree"
-          : eduLevel === "Master"
-          ? eduDegree || "Master's Degree"
-          : eduLevel === "12th"
-          ? "Intermediate / Senior Secondary"
-          : eduLevel === "10th"
-          ? "Secondary School Certificate"
-          : eduDegree || eduLevel,
-      course: eduCourse || eduDegree,
-      specialization: eduSpecialization,
-      startYear: eduStartYear || "2021",
-      passOutYear: eduPassYear || "2025",
-      percentageOrCgpa: eduScore || "8.0",
+      degree: eduDegree.trim(),
+      course: eduCourse.trim(),
+      specialization: eduSpecialization.trim(),
+      startYear: eduStartYear.trim(),
+      passOutYear: eduPassYear.trim(),
+      percentageOrCgpa: eduScore.trim(),
       cgpaScale: eduLevel === "Bachelor" || eduLevel === "Master" ? eduCgpaScale : undefined,
-      englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduEnglishMarks : undefined,
-      maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduMaxEnglishMarks : undefined,
+      englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduEnglishMarks.trim() : undefined,
+      maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? eduMaxEnglishMarks.trim() : undefined,
       hasBacklogs: eduBacklogs > 0,
       numberOfBacklogs: eduBacklogs,
       activeBacklogs: eduActiveBacklogs,
-      verificationStatus: "Pending",
     };
-
-    setQualificationsList((prev) => [...prev, newQ]);
-    addEducation(newQ);
+    if (editingEduId) {
+      updateEducation(editingEduId, payload);
+      setQualificationsList((prev) =>
+        prev.map((item) => (item.id === editingEduId ? { ...item, ...payload } : item))
+      );
+    } else {
+      const created: EducationQualification = {
+        ...payload,
+        id: `edu-${Date.now()}`,
+        verificationStatus: "Pending",
+      };
+      setQualificationsList((prev) => [...prev, created]);
+      addEducation(payload);
+    }
     setShowAddEduModal(false);
+    resetEduForm();
   };
 
   // Submit Application
   const handleSubmitApplication = () => {
-    if (!currentUniv || !currentCourse) return;
-    const newApp = submitStudentApplication({
-      universityId: currentUniv.id,
-      courseId: currentCourse.id,
-      intake: selectedIntake,
-      notes: applicationNotes || `Student application for ${currentCourse.courseName} at ${currentUniv.name}.`,
-    });
-    if (!newApp) return;
+    if (!currentUniv || !currentCourse || !selectedIntake) {
+      setSelectionError("Select a university, a course, and an intake before submitting.");
+      setCurrentStep(5);
+      return;
+    }
+    const notes = applicationNotes || `Application for ${currentCourse.courseName} at ${currentUniv.name}.`;
+    if (activeStudent) {
+      const newApp = submitStudentApplication({
+        universityId: currentUniv.id,
+        courseId: currentCourse.id,
+        intake: selectedIntake,
+        notes,
+      });
+      if (!newApp) return;
+      setSubmittedApp(newApp);
+      setCurrentStep(8);
+      onApplicationCompleted(newApp);
+      return;
+    }
 
-    setSubmittedApp(newApp);
+    const studentName = [firstName, middleName, lastName].map((part) => part.trim()).filter(Boolean).join(" ");
+    if (!studentName || !email.trim()) {
+      setSelectionError("Enter the student's name and email before submitting.");
+      setCurrentStep(1);
+      return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const spokenTest = selectedTestType === "GRE" || selectedTestType === "GMAT" ? "Other" : selectedTestType;
+    const mark = currencyMark([currentCourse]);
+    const filed: ApplicationRecord = {
+      camsId: createTrackingId("APP"),
+      student: {
+        firstName: firstName.trim(),
+        middleName: middleName.trim() || undefined,
+        lastName: lastName.trim(),
+        name: studentName,
+        dob: dob.trim(),
+        gender,
+        nationality: nationality.trim(),
+        passportNumber: hasPassport === "YES" ? passportNumber.trim() : "",
+        passportExpiry: expiryDate.trim(),
+        email: email.trim(),
+        phone: mobile.trim(),
+        studentId: createTrackingId("STU"),
+        address: {
+          country: countryOfResidence.trim(),
+          state: stateName.trim(),
+          city: city.trim(),
+          postalCode: postalCode.trim(),
+          streetAddress: streetAddress.trim(),
+        },
+      },
+      university: currentUniv,
+      course: { ...currentCourse, activeIntake: selectedIntake },
+      primaryStatus: "Application Submitted",
+      secondaryStatus: "Documents Pending",
+      dateAdded: today,
+      dateModified: today,
+      counselorName: "B2B partner",
+      qualifications: qualificationsList.map((item) => ({
+        id: item.id,
+        highestQualification: item.degree || item.level,
+        institution: item.institutionName,
+        course: item.course || item.stream || item.level,
+        yearCompleted: item.passOutYear,
+        gradePercentage: item.percentageOrCgpa,
+      })),
+      englishProficiency: {
+        testType: testsStatus === "YES" ? spokenTest : "English waiver",
+        overallScore: testsStatus === "YES" ? testScoreOverall || "N/A" : "N/A",
+        readingScore: testSubR || "N/A",
+        writingScore: testSubW || "N/A",
+        listeningScore: testSubL || "N/A",
+        speakingScore: testSubS || "N/A",
+      },
+      documents: uploadedDocs.map((doc) => ({
+        id: createTrackingId("DOC"),
+        category: documentCategory(doc.category),
+        fileName: doc.fileName,
+        fileSize: doc.fileSize || "Uploaded",
+        storagePath: doc.storagePath,
+        storageBucket: doc.storageBucket,
+        progress: 100,
+        status: "Uploaded" as const,
+      })),
+      timeline: buildTimeline("Application Submitted", today),
+      payment: {
+        grossTuition: currentCourse.tuitionFee,
+        scholarship: scholarshipRequired === "YES" ? "Requested" : "Not requested",
+        depositPaid: money(0, mark),
+        netBalanceDue: currentCourse.tuitionFee,
+        paymentStatus: "Pending",
+      },
+      commission: freshCommission(currentCourse),
+      notes: [{ id: `note-${Date.now()}`, author: studentName, date: today, text: notes }],
+    };
+    setSubmittedApp(filed);
     setCurrentStep(8);
-    onApplicationCompleted(newApp);
+    onApplicationCompleted(filed);
   };
 
   if (!isOpen) return null;
-  if (!currentUniv || !currentCourse) {
+  if (universities.length === 0 || courses.length === 0) {
     return (
       <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl p-6 max-w-md text-sm text-slate-700 space-y-3">
@@ -342,14 +585,14 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
-                  Admissions Dossier
+                  Application
                 </span>
                 <span className="text-white/80 text-xs font-medium truncate hidden sm:inline">
                   Step {currentStep} of 8 — {stepTitles[currentStep - 1]}
                 </span>
               </div>
               <h1 className="font-heading text-base sm:text-lg font-bold text-white truncate leading-tight mt-0.5">
-                Apply to {currentCourse?.courseName || "Program"}
+                {currentCourse ? `Apply to ${currentCourse.courseName}` : "Start application"}
               </h1>
             </div>
           </div>
@@ -357,10 +600,10 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-right hidden md:block">
               <p className="text-xs font-semibold text-white/95 leading-tight">
-                {currentUniv.name}
+                {currentUniv?.name || "University not selected"}
               </p>
               <p className="text-[11px] text-[#A3E5C3] font-medium">
-                {selectedIntake} Intake
+                {selectedIntake ? `${selectedIntake} Intake` : "Intake not selected"}
               </p>
             </div>
             <button
@@ -386,10 +629,11 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   Target Program
                 </span>
                 <p className="font-bold text-slate-900 text-xs leading-snug">
-                  {currentCourse.courseName}
+                  {currentCourse?.courseName || "No course selected"}
                 </p>
                 <p className="text-[11px] text-slate-500 font-medium">
-                  {currentUniv.name} • {selectedIntake}
+                  {currentUniv?.name || "No university selected"}
+                  {selectedIntake ? ` • ${selectedIntake}` : ""}
                 </p>
                 {currentStep !== 5 && currentStep !== 8 && (
                   <button
@@ -397,7 +641,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     onClick={() => setCurrentStep(5)}
                     className="text-[11px] font-semibold text-[#ea580c] hover:text-[#c2410c] hover:underline pt-1 inline-block cursor-pointer"
                   >
-                    Change Course →
+                    {currentCourse ? "Change Course →" : "Select Course →"}
                   </button>
                 )}
               </div>
@@ -409,14 +653,17 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 </span>
                 {stepTitles.map((title, idx) => {
                   const stepNum = idx + 1;
-                  const isDone = currentStep > stepNum;
                   const isCurrent = currentStep === stepNum;
+                  const isDone = stepFilled(stepNum) && !isCurrent;
                   return (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => {
-                        if (isDone || isCurrent) setCurrentStep(stepNum);
+                        if (stepNum <= currentStep || stepFilled(stepNum)) {
+                          setSelectionError(null);
+                          setCurrentStep(stepNum);
+                        }
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all text-xs ${
                         isCurrent
@@ -475,7 +722,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 <span className="font-semibold text-slate-800">{stepTitles[currentStep - 1]}</span>
               </div>
               <span className="text-[11px] font-medium text-[#ea580c] bg-[#fff7ed] px-2.5 py-0.5 rounded-full border border-[#ea580c]/15">
-                {Math.round((currentStep / 8) * 100)}% Complete
+                {Math.round((filledCount / 8) * 100)}% Complete
               </span>
             </div>
 
@@ -492,7 +739,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   <span>Step 1 — Personal & Contact Details</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
-                  Confirm your legal identity and contact channels as they will appear on your admissions dossier.
+                  Confirm your legal identity and contact channels as they will appear on your application.
                 </p>
               </div>
 
@@ -760,7 +1007,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowAddEduModal(true)}
+                  onClick={openAddQualification}
                   className="px-3.5 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
                 >
                   <Plus className="w-4 h-4" />
@@ -809,6 +1056,14 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                       </div>
 
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEditQualification(q)}
+                          className="p-2 text-slate-400 hover:text-orange-700 rounded-lg hover:bg-orange-50 transition-colors cursor-pointer"
+                          title="Edit qualification"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -1007,7 +1262,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   <span>Step 5 — Target University & Course Selection</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
-                  Select or switch the targeted university, degree course, and intake for this application dossier.
+                  Select the university, course, and intake for this application.
                 </p>
               </div>
 
@@ -1022,16 +1277,14 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     <select
                       value={selectedUnivId}
                       onChange={(e) => {
-                        const newUnivId = e.target.value;
-                        setSelectedUnivId(newUnivId);
-                        const univCourses = courses.filter((c) => c.universityId === newUnivId);
-                        if (univCourses.length > 0) {
-                          setSelectedCourseId(univCourses[0].id);
-                          setSelectedIntake(univCourses[0].activeIntake || "September / October 2026");
-                        }
+                        setSelectedUnivId(e.target.value);
+                        setSelectedCourseId("");
+                        setSelectedIntake("");
+                        setSelectionError(null);
                       }}
                       className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
+                      <option value="">Select a university</option>
                       {universities.map((u) => (
                         <option key={u.id} value={u.id}>
                           {u.name} — {u.country}
@@ -1051,12 +1304,13 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                         const newCourseId = e.target.value;
                         setSelectedCourseId(newCourseId);
                         const foundCourse = courses.find((c) => c.id === newCourseId);
-                        if (foundCourse?.activeIntake) {
-                          setSelectedIntake(foundCourse.activeIntake);
-                        }
+                        const offered = foundCourse ? courseIntakes(foundCourse) : [];
+                        setSelectedIntake(offered.length === 1 ? offered[0] : "");
+                        setSelectionError(null);
                       }}
                       className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
+                      <option value="">Select a course</option>
                       {availableCoursesForUniv.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.courseName} ({c.studyLevel})
@@ -1074,12 +1328,18 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     </label>
                     <select
                       value={selectedIntake}
-                      onChange={(e) => setSelectedIntake(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedIntake(e.target.value);
+                        setSelectionError(null);
+                      }}
                       className="w-full h-11 px-3.5 rounded-[10px] border border-[#E7E5E0] bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/20 focus:border-[#ea580c] transition-all"
                     >
-                      <option value="September / October 2026">September / October 2026</option>
-                      <option value="January / February 2027">January / February 2027</option>
-                      <option value="May / June 2027">May / June 2027</option>
+                      <option value="">{intakeChoices.length === 0 ? "Intake not set" : "Select an intake"}</option>
+                      {intakeChoices.map((intake) => (
+                        <option key={intake} value={intake}>
+                          {intake}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -1098,9 +1358,11 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                     </select>
                   </div>
                 </div>
+                {selectionError && <p className="text-xs font-semibold text-rose-700">{selectionError}</p>}
               </div>
 
               {/* Program Overview & Financials Card */}
+              {currentCourse && currentUniv ? (
               <div className="p-4 bg-[#FAFAF8] border border-[#E7E5E0] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -1128,6 +1390,9 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   <span className="text-slate-500 text-[11px] block mt-0.5">App Fee Waiver: Included</span>
                 </div>
               </div>
+              ) : (
+                <p className="text-xs text-slate-500">Choose a university and a course. Nothing is selected yet.</p>
+              )}
 
               {/* Live Eligibility Check Card */}
               <div
@@ -1191,6 +1456,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 </p>
               </div>
 
+              {uploadError && <p className="text-xs font-semibold text-rose-700">{uploadError}</p>}
               <div className="space-y-2.5">
                 {[
                   { cat: "Passport", name: "Passport Bio-Page", required: hasPassport === "YES" },
@@ -1250,29 +1516,53 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                             />
                             {existing?.status || "Not Uploaded"}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newDoc = {
-                                category: item.cat as any,
-                                title: item.name,
-                                fileName: `${item.cat.replace(/\s+/g, "_")}.pdf`,
-                                status: "Uploaded",
-                              };
-                              setUploadedDocs((prev) => [
-                                ...prev.filter((d) => d.category !== item.cat),
-                                newDoc,
-                              ]);
-                              uploadDocument({
-                                category: item.cat as any,
-                                title: item.name,
-                                fileName: newDoc.fileName,
-                              });
-                            }}
-                            className="h-8 px-3 bg-white border border-[#E7E5E0] hover:bg-slate-50 rounded-lg font-medium text-slate-700 text-xs transition-colors cursor-pointer active:scale-[0.98]"
-                          >
-                            {existing ? "Replace" : "Upload"}
-                          </button>
+                          <label className="h-8 px-3 bg-white border border-[#E7E5E0] hover:bg-slate-50 rounded-lg font-medium text-slate-700 text-xs transition-colors cursor-pointer active:scale-[0.98] inline-flex items-center">
+                            {uploadingCat === item.cat ? "Uploading..." : existing ? "Replace" : "Upload"}
+                            <input
+                              type="file"
+                              accept={acceptFor(item.cat)}
+                              className="sr-only"
+                              disabled={uploadingCat === item.cat}
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                event.target.value = "";
+                                if (!file) return;
+                                setUploadError(null);
+                                setUploadingCat(item.cat);
+                                const upload = activeStudent
+                                  ? uploadStudentFile(file, item.cat)
+                                  : uploadForCurrentUser(file, item.cat);
+                                void upload.then((result) => {
+                                  setUploadingCat(null);
+                                  if (!result.ok) {
+                                    setUploadError(result.error);
+                                    return;
+                                  }
+                                  const newDoc = {
+                                    category: item.cat as DocumentCategoryType,
+                                    title: item.name,
+                                    fileName: result.fileName,
+                                    status: "Uploaded",
+                                    storagePath: result.path,
+                                    storageBucket: result.bucket,
+                                    fileSize: result.fileSize,
+                                  };
+                                  setUploadedDocs((prev) => [
+                                    ...prev.filter((d) => d.category !== item.cat),
+                                    newDoc,
+                                  ]);
+                                  uploadDocument({
+                                    category: item.cat as DocumentCategoryType,
+                                    title: item.name,
+                                    fileName: result.fileName,
+                                    fileSize: result.fileSize,
+                                    storagePath: result.path,
+                                    storageBucket: result.bucket,
+                                  });
+                                });
+                              }}
+                            />
+                          </label>
                         </div>
                       </div>
                     );
@@ -1289,7 +1579,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#ea580c]" />
-                  <span>Step 7 — Review Application Dossier</span>
+                  <span>Step 7 — Review application</span>
                 </h2>
                 <p className="text-slate-500 text-[11px] mt-0.5">
                   Verify each section prior to submission. Click [ EDIT ] on any row to return and revise details.
@@ -1305,10 +1595,12 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                       Target Institution & Course
                     </span>
                     <p className="font-extrabold text-slate-900 text-xs">
-                      {currentCourse.courseName} — {currentUniv.name}
+                      {currentCourse && currentUniv
+                        ? `${currentCourse.courseName} — ${currentUniv.name}`
+                        : "Not selected"}
                     </p>
                     <p className="text-slate-500 text-[11px]">
-                      Intake: {selectedIntake} • Tuition: {currentCourse.tuitionFee} • Campus: {currentCourse.campus}
+                      Intake: {selectedIntake || "Not selected"} • Tuition: {currentCourse?.tuitionFee || "—"} • Campus: {currentCourse?.campus || "—"}
                     </p>
                   </div>
                   <button
@@ -1409,7 +1701,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                   </span>
                 </label>
                 <p className="text-[11px] text-slate-500 pl-6">
-                  Submission sends your dossier directly to the Dakshinvedha Abroad Admissions Department for compliance vetting and university portal transmission.
+                  Submission sends your application to the Dakshinvedha Abroad admissions team.
                 </p>
               </div>
             </div>
@@ -1426,7 +1718,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
               <div className="space-y-1">
                 <span className="text-xs font-bold text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
-                  Dossier Successfully Transmitted
+                  Application submitted
                 </span>
                 <h2 className="text-2xl font-black text-slate-900 mt-2">
                   Application Submitted Successfully
@@ -1441,16 +1733,16 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                   <span className="text-slate-500 font-medium">Application ID:</span>
                   <span className="font-mono font-bold text-[#ea580c] text-sm">
-                    {submittedApp?.camsId || "DV-APP-2026-89410"}
+                    {submittedApp?.camsId || "Pending"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">University:</span>
-                  <strong className="text-slate-900">{currentUniv.name}</strong>
+                  <strong className="text-slate-900">{currentUniv?.name || "Not selected"}</strong>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Course:</span>
-                  <strong className="text-slate-900">{currentCourse.courseName}</strong>
+                  <strong className="text-slate-900">{currentCourse?.courseName || "Not selected"}</strong>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Intake:</span>
@@ -1503,6 +1795,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
             </button>
 
             <div className="flex items-center gap-2">
+              {selectionError && <p className="max-w-xs text-[11px] font-semibold text-rose-700">{selectionError}</p>}
               {currentStep > 1 && (
                 <button
                   type="button"
@@ -1517,7 +1810,14 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
               {currentStep < 7 && (
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(currentStep + 1)}
+                  onClick={() => {
+                    if (!stepFilled(currentStep)) {
+                      setSelectionError(stepGap(currentStep));
+                      return;
+                    }
+                    setSelectionError(null);
+                    setCurrentStep(currentStep + 1);
+                  }}
                   className="h-11 px-6 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-[10px] shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-[0.98] transition-all"
                 >
                   <span>Continue</span>
@@ -1556,7 +1856,9 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
           >
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <h3 className="font-extrabold text-base text-slate-900">Add Education Qualification</h3>
+                <h3 className="font-extrabold text-base text-slate-900">
+                  {editingEduId ? "Edit Education Qualification" : "Add Education Qualification"}
+                </h3>
                 <p className="text-slate-500 text-[11px]">Enter your degree, institution, and exact graduation years.</p>
               </div>
               <button
@@ -1738,7 +2040,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                 type="submit"
                 className="h-10 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg font-semibold text-xs shadow-xs cursor-pointer active:scale-[0.98] transition-all"
               >
-                Save Qualification
+                {editingEduId ? "Save Changes" : "Save Qualification"}
               </button>
             </div>
           </form>

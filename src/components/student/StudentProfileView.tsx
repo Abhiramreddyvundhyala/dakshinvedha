@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import { usePlatform } from "@/context/PlatformContext";
-import { DocumentCategoryType, EducationLevelType } from "@/types";
+import { StoredFileButton } from "@/components/shared/StoredFileButton";
+import { STORAGE_BUCKETS, acceptFor, uploadStudentFile } from "@/lib/storage";
+import { DocumentCategoryType, EducationLevelType, EducationQualification } from "@/types";
 import {
   User,
   ShieldCheck,
@@ -11,6 +13,7 @@ import {
   FileText,
   Upload,
   Trash2,
+  Pencil,
   Plus,
   AlertTriangle,
   CheckCircle2,
@@ -28,6 +31,7 @@ export const StudentProfileView: React.FC = () => {
     activeStudent,
     updateActiveStudentProfile,
     addEducation,
+    updateEducation,
     deleteEducation,
     uploadDocument,
     deleteDocument,
@@ -37,47 +41,106 @@ export const StudentProfileView: React.FC = () => {
   const [profileTab, setProfileTab] = useState<
     "personal" | "education" | "tests" | "preferences" | "documents"
   >("documents");
+  const [uploadingCat, setUploadingCat] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const pickDocument = async (category: DocumentCategoryType, file: File) => {
+    setUploadError(null);
+    setUploadingCat(category);
+    const result = await uploadStudentFile(file, category);
+    setUploadingCat(null);
+    if (!result.ok) {
+      setUploadError(result.error);
+      return;
+    }
+    uploadDocument({
+      category,
+      title: category,
+      fileName: result.fileName,
+      fileSize: result.fileSize,
+      storagePath: result.path,
+      storageBucket: result.bucket,
+    });
+  };
 
   // Add Qualification submodal state
   const [showAddEdu, setShowAddEdu] = useState(false);
+  const [editingEduId, setEditingEduId] = useState<string | null>(null);
   const [eduLevel, setEduLevel] = useState<EducationLevelType>("Bachelor");
   const [degreeName, setDegreeName] = useState("");
   const [institution, setInstitution] = useState("");
   const [board, setBoard] = useState("");
   const [stream, setStream] = useState("MPC");
   const [score, setScore] = useState("");
-  const [startYear, setStartYear] = useState("2021");
-  const [passYear, setPassYear] = useState("2025");
-  const [engMarks, setEngMarks] = useState("82");
+  const [startYear, setStartYear] = useState("");
+  const [passYear, setPassYear] = useState("");
+  const [engMarks, setEngMarks] = useState("");
   const [maxEngMarks, setMaxEngMarks] = useState("100");
 
   if (!activeStudent) {
     return <div className="p-8 text-center text-slate-500">No active student profile found.</div>;
   }
 
+  const resetEduForm = () => {
+    setEditingEduId(null);
+    setEduLevel("Bachelor");
+    setDegreeName("");
+    setInstitution("");
+    setBoard("");
+    setStream("MPC");
+    setScore("");
+    setStartYear("");
+    setPassYear("");
+    setEngMarks("");
+    setMaxEngMarks("100");
+  };
+
+  const openAddEdu = () => {
+    resetEduForm();
+    setShowAddEdu(true);
+  };
+
+  const openEditEdu = (item: EducationQualification) => {
+    setEditingEduId(item.id);
+    setEduLevel(item.level);
+    setDegreeName(item.degree || "");
+    setInstitution(item.institutionName || "");
+    setBoard(item.boardOrUniversity || "");
+    setStream(item.stream || "MPC");
+    setScore(item.percentageOrCgpa || "");
+    setStartYear(item.startYear || "");
+    setPassYear(item.passOutYear || "");
+    setEngMarks(item.englishMarks || "");
+    setMaxEngMarks(item.maxEnglishMarks || "100");
+    setShowAddEdu(true);
+  };
+
   const handleSaveEdu = (e: React.FormEvent) => {
     e.preventDefault();
-    addEducation({
+    const payload = {
       level: eduLevel,
-      degree: degreeName || (eduLevel === "Bachelor" ? "Bachelor's Degree" : eduLevel === "Master" ? "Master's Degree" : eduLevel),
+      degree: degreeName.trim(),
       institutionName: institution.trim(),
       boardOrUniversity: board.trim(),
       stream: eduLevel === "12th" ? stream : undefined,
       percentageOrCgpa: score.trim(),
       startYear: startYear.trim(),
       passOutYear: passYear.trim(),
-      englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? engMarks : undefined,
-      maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? maxEngMarks : undefined,
-    });
-    // Reset form
-    setDegreeName("");
-    setInstitution("");
-    setBoard("");
-    setScore("");
-    setStartYear("2021");
-    setPassYear("2025");
+      englishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? engMarks.trim() : undefined,
+      maxEnglishMarks: eduLevel === "12th" || eduLevel === "Diploma" ? maxEngMarks.trim() : undefined,
+    };
+    if (editingEduId) updateEducation(editingEduId, payload);
+    else addEducation(payload);
     setShowAddEdu(false);
+    resetEduForm();
   };
+
+  const englishRecord =
+    activeStudent.education.find((item) => item.level === "12th") ||
+    activeStudent.education.find((item) => item.level === "Diploma");
+  const englishLabel = englishRecord?.englishMarks
+    ? `${englishRecord.englishMarks} / ${englishRecord.maxEnglishMarks || 100}`
+    : "Not added";
 
   const documentCategories: DocumentCategoryType[] = [
     "Passport",
@@ -188,6 +251,7 @@ export const StudentProfileView: React.FC = () => {
               </p>
             </div>
           </div>
+          {uploadError && <p className="text-xs font-semibold text-rose-700">{uploadError}</p>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {documentCategories.map((cat) => {
@@ -255,18 +319,23 @@ export const StudentProfileView: React.FC = () => {
 
                   {/* Actions: Upload, Replace, Delete (Refined 40px Secondary Button) */}
                   <div className="flex items-center gap-2 pt-3 border-t border-[#F0EEE9]">
-                    <button
-                      onClick={() =>
-                        uploadDocument({
-                          category: cat,
-                          title: cat,
-                          fileName: `${cat.replace(/[\s/]+/g, "_")}_${activeStudent.firstName}.pdf`,
-                        })
-                      }
-                      className="flex-1 h-10 px-4 bg-white hover:bg-slate-50 border border-[#E7E5E0] hover:border-slate-300 rounded-lg text-xs font-semibold text-slate-700 transition-all duration-150 cursor-pointer text-center active:scale-[0.98] shadow-xs flex items-center justify-center"
-                    >
-                      {existingDoc ? "REPLACE" : "UPLOAD"}
-                    </button>
+                    {existingDoc?.storagePath && (
+                      <StoredFileButton bucket={existingDoc.storageBucket || STORAGE_BUCKETS.student} path={existingDoc.storagePath} />
+                    )}
+                    <label className="flex-1 h-10 px-4 bg-white hover:bg-slate-50 border border-[#E7E5E0] hover:border-slate-300 rounded-lg text-xs font-semibold text-slate-700 transition-all duration-150 cursor-pointer text-center active:scale-[0.98] shadow-xs flex items-center justify-center">
+                      {uploadingCat === cat ? "UPLOADING..." : existingDoc ? "REPLACE" : "UPLOAD"}
+                      <input
+                        type="file"
+                        accept={acceptFor(cat)}
+                        className="sr-only"
+                        disabled={uploadingCat === cat}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          event.target.value = "";
+                          if (file) void pickDocument(cat, file);
+                        }}
+                      />
+                    </label>
                     {existingDoc && (
                       <button
                         onClick={() => deleteDocument(existingDoc.id)}
@@ -294,7 +363,7 @@ export const StudentProfileView: React.FC = () => {
               Education Qualifications
             </h2>
             <button
-              onClick={() => setShowAddEdu(true)}
+              onClick={openAddEdu}
               className="h-10 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -328,13 +397,24 @@ export const StudentProfileView: React.FC = () => {
                     {q.englishMarks && ` • English Marks: ${q.englishMarks}/${q.maxEnglishMarks || 100}`}
                   </p>
                 </div>
-                <button
-                  onClick={() => deleteEducation(q.id)}
-                  className="p-2 text-slate-400 hover:text-rose-600 self-end sm:self-center cursor-pointer"
-                  title="Remove Qualification"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 self-end sm:self-center">
+                  <button
+                    type="button"
+                    onClick={() => openEditEdu(q)}
+                    className="p-2 text-slate-400 hover:text-orange-700 cursor-pointer"
+                    title="Edit qualification"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteEducation(q.id)}
+                    className="p-2 text-slate-400 hover:text-rose-600 cursor-pointer"
+                    title="Remove Qualification"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -405,7 +485,7 @@ export const StudentProfileView: React.FC = () => {
           <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl space-y-1">
             <span className="font-bold text-orange-900 text-xs">Academic English Standard</span>
             <p className="text-slate-800">
-              12th / Intermediate English Marks: <strong>82 / 100</strong> (Eligible for English Waiver)
+              12th / Intermediate English Marks: <strong>{englishLabel}</strong>
             </p>
           </div>
 
@@ -480,7 +560,9 @@ export const StudentProfileView: React.FC = () => {
             className="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 text-xs"
           >
             <div className="flex items-center justify-between border-b pb-2">
-              <h3 className="font-black text-sm text-slate-900">Add Education Qualification</h3>
+              <h3 className="font-black text-sm text-slate-900">
+                {editingEduId ? "Edit Education Qualification" : "Add Education Qualification"}
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowAddEdu(false)}
@@ -632,7 +714,7 @@ export const StudentProfileView: React.FC = () => {
                 type="submit"
                 className="h-10 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer active:scale-[0.98] transition-all"
               >
-                Save Qualification
+                {editingEduId ? "Save Changes" : "Save Qualification"}
               </button>
             </div>
           </form>
