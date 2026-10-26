@@ -139,8 +139,8 @@ export const URMContactView: React.FC = () => {
               <div className="space-y-3.5">
                 {/* University Logo & University Name */}
                 <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-xl flex items-center justify-center shrink-0">
-                    {u.logo}
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-sm font-black text-slate-700 flex items-center justify-center shrink-0">
+                    {u.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-extrabold text-sm text-slate-900 leading-snug line-clamp-1">

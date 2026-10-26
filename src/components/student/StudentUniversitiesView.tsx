@@ -281,9 +281,7 @@ export const StudentUniversitiesView: React.FC<StudentUniversitiesViewProps> = (
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-                    {/* Logo & Country Flag */}
-                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl shadow-sm flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                      <span>{univ.logo}</span>
+                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl shadow-sm text-xs font-bold text-slate-900">
                       <span>{univ.country}</span>
                     </div>
 

@@ -119,25 +119,14 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent" />
 
-          {/* Logo & City Overlay */}
-          <div className="absolute bottom-6 left-6 right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-white">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-xl flex items-center justify-center text-3xl sm:text-4xl shrink-0 border-2 border-white">
-                {university.logo}
-              </div>
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-orange-300">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>{university.city}, {university.country}</span>
-                </div>
-                <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white mt-0.5">
-                  {university.name}
-                </h1>
-              </div>
+          <div className="absolute bottom-6 left-6 right-6 text-white">
+            <div className="flex items-center gap-2 text-xs font-bold text-orange-300">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{university.city}, {university.country}</span>
             </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-            </div>
+            <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white mt-0.5">
+              {university.name}
+            </h1>
           </div>
         </div>
 

@@ -683,7 +683,6 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                       <div className="w-full h-full flex items-center justify-center text-3xl font-black text-orange-600">{u.name.charAt(0)}</div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent" />
-                    <span className="absolute top-2 left-2 text-2xl">{u.logo}</span>
                     <div className="absolute bottom-2 left-3 right-3 text-white">
                       <p className="font-bold text-sm truncate">{u.name}</p>
                       <p className="text-[11px] text-slate-300">{u.city}, {u.country}</p>

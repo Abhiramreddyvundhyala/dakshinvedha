@@ -208,7 +208,7 @@ export const StudentApplicationTrackingModal: React.FC<StudentApplicationTrackin
               <div className="flex items-center justify-between border-b border-orange-200/80 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xl shadow-xs">
-                    {application.university.logo}
+                    {application.university.name.charAt(0)}
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
