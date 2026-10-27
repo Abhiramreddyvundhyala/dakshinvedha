@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   if (smsRequired && smsCode.length !== 6) {
     return Response.json({ error: "Enter the 6-digit SMS verification code." }, { status: 400 });
   }
-  const smsOk = smsRequired ? await verifySmsOtp(challenge.smsSessionId, smsCode) : true;
+  const smsOk = smsRequired ? await verifySmsOtp(challenge.smsSessionId, smsCode, ten) : true;
   const emailOk = hashesMatch(challenge.emailOtpHash, hashOtp(emailCode, challenge.id));
   if (!smsOk || !emailOk) {
     await patchChallenge(challenge.id, { attempts: challenge.attempts + 1 });

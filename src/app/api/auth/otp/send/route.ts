@@ -4,13 +4,15 @@ import {
   clientIp,
   createChallenge,
   displayPhone,
+  emailOtpReady,
+  emailOtpSetupError,
   hashOtp,
   indiaTenDigit,
-  resendKey,
   sendEmailOtp,
   sendSmsOtp,
   sixDigitCode,
-  twoFactorKey,
+  smsOtpSetupError,
+  verifyNowConfigured,
 } from "@/lib/otp";
 
 export async function POST(request: Request) {
@@ -26,30 +28,17 @@ export async function POST(request: Request) {
   if (!email.includes("@") || !ten) {
     return Response.json({ error: "A valid email and 10-digit Indian mobile number are required." }, { status: 400 });
   }
-  if (!resendKey()) {
-    return Response.json(
-      {
-        error: "Email OTP is not configured. Add RESEND_API_KEY to .env.local, then restart the app.",
-      },
-      { status: 503 }
-    );
+  if (!emailOtpReady()) {
+    return Response.json({ error: emailOtpSetupError() }, { status: 503 });
+  }
+  if (!verifyNowConfigured()) {
+    return Response.json({ error: smsOtpSetupError() }, { status: 503 });
   }
 
   const ip = clientIp(request);
-  const allowed = assertSendAllowed([`ip:${ip}`, `email:${email}`, `phone:${ten}`]);
+  const allowed = await assertSendAllowed([`ip:${ip}`, `email:${email}`, `phone:${ten}`]);
   if (!allowed.ok) {
     return Response.json({ error: allowed.error }, { status: allowed.status });
-  }
-
-  let smsSessionId = "";
-  let smsSent = false;
-  if (twoFactorKey()) {
-    const sms = await sendSmsOtp(ten);
-    if (!sms.ok) {
-      return Response.json({ error: sms.error }, { status: 502 });
-    }
-    smsSessionId = sms.sessionId;
-    smsSent = true;
   }
 
   const challengeId = randomUUID();
@@ -58,14 +47,19 @@ export async function POST(request: Request) {
   if (!emailSend.ok) {
     return Response.json({ error: emailSend.error }, { status: 502 });
   }
+  const sms = await sendSmsOtp(ten);
+  if (!sms.ok) {
+    return Response.json({ error: sms.error }, { status: 502 });
+  }
 
-  const challenge = await createChallenge({
+  const stored = await createChallenge({
     id: challengeId,
     email,
     phone: displayPhone(ten),
     emailOtpHash: hashOtp(emailCode, challengeId),
-    smsSessionId,
+    smsSessionId: sms.sessionId,
   });
+  if (!stored.ok) return Response.json({ error: stored.error }, { status: 500 });
 
-  return Response.json({ ok: true, challengeId: challenge.id, cooldown: 45, smsSent });
+  return Response.json({ ok: true, challengeId: stored.challenge.id, cooldown: 45, smsSent: true });
 }

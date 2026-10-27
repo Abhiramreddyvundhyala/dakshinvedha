@@ -58,8 +58,14 @@ export default function UnifiedLoginPage() {
   const [emailAddress, setEmailAddress] = useState("");
   const [studentPassword, setStudentPassword] = useState("");
   const [showStudentPassword, setShowStudentPassword] = useState(false);
-
-  // OTP send/verify routes stay in /api/auth/otp for later. Signup skips them for now.
+  const [channels, setChannels] = useState({ emailOtp: false, smsOtp: false });
+  const [loginStep, setLoginStep] = useState<"password" | "otp">("password");
+  const [loginChallengeId, setLoginChallengeId] = useState("");
+  const [loginCode, setLoginCode] = useState("");
+  const [signupStep, setSignupStep] = useState<"details" | "otp">("details");
+  const [signupChallengeId, setSignupChallengeId] = useState("");
+  const [smsCode, setSmsCode] = useState("");
+  const [emailCode, setEmailCode] = useState("");
 
   // Check if session is already active
   useEffect(() => {
@@ -111,6 +117,27 @@ export default function UnifiedLoginPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+    fetch("/api/auth/otp/status")
+      .then((response) => response.json())
+      .then((payload: { emailOtp?: boolean; smsOtp?: boolean }) => {
+        if (!ignore) setChannels({ emailOtp: Boolean(payload.emailOtp), smsOtp: Boolean(payload.smsOtp) });
+      })
+      .catch(() => undefined);
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    setLoginStep("password");
+    setSignupStep("details");
+    setLoginCode("");
+    setSmsCode("");
+    setEmailCode("");
+  }, [authMode]);
+
   /* =========================================================
      1. UNIFIED LOGIN HANDLER (STUDENT, B2B, AGENT, ADMIN)
      ========================================================= */
@@ -118,7 +145,7 @@ export default function UnifiedLoginPage() {
     e.preventDefault();
     setError(null);
 
-    const cleanEmail = email.trim();
+    const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) {
       setError("Please enter your registered email address.");
       return;
@@ -135,12 +162,64 @@ export default function UnifiedLoginPage() {
     }
 
     setIsLoading(true);
-    const signedIn = await supabase.auth.signInWithPassword({ email: cleanEmail.toLowerCase(), password });
-    if (signedIn.error) {
+    if (channels.emailOtp && loginStep === "password") {
+      const response = await fetch("/api/auth/otp/login/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string; challengeId?: string };
       setIsLoading(false);
-      setError("Those credentials were not accepted. Use the email and password issued for this portal.");
-      setRedirectNotice(null);
+      if (!response.ok || !payload.challengeId) {
+        setError(payload.error || "Could not send the login code.");
+        return;
+      }
+      setLoginChallengeId(payload.challengeId);
+      setLoginCode("");
+      setLoginStep("otp");
+      setInfo(`A 6-digit code was sent to ${cleanEmail}.`);
       return;
+    }
+
+    if (channels.emailOtp && loginStep === "otp") {
+      const code = loginCode.replace(/\D/g, "");
+      if (code.length !== 6) {
+        setIsLoading(false);
+        setError("Enter the 6-digit code from your email.");
+        return;
+      }
+      const response = await fetch("/api/auth/otp/login/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId: loginChallengeId, email: cleanEmail, password, emailCode: code }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        accessToken?: string;
+        refreshToken?: string;
+      };
+      if (!response.ok || !payload.accessToken || !payload.refreshToken) {
+        setIsLoading(false);
+        setError(payload.error || "Could not verify the login code.");
+        return;
+      }
+      const session = await supabase.auth.setSession({
+        access_token: payload.accessToken,
+        refresh_token: payload.refreshToken,
+      });
+      if (session.error) {
+        setIsLoading(false);
+        setError(session.error.message);
+        return;
+      }
+    } else {
+      const signedIn = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      if (signedIn.error) {
+        setIsLoading(false);
+        setError("Those credentials were not accepted. Use the email and password issued for this portal.");
+        setRedirectNotice(null);
+        return;
+      }
     }
 
     const profile = await fetchMyProfile();
@@ -222,6 +301,49 @@ export default function UnifiedLoginPage() {
     const cleanEmail = emailAddress.trim().toLowerCase();
     const cleanName = fullName.trim();
     const fullMobile = mobileNumber.startsWith("+") ? mobileNumber : `+91 ${mobileNumber}`;
+    const otpRequired = channels.emailOtp && channels.smsOtp;
+
+    if (otpRequired && signupStep === "details") {
+      const response = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, phone: fullMobile, fullName: cleanName }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string; challengeId?: string };
+      setIsLoading(false);
+      if (!response.ok || !payload.challengeId) {
+        setError(payload.error || "Could not send the verification codes.");
+        return;
+      }
+      setSignupChallengeId(payload.challengeId);
+      setSmsCode("");
+      setEmailCode("");
+      setSignupStep("otp");
+      setInfo("Enter the SMS code and the email code. Each code expires in 10 minutes.");
+      return;
+    }
+
+    let otpTicket = "";
+    if (otpRequired && signupStep === "otp") {
+      const response = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          challengeId: signupChallengeId,
+          email: cleanEmail,
+          phone: fullMobile,
+          smsCode: smsCode.replace(/\D/g, ""),
+          emailCode: emailCode.replace(/\D/g, ""),
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string; otpTicket?: string };
+      if (!response.ok || !payload.otpTicket) {
+        setIsLoading(false);
+        setError(payload.error || "Could not verify the codes.");
+        return;
+      }
+      otpTicket = payload.otpTicket;
+    }
 
     const response = await fetch("/api/auth/signup", {
       method: "POST",
@@ -232,6 +354,7 @@ export default function UnifiedLoginPage() {
         password: studentPassword.trim(),
         fullName: cleanName,
         phone: fullMobile,
+        otpTicket,
       }),
     });
     const payload = (await response.json().catch(() => ({}))) as { error?: string };
@@ -459,7 +582,11 @@ export default function UnifiedLoginPage() {
                     Log In
                   </h2>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Enter your email address and password to access your dashboard.
+                    {loginStep === "otp"
+                      ? `Enter the 6-digit code sent to ${email.trim().toLowerCase()}.`
+                      : channels.emailOtp
+                        ? "Enter your email and password. We will email a login code before opening the dashboard."
+                        : "Enter your email address and password to access your dashboard."}
                   </p>
                 </div>
 
@@ -484,8 +611,27 @@ export default function UnifiedLoginPage() {
                     />
                   </div>
 
+                  {loginStep === "otp" && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Email code</label>
+                      <input
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        required
+                        value={loginCode}
+                        onChange={(e) => {
+                          setLoginCode(e.target.value.replace(/\D/g, "").slice(0, 6));
+                          setError(null);
+                        }}
+                        placeholder="6-digit code"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                      />
+                    </div>
+                  )}
+
                   {/* Password Input */}
-                  <div className="space-y-1.5">
+                  {loginStep === "password" && <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5 text-slate-400" />
@@ -520,10 +666,10 @@ export default function UnifiedLoginPage() {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                  </div>
+                  </div>}
 
                   {/* Remember Me */}
-                  <div className="flex items-center justify-between text-xs text-slate-600 pt-0.5">
+                  {loginStep === "password" && <div className="flex items-center justify-between text-xs text-slate-600 pt-0.5">
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input
                         type="checkbox"
@@ -533,7 +679,7 @@ export default function UnifiedLoginPage() {
                       />
                       <span>Stay signed in on this device</span>
                     </label>
-                  </div>
+                  </div>}
 
                   {/* Submit Button */}
                   <button
@@ -544,15 +690,56 @@ export default function UnifiedLoginPage() {
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Verifying credentials...</span>
+                        <span>{loginStep === "otp" ? "Checking the code..." : "Verifying credentials..."}</span>
                       </>
                     ) : (
                       <>
-                        <span>Log In</span>
+                        <span>{loginStep === "otp" ? "Verify and log in" : channels.emailOtp ? "Send login code" : "Log In"}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
+                  {loginStep === "otp" && (
+                    <div className="flex items-center justify-between text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLoginStep("password");
+                          setLoginCode("");
+                          setInfo(null);
+                          setError(null);
+                        }}
+                        className="font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={async () => {
+                          setError(null);
+                          setIsLoading(true);
+                          const response = await fetch("/api/auth/otp/login/send", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+                          });
+                          const payload = (await response.json().catch(() => ({}))) as { error?: string; challengeId?: string };
+                          setIsLoading(false);
+                          if (!response.ok || !payload.challengeId) {
+                            setError(payload.error || "Could not send a new login code.");
+                            return;
+                          }
+                          setLoginChallengeId(payload.challengeId);
+                          setLoginCode("");
+                          setInfo(`A new code was sent to ${email.trim().toLowerCase()}.`);
+                        }}
+                        className="font-bold text-orange-600 hover:text-orange-700 cursor-pointer"
+                      >
+                        Resend code
+                      </button>
+                    </div>
+                  )}
                 </form>
 
                 <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-100 space-y-2">
@@ -668,10 +855,47 @@ export default function UnifiedLoginPage() {
                         Create Account
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        Register with your name, mobile, email, and a password.
+                        {signupStep === "otp"
+                          ? "Enter the SMS code and the email code to create the account."
+                          : channels.emailOtp && channels.smsOtp
+                            ? "We will text a code to your mobile and email a code before creating the account."
+                            : "Register with your name, mobile, email, and a password."}
                       </p>
                     </div>
 
+                    {signupStep === "otp" && (
+                      <div className="space-y-3">
+                        <p className="text-xs text-slate-600">Codes sent to +91 {mobileNumber.replace(/\D/g, "").slice(-10)} and {emailAddress.trim().toLowerCase()}.</p>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-700">SMS code</label>
+                          <input
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={6}
+                            required
+                            value={smsCode}
+                            onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            placeholder="6-digit SMS code"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-700">Email code</label>
+                          <input
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={6}
+                            required
+                            value={emailCode}
+                            onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            placeholder="6-digit email code"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {signupStep === "details" && <>
                     {/* Name */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
@@ -717,7 +941,7 @@ export default function UnifiedLoginPage() {
                         />
                       </div>
                       <p className="text-[10px] text-slate-400">
-                        Stored on your student profile. SMS OTP can be turned on later.
+                        {channels.smsOtp ? "A 6-digit SMS code is sent to this number." : "Stored on your student profile."}
                       </p>
                     </div>
 
@@ -743,7 +967,7 @@ export default function UnifiedLoginPage() {
                         className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                       />
                       <p className="text-[10px] text-slate-400">
-                        Used to log in. Email OTP can be turned on later.
+                        {channels.emailOtp ? "A 6-digit email code is sent to this address." : "Used to log in."}
                       </p>
                     </div>
 
@@ -772,6 +996,7 @@ export default function UnifiedLoginPage() {
                         </button>
                       </div>
                     </div>
+                    </>}
 
                     {/* Submit Button */}
                     <button
@@ -782,15 +1007,30 @@ export default function UnifiedLoginPage() {
                       {isLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Creating your account...</span>
+                          <span>{signupStep === "otp" ? "Checking the codes..." : channels.emailOtp && channels.smsOtp ? "Sending codes..." : "Creating your account..."}</span>
                         </>
                       ) : (
                         <>
-                          <span>Create Student Account</span>
+                          <span>{signupStep === "otp" ? "Verify and create account" : channels.emailOtp && channels.smsOtp ? "Send verification codes" : "Create Student Account"}</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
                     </button>
+                    {signupStep === "otp" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSignupStep("details");
+                          setSmsCode("");
+                          setEmailCode("");
+                          setInfo(null);
+                          setError(null);
+                        }}
+                        className="w-full text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+                      >
+                        Back to details
+                      </button>
+                    )}
 
                     <div className="text-center pt-2 text-xs text-slate-500">
                       Already have an account?{" "}

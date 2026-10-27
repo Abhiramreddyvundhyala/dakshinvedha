@@ -1,5 +1,5 @@
 import { createConfirmedUser } from "@/lib/createPortalUser";
-import { indiaTenDigit, patchChallenge, readChallenge, readOtpTicket } from "@/lib/otp";
+import { emailOtpReady, indiaTenDigit, patchChallenge, readChallenge, readOtpTicket, verifyNowConfigured } from "@/lib/otp";
 import { blankStudent, studentToRow } from "@/lib/records";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   }
 
   const ticketValue = (body?.otpTicket || "").trim();
-  if (ticketValue) {
+  if ((emailOtpReady() && verifyNowConfigured()) || ticketValue) {
     const ticket = readOtpTicket(ticketValue);
     if (!ticket || ticket.email !== email || indiaTenDigit(ticket.phone) !== indiaTenDigit(phone)) {
       return Response.json({ error: "Verify the SMS and email codes before creating the account." }, { status: 403 });
@@ -43,7 +43,10 @@ export async function POST(request: Request) {
     if (!challenge || !challenge.verified || challenge.consumed) {
       return Response.json({ error: "Verify the SMS and email codes before creating the account." }, { status: 403 });
     }
-    await patchChallenge(challenge.id, { consumed: true });
+    const consumed = await patchChallenge(challenge.id, { consumed: true });
+    if (!consumed) {
+      return Response.json({ error: "Could not store the verification result." }, { status: 500 });
+    }
   }
 
   const created = await createConfirmedUser(admin, { email, password, fullName, phone });
