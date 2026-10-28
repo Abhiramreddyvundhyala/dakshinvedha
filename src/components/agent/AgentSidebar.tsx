@@ -5,14 +5,15 @@ import {
   LayoutDashboard,
   Building2,
   FileText,
-  GraduationCap,
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Wallet,
 } from "lucide-react";
 import { performLogout } from "@/utils/auth";
+import { BrandMark } from "@/components/brand/BrandMark";
 
-export type AgentNavTab = "dashboard" | "universities" | "applications";
+export type AgentNavTab = "dashboard" | "universities" | "applications" | "commission";
 
 interface AgentSidebarProps {
   currentTab: AgentNavTab;
@@ -24,12 +25,14 @@ interface AgentSidebarProps {
   name: string;
   trackingId: string;
   applicationCount: number;
+  claimableCount: number;
 }
 
 const NAV_ITEMS: { key: AgentNavTab; label: string; icon: React.ElementType }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "universities", label: "Universities & Courses", icon: Building2 },
   { key: "applications", label: "Applications", icon: FileText },
+  { key: "commission", label: "Commission", icon: Wallet },
 ];
 
 export const AgentSidebar: React.FC<AgentSidebarProps> = ({
@@ -42,6 +45,7 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({
   name,
   trackingId,
   applicationCount,
+  claimableCount,
 }) => {
   const compact = collapsed && !mobileOpen;
 
@@ -53,9 +57,7 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({
       style={{ background: "#ffffff", borderRight: "1px solid #E7E5E0" }}
     >
       <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: "1px solid #E7E5E0" }}>
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-white" style={{ background: "#ea580c" }}>
-          <GraduationCap className="w-5 h-5" />
-        </div>
+        <BrandMark className="h-10 w-10 shrink-0" />
         {!compact && (
           <div>
             <p className="text-sm font-bold tracking-tight leading-none" style={{ color: "#0f172a" }}>
@@ -72,7 +74,8 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.key;
-          const showBadge = item.key === "applications" && applicationCount > 0;
+          const badge = item.key === "applications" ? applicationCount : item.key === "commission" ? claimableCount : 0;
+          const showBadge = badge > 0;
           return (
             <button
               key={item.key}
@@ -95,7 +98,7 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({
                   <span className="flex-1 text-left whitespace-nowrap">{item.label}</span>
                   {showBadge && (
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "#fff7ed", color: "#ea580c" }}>
-                      {applicationCount}
+                      {badge}
                     </span>
                   )}
                 </>

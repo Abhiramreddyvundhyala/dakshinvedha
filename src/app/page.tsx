@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import {
-  GraduationCap,
   Mail,
   Lock,
   ArrowRight,
@@ -18,6 +17,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { writeSession } from "@/utils/accounts";
+import { BrandLogo } from "@/components/brand/BrandMark";
 import { getSupabase } from "@/lib/supabase";
 import { fetchMyProfile } from "@/lib/portalDb";
 import { sessionAccount } from "@/lib/records";
@@ -406,18 +406,8 @@ export default function UnifiedLoginPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
           {/* Logo & Platform Name */}
           <div>
-            <div className="inline-flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/25 ring-2 ring-white/10">
-                <GraduationCap className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <span className="text-2xl font-black text-white tracking-tight leading-none block">
-                  Dakshinvedha
-                </span>
-                <span className="text-[11px] text-orange-400 font-extrabold tracking-widest uppercase block mt-1">
-                  ABROAD SOLUTIONS
-                </span>
-              </div>
+            <div className="inline-flex rounded-2xl bg-white p-3 shadow-lg">
+              <BrandLogo className="h-24 w-auto" />
             </div>
           </div>
 
@@ -498,20 +488,8 @@ export default function UnifiedLoginPage() {
       <div className="flex-1 flex items-center justify-center bg-[#f8fafc] px-4 sm:px-8 py-8 overflow-y-auto">
         <div className="w-full max-w-[460px]">
           {/* Mobile Brand Bar */}
-          <div className="lg:hidden mb-6 text-center">
-            <div className="inline-flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-md">
-                <GraduationCap className="w-5 h-5 text-white" />
-              </div>
-              <div className="text-left">
-                <span className="text-lg font-black text-slate-900 tracking-tight leading-none block">
-                  Dakshinvedha
-                </span>
-                <span className="text-[10px] font-extrabold text-orange-600 tracking-wider uppercase block">
-                  ABROAD SOLUTIONS
-                </span>
-              </div>
-            </div>
+          <div className="lg:hidden mb-6 flex justify-center">
+            <BrandLogo className="h-20 w-auto" />
           </div>
 
           {/* AUTHENTICATION CARD */}

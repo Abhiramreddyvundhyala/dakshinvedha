@@ -149,7 +149,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
         passportNumber: hasPassport === "YES" ? passportNumber : undefined,
         passportCountry: hasPassport === "YES" ? passportCountry : undefined,
         expiryDate: hasPassport === "YES" ? passportExpiry : undefined,
-        status: hasPassport === "YES" ? "Verified" : "Passport Pending",
+        status: hasPassport === "YES" ? "Under Review" : "Passport Pending",
       },
     });
   };
@@ -463,6 +463,7 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                 </div>
 
                 {hasPassport === "YES" ? (
+                  <div className="space-y-2">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200">
                     <div>
                       <label className="text-[11px] font-bold text-slate-600">Passport Number</label>
@@ -492,6 +493,10 @@ export const StudentOnboardingWizard: React.FC<StudentOnboardingWizardProps> = (
                         className="w-full mt-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
                       />
                     </div>
+                  </div>
+                  <p className="text-[11px] font-semibold text-sky-800">
+                    This stays under review after you save it. Dakshinvedha admin verifies the passport from the student record.
+                  </p>
                   </div>
                 ) : (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-center gap-2">

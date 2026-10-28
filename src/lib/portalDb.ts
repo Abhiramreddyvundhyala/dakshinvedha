@@ -590,6 +590,29 @@ export async function saveVoucher(voucher: VoucherItem): Promise<string | null> 
   return error ? explain(error.message) : null;
 }
 
+export async function recordCommissionPayout(input: {
+  partnerId?: string;
+  camsId: string;
+  description: string;
+  amount: number;
+}): Promise<string | null> {
+  const supabase = getSupabase();
+  if (!supabase) return SETUP;
+  const row = {
+    partner_id: isUuid(input.partnerId) ? input.partnerId : null,
+    cams_id: input.camsId,
+    description: input.description,
+    credit: input.amount,
+    debit: 0,
+    balance: input.amount,
+  };
+  let result = await supabase.from("commission_ledger").insert(row);
+  if (result.error && /foreign key/i.test(result.error.message)) {
+    result = await supabase.from("commission_ledger").insert({ ...row, cams_id: null, partner_id: null });
+  }
+  return result.error ? explain(result.error.message) : null;
+}
+
 export async function loadLedger(): Promise<{ entries: CommissionLedgerItem[]; error: string | null }> {
   const supabase = getSupabase();
   if (!supabase) return { entries: [], error: SETUP };

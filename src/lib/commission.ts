@@ -38,6 +38,9 @@ export type CommissionFigures = {
   eligible: number;
   expectedLabel: string;
   eligibleLabel: string;
+  tuitionLabel: string;
+  rateLabel: string;
+  amountLabel: string;
   paid: boolean;
   awaiting: boolean;
   status: ApplicationRecord["commission"]["status"];
@@ -45,11 +48,66 @@ export type CommissionFigures = {
   mark: string;
 };
 
+/** "15%", "15", and "0.15" all display as 15%. A blank rate stays unset. */
+export function displayRate(rate: string | undefined): string {
+  const fraction = rateFraction(rate);
+  if (fraction <= 0) return "Not set";
+  const percent = Math.round(fraction * 10000) / 100;
+  return `${percent}%`;
+}
+
+/** Tuition fee, commission percentage, and commission amount for one course. */
+export function courseCommissionQuote(course: RateCourse): {
+  tuitionLabel: string;
+  rateLabel: string;
+  amount: number;
+  amountLabel: string;
+  mark: string;
+} {
+  const mark = currencyMark([course]);
+  const fee = feeNumber(course);
+  const amount = expectedAmount(course);
+  const tuitionLabel = (course.tuitionFee || "").trim() || (fee > 0 ? money(fee, mark) : "Not set");
+  return {
+    tuitionLabel,
+    rateLabel: displayRate(course.commissionRate),
+    amount,
+    amountLabel: money(amount, mark),
+    mark,
+  };
+}
+
+export type ClaimStage = "in-process" | "ready" | "requested" | "claimed";
+
+/** in-process: not placed. ready: partner or agent can claim. requested: with admin. claimed: admin marked it done. */
+export function claimStage(app: ApplicationRecord): ClaimStage {
+  const status = app.commission?.status || "Pending";
+  if (status === "Paid") return "claimed";
+  if (status === "Claimed" || status === "Approved") return "requested";
+  if (app.primaryStatus === "Completed") return "ready";
+  return "in-process";
+}
+
+export function claimStatusLabel(app: ApplicationRecord): string {
+  const stage = claimStage(app);
+  if (stage === "claimed") {
+    return app.commission?.paidDate ? `Claimed done · ${app.commission.paidDate}` : "Claimed done";
+  }
+  if (stage === "requested") {
+    return app.commission?.claimedOn
+      ? `Requested · ${app.commission.claimedOn} · waiting for admin`
+      : "Requested · waiting for admin";
+  }
+  if (stage === "ready") return "Ready to claim";
+  return "In process · claim opens after placement";
+}
+
 export function figures(app: ApplicationRecord): CommissionFigures {
-  const computed = expectedAmount(app.course);
+  const quote = courseCommissionQuote(app.course);
+  const computed = quote.amount;
   const storedExpected = parseMoney(app.commission?.expectedCommission);
   const expected = storedExpected > 0 ? storedExpected : computed;
-  const mark = currencyMark([{ tuitionFee: app.commission?.expectedCommission || app.course?.tuitionFee || "£" }]);
+  const mark = quote.mark || currencyMark([{ tuitionFee: app.commission?.expectedCommission || app.course?.tuitionFee || "£" }]);
   const status = app.commission?.status || "Pending";
   const ready = commissionReady(app.primaryStatus) || status === "Claimed" || status === "Approved" || status === "Paid";
   const storedEligible = parseMoney(app.commission?.eligibleAmount);
@@ -59,6 +117,9 @@ export function figures(app: ApplicationRecord): CommissionFigures {
     eligible,
     expectedLabel: money(expected, mark),
     eligibleLabel: money(eligible, mark),
+    tuitionLabel: quote.tuitionLabel,
+    rateLabel: quote.rateLabel,
+    amountLabel: money(expected, mark),
     paid: status === "Paid",
     awaiting: status === "Claimed" || status === "Approved",
     status,

@@ -9,13 +9,13 @@ import {
   Sparkles,
   ExternalLink,
   ShieldAlert,
-  GraduationCap,
   Menu,
   LogOut,
   DollarSign,
   Headphones,
 } from "lucide-react";
 import { ApplicationRecord } from "@/types";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { performLogout } from "@/utils/auth";
 import { readSessionValue } from "@/utils/accounts";
 import { usePlatform } from "@/context/PlatformContext";
@@ -106,9 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Company Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-[#f97316] flex items-center justify-center text-white shadow-xs">
-            <GraduationCap className="w-5 h-5 text-white" />
-          </div>
+          <BrandMark className="h-10 w-10 shrink-0" />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-base tracking-tight text-slate-900">

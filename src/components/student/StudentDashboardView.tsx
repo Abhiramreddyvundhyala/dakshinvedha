@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Sparkles,
   ChevronRight,
+  XCircle,
 } from "lucide-react";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 import { ImportantNotices } from "@/components/dashboard/ImportantNotices";
@@ -50,6 +51,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   const offersCount = studentApplications.filter(
     (a) => a.primaryStatus.includes("Offer") || a.secondaryStatus.includes("Offer")
   ).length;
+  const rejectedCount = studentApplications.filter((a) => a.primaryStatus === "Closed").length;
 
   const pendingDocsCount = useMemo(() => {
     if (!activeStudent) return 0;
@@ -210,6 +212,25 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <p className="text-[11px] text-amber-700 font-medium mt-1 flex items-center gap-1">
             <span>Upload to speed admission</span>
             <ChevronRight className="w-3 h-3 text-amber-600" />
+          </p>
+        </div>
+
+        <div
+          onClick={onNavigateToApplications}
+          className="bg-white p-5 rounded-xl border border-[#E7E5E0] shadow-xs hover:border-rose-200 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500">Rejected</span>
+            <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center border border-rose-200 group-hover:scale-105 transition-transform">
+              <XCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 font-heading">
+            {rejectedCount}
+          </p>
+          <p className="text-[11px] text-rose-700 font-medium mt-1 flex items-center gap-1">
+            <span>Cancelled or closed</span>
+            <ChevronRight className="w-3 h-3 text-rose-600" />
           </p>
         </div>
 

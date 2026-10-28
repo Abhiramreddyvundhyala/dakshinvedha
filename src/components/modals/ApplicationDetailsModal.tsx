@@ -26,6 +26,7 @@ import {
 import { StoredFileButton } from "@/components/shared/StoredFileButton";
 import { ApplicationRecord } from "@/types";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
+import { claimStatusLabel, figures } from "@/lib/commission";
 
 interface ApplicationDetailsModalProps {
   application: ApplicationRecord | null;
@@ -40,6 +41,8 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
   const [notes, setNotes] = useState(application?.notes || []);
 
   if (!application) return null;
+
+  const commission = figures(application);
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,9 +279,11 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             </div>
 
             <div className="p-4 bg-orange-50/60 border border-orange-200 rounded-xl space-y-1.5">
-              <span className="text-orange-700 uppercase font-bold text-[10px]">10. Commission Status</span>
-              <p className="font-bold text-orange-950 text-sm">{application.commission.amount}</p>
-              <p className="text-slate-600">Status: <strong className="text-slate-800">{application.commission.status}</strong></p>
+              <span className="text-orange-700 uppercase font-bold text-[10px]">10. Commission</span>
+              <p className="text-slate-600">Tuition fee: <strong className="text-slate-900">{commission.tuitionLabel}</strong></p>
+              <p className="text-slate-600">Commission percentage: <strong className="text-orange-700">{commission.rateLabel}</strong></p>
+              <p className="text-slate-600">Commission amount: <strong className="text-slate-900">{commission.amountLabel}</strong></p>
+              <p className="text-slate-600">Status: <strong className="text-slate-800">{claimStatusLabel(application)}</strong></p>
             </div>
           </div>
 

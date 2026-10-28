@@ -36,12 +36,13 @@ import {
   loadPortalBundle,
   portalSnapshot,
   provisionAccount,
+  recordCommissionPayout,
   removeAccount,
   saveTeamFeatures,
   updateAccountStatus,
 } from "@/lib/portalDb";
 import { computeProfileCompletion } from "@/lib/profileCompletion";
-import { figures, freshCommission, withCommission } from "@/lib/commission";
+import { commissionChannel, figures, freshCommission, partnerApplications, withCommission } from "@/lib/commission";
 import { isUuid } from "@/lib/records";
 import { APPLICATION_STAGES, buildTimeline, buildTimelineAt, createTrackingId } from "@/utils/tracking";
 import {
@@ -115,6 +116,7 @@ interface PlatformContextType {
 
   // Super Admin Document Verifications
   verifyStudentDocument: (studentId: string, docId: string) => void;
+  verifyStudentPassport: (studentId: string) => void;
   rejectStudentDocument: (studentId: string, docId: string, reason: string) => void;
   requestDocumentReupload: (studentId: string, docId: string, reason: string) => void;
 
@@ -176,7 +178,8 @@ interface PlatformContextType {
   removeB2BTeamMember: (partnerId: string, memberId: string) => Promise<void>;
   updateB2BTeamMember: (partnerId: string, memberId: string, updates: Partial<B2BTeamMember>) => void;
   recordApplication: (application: ApplicationRecord) => void;
-  claimCommission: (camsId: string) => void;
+  /** Sends a claim request to admin. Returns an error message, or null when the request is saved. */
+  claimCommission: (camsId: string) => string | null;
   settleCommission: (camsId: string, next: "Approved" | "Paid") => void;
   syncError: string | null;
 
@@ -634,7 +637,19 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
           } else {
             updatedDocs.push(newDoc);
           }
-          const updatedStudent = { ...s, documents: updatedDocs };
+          const passportUploaded = doc.category === "Passport";
+          const updatedStudent = {
+            ...s,
+            documents: updatedDocs,
+            passport: passportUploaded
+              ? {
+                  ...s.passport,
+                  hasPassport: "YES" as const,
+                  passportFile: doc.storagePath || s.passport.passportFile,
+                  status: s.passport.status === "Verified" ? ("Verified" as const) : ("Under Review" as const),
+                }
+              : s.passport,
+          };
           updatedStudent.profileCompletion = computeProfileCompletion(updatedStudent);
           return updatedStudent;
         }
@@ -841,7 +856,14 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       prev.map((s) => {
         if (s.id === studentId || s.studentId === studentId) {
           const updatedDocs = s.documents.map((d) => (d.id === docId ? { ...d, status: "Verified" as const, rejectionReason: undefined } : d));
-          return { ...s, documents: updatedDocs };
+          const verifiedPassport = updatedDocs.some((d) => d.id === docId && d.category === "Passport");
+          return {
+            ...s,
+            documents: updatedDocs,
+            passport: verifiedPassport
+              ? { ...s.passport, hasPassport: "YES" as const, status: "Verified" as const }
+              : s.passport,
+          };
         }
         return s;
       })
@@ -871,6 +893,41 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       studentId,
     };
     setNotifications((prev) => [studentNotif, ...prev]);
+  };
+
+  const verifyStudentPassport = (studentId: string) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId && s.studentId !== studentId) return s;
+        const passportFile = s.documents.find((d) => d.category === "Passport" && d.storagePath);
+        const hasDetails = Boolean(s.passport.passportNumber || s.passport.passportFile || passportFile);
+        if (!hasDetails) return s;
+        return {
+          ...s,
+          passport: {
+            ...s.passport,
+            hasPassport: "YES",
+            passportFile: s.passport.passportFile || passportFile?.storagePath,
+            status: "Verified",
+          },
+          documents: s.documents.map((d) =>
+            d.category === "Passport" ? { ...d, status: "Verified" as const, rejectionReason: undefined } : d
+          ),
+        };
+      })
+    );
+    setNotifications((prev) => [
+      {
+        id: `notif-passport-${Date.now()}`,
+        title: "Passport Verified",
+        message: "Your passport details have been verified by the Admissions Team.",
+        timeAgo: "Just now",
+        type: "document",
+        isRead: false,
+        studentId,
+      },
+      ...prev,
+    ]);
   };
 
   const rejectStudentDocument = (studentId: string, docId: string, reason: string) => {
@@ -1162,7 +1219,10 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
             merged.bankDetails.accountNumber
           );
           merged.profileCompleted = isComplete;
-          if (isComplete && merged.accountStatus === "Pending Profile") {
+          if (isComplete && merged.verificationStatus !== "Verified" && merged.verificationStatus !== "Rejected") {
+            merged.verificationStatus = "Under Review";
+            if (merged.accountStatus !== "Suspended") merged.accountStatus = "Under Verification";
+          } else if (isComplete && merged.accountStatus === "Pending Profile") {
             merged.accountStatus = "Under Verification";
           }
           return merged;
@@ -1338,53 +1398,111 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     setApplications((prev) => [application, ...prev.filter((item) => item.camsId !== application.camsId)]);
   };
 
-  const claimCommission = (camsId: string) => {
+  const ownsCommission = (app: ApplicationRecord) => {
+    if (portalRole === "partner" || portalRole === "team") {
+      if (!activeB2BPartner) return false;
+      return partnerApplications([app], activeB2BPartner).length === 1;
+    }
+    if (portalRole === "agent") {
+      if (commissionChannel(app) !== "agent") return false;
+      const trackingId = readSessionValue("dakshin_tracking_id") || "";
+      const accountId = readSessionValue("dakshin_account_id") || "";
+      const name = (readSessionValue("dakshin_user_name") || "").trim().toLowerCase();
+      if (trackingId && app.agentTrackingId === trackingId) return true;
+      if (accountId && app.agentProfileId === accountId) return true;
+      return Boolean(name) && app.counselorName.trim().toLowerCase() === name;
+    }
+    return false;
+  };
+
+  const claimCommission = (camsId: string): string | null => {
+    if (portalRole !== "partner" && portalRole !== "team" && portalRole !== "agent") {
+      return "Only a B2B partner or an agent can claim commission.";
+    }
+    const app = applications.find((item) => item.camsId === camsId);
+    if (!app) return "That application was not found.";
+    if (commissionChannel(app) === "direct") return "A student self-apply does not earn commission.";
+    if (!ownsCommission(app)) return "This file is not yours to claim.";
+    const prepared = withCommission(app);
+    const snapshot = figures(prepared);
+    if (prepared.commission.status === "Paid") return "This commission is already claimed.";
+    if (prepared.commission.status === "Claimed" || prepared.commission.status === "Approved") {
+      return "This claim is already with admin.";
+    }
+    if (!snapshot.ready) return "Claim opens after admin marks the student placed.";
+    if (snapshot.eligible <= 0) return "This course has no commission amount.";
+    const today = new Date().toISOString().slice(0, 10);
+    const claimant = readSessionValue("dakshin_user_name") || (portalRole === "agent" ? "Agent" : "B2B partner");
+    const noticeId = `notif-claim-${camsId}-${today}`;
     setApplications((prev) =>
-      prev.map((app) => {
-        if (app.camsId !== camsId) return app;
-        const prepared = withCommission(app);
-        const snapshot = figures(prepared);
-        if (prepared.commission.status !== "Pending" || !snapshot.ready || snapshot.eligible <= 0) return app;
+      prev.map((item) => {
+        if (item.camsId !== camsId) return item;
+        const nextPrepared = withCommission(item);
+        const nextSnapshot = figures(nextPrepared);
+        if (nextPrepared.commission.status !== "Pending" || !nextSnapshot.ready || nextSnapshot.eligible <= 0) return item;
         return {
-          ...prepared,
+          ...nextPrepared,
+          secondaryStatus: "Commission Processing",
+          dateModified: today,
           commission: {
-            ...prepared.commission,
+            ...nextPrepared.commission,
             status: "Claimed",
-            amount: snapshot.eligibleLabel,
-            eligibleAmount: snapshot.eligibleLabel,
+            claimedOn: today,
+            amount: nextSnapshot.eligibleLabel,
+            eligibleAmount: nextSnapshot.eligibleLabel,
           },
-          secondaryStatus: prepared.secondaryStatus === "Commission Paid" ? prepared.secondaryStatus : "Commission Pending",
         };
       })
     );
+    setNotifications((prev) => [
+      {
+        id: noticeId,
+        title: "Commission claim requested",
+        message: `${claimant} requested commission for ${app.student.name} (${camsId}). Tuition ${snapshot.tuitionLabel}, commission ${snapshot.rateLabel}, amount ${snapshot.eligibleLabel}. Transfer it, then mark the claim done.`,
+        timeAgo: "Just now",
+        type: "finance",
+        isRead: false,
+        camsId,
+      },
+      ...prev.filter((item) => item.id !== noticeId),
+    ]);
+    return null;
   };
 
   const settleCommission = (camsId: string, next: "Approved" | "Paid") => {
-    if (portalRole === "admin" && !hasAdminFeature("applications")) return;
+    if (portalRole !== "admin" || !hasAdminFeature("commissions")) return;
     const today = new Date().toISOString().slice(0, 10);
-    setApplications((prev) =>
-      prev.map((app) => {
-        if (app.camsId !== camsId) return app;
-        const prepared = withCommission(app);
-        const status = prepared.commission.status;
-        const placed = app.primaryStatus === "Completed";
-        if (next === "Approved" && status === "Pending" && !placed) return app;
-        if (next === "Approved" && status !== "Pending" && status !== "Claimed") return app;
-        if (next === "Paid" && status !== "Claimed" && status !== "Approved") return app;
-        return {
-          ...prepared,
-          secondaryStatus: next === "Paid" ? "Commission Paid" : prepared.secondaryStatus,
-          dateModified: today,
-          commission: {
-            ...prepared.commission,
-            status: next,
-            paidDate: next === "Paid" ? today : prepared.commission.paidDate,
-            referenceNumber:
-              next === "Paid" ? prepared.commission.referenceNumber || `Recorded ${today}` : prepared.commission.referenceNumber,
-          },
-        };
-      })
-    );
+    const current = applications.find((app) => app.camsId === camsId);
+    if (!current) return;
+    const prepared = withCommission(current);
+    const status = prepared.commission.status;
+    const placed = current.primaryStatus === "Completed";
+    if (next === "Approved" && status === "Pending" && !placed) return;
+    if (next === "Approved" && status !== "Pending" && status !== "Claimed") return;
+    if (next === "Paid" && status !== "Claimed" && status !== "Approved") return;
+    const snapshot = figures(prepared);
+    const updated: ApplicationRecord = {
+      ...prepared,
+      secondaryStatus: next === "Paid" ? "Commission Paid" : prepared.secondaryStatus,
+      dateModified: today,
+      commission: {
+        ...prepared.commission,
+        status: next,
+        paidDate: next === "Paid" ? today : prepared.commission.paidDate,
+        referenceNumber: next === "Paid" ? `Claimed done ${today}` : prepared.commission.referenceNumber,
+      },
+    };
+    setApplications((prev) => prev.map((app) => (app.camsId === camsId ? updated : app)));
+    if (next !== "Paid" || snapshot.eligible <= 0) return;
+    const who = commissionChannel(prepared) === "agent" ? prepared.counselorName || "Agent" : "B2B partner";
+    void recordCommissionPayout({
+      partnerId: prepared.partnerRecordId,
+      camsId,
+      description: `Claimed done · ${who} · ${prepared.student.name} · ${camsId}`,
+      amount: snapshot.eligible,
+    }).then((error) => {
+      if (error) setSyncError(error);
+    });
   };
 
   return (
@@ -1422,6 +1540,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         updateApplicationStatus,
         cancelApplication,
         verifyStudentDocument,
+        verifyStudentPassport,
         rejectStudentDocument,
         requestDocumentReupload,
         reviewStudentEducation,

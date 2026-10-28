@@ -106,6 +106,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
   const pendingDocs     = students.reduce((acc, s) => acc + s.documents.filter((d) => d.status === "Uploaded" || d.status === "Under Review").length, 0);
   const activePartners  = b2bPartners.filter((p) => p.accountStatus === "Active").length;
   const completedApps   = applications.filter((a) => a.primaryStatus === "Completed").length;
+  const rejectedApps    = applications.filter((a) => a.primaryStatus === "Closed").length;
   const visaApps        = applications.filter((a) => a.primaryStatus === "Visa Processing" || a.primaryStatus === "CAS Processing").length;
 
   const offerDates = applications
@@ -116,6 +117,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
     { label: "Applications", value: totalApps,      color: "#f97316", icon: FileText,      tab: "applications" as AdminTabKey, trend: countsByMonth(applications.map((application) => application.dateAdded)) },
     { label: "Offers Issued",value: offersCount,    color: "#0284c7", icon: Award,         tab: "applications" as AdminTabKey, trend: countsByMonth(offerDates) },
     { label: "Doc Queue",    value: pendingDocs,    color: "#dc2626", icon: CheckCircle2,  tab: "documents"    as AdminTabKey, trend: [] as number[] },
+    { label: "Rejected",     value: rejectedApps,   color: "#b91c1c", icon: AlertTriangle, tab: "applications" as AdminTabKey, trend: [] as number[] },
   ];
 
   const statusColors = ["#2563eb", "#f97316", "#0284c7", "#0891b2", "#d97706", "#ea580c", "#0369a1", "#dc2626"];

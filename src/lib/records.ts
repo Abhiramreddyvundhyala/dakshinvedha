@@ -421,6 +421,15 @@ export function applicationFromRow(row: Row): ApplicationRecord | null {
   if (!payload || !payload.student || !payload.university || !payload.course) return null;
   const primary = text(row.primary_status);
   const secondary = text(row.secondary_status);
+  const columnStatus = text(row.commission_status);
+  const payloadCommission = payload.commission;
+  const status = (
+    payloadCommission?.status && COMMISSION.has(payloadCommission.status)
+      ? payloadCommission.status
+      : COMMISSION.has(columnStatus)
+        ? columnStatus
+        : "Pending"
+  ) as ApplicationRecord["commission"]["status"];
   return {
     ...payload,
     camsId: text(row.cams_id) || payload.camsId,
@@ -430,6 +439,16 @@ export function applicationFromRow(row: Row): ApplicationRecord | null {
     primaryStatus: (PRIMARY.has(primary) ? primary : payload.primaryStatus) as ApplicationRecord["primaryStatus"],
     secondaryStatus: (SECONDARY.has(secondary) ? secondary : payload.secondaryStatus) as ApplicationRecord["secondaryStatus"],
     counselorName: text(row.counselor_name) || payload.counselorName,
+    commission: {
+      amount: text(row.commission_amount) || payloadCommission?.amount || "",
+      eligibleAmount: text(row.commission_eligible_amount) || payloadCommission?.eligibleAmount || "",
+      expectedCommission: text(row.commission_expected) || payloadCommission?.expectedCommission || "",
+      status,
+      invoiceNumber: text(row.commission_invoice_number) || payloadCommission?.invoiceNumber,
+      claimedOn: payloadCommission?.claimedOn,
+      paidDate: asDate(row.commission_paid_date) || payloadCommission?.paidDate,
+      referenceNumber: text(row.commission_reference) || payloadCommission?.referenceNumber,
+    },
   };
 }
 

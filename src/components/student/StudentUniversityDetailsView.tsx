@@ -48,7 +48,8 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
   onOpenCourseDetails,
   allowApply = true,
 }) => {
-  const { courses, activeStudent } = usePlatform();
+  const { courses, activeStudent, portalRole } = usePlatform();
+  const showUrm = portalRole !== "student";
 
   const [activeTab, setActiveTab] = useState<"details" | "courses">(initialTab);
 
@@ -290,7 +291,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
               </div>
             </div>
 
-            {/* University Representative Contact */}
+            {showUrm && (
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-3 text-xs">
               <h3 className="font-extrabold text-slate-900 flex items-center gap-1.5">
                 <Mail className="w-4 h-4 text-orange-600" />
@@ -319,6 +320,7 @@ export const StudentUniversityDetailsView: React.FC<StudentUniversityDetailsView
                 </div>
               </div>
             </div>
+            )}
 
             {/* CTA to view courses */}
             <button

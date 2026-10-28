@@ -4,7 +4,6 @@ import React, { useMemo, useState } from "react";
 import {
   Search,
   Building,
-  GraduationCap,
   Calendar,
   Globe,
   DollarSign,
@@ -31,6 +30,8 @@ import {
   intakeBounds,
   intakeOptions,
 } from "@/lib/catalogOffers";
+import { courseCommissionQuote } from "@/lib/commission";
+import { CampusCover } from "@/components/shared/CampusCover";
 
 interface SearchProgramViewProps {
   onApplyCourse?: (course: CourseInfo) => void;
@@ -505,6 +506,8 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {paginatedCourses.map((c) => {
                   const isChecked = selectedCardCheckboxes.includes(c.id);
+                  const quote = courseCommissionQuote(c);
+                  const university = universities.find((item) => item.id === c.universityId);
                   return (
                     <div
                       key={c.id}
@@ -512,9 +515,9 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                     >
                       {/* Image Gallery */}
                       <div className="h-32 bg-slate-100 relative overflow-hidden">
-                        <img
-                          src={c.images[0]}
-                          alt={c.courseName}
+                        <CampusCover
+                          sources={[...(c.images || []), university?.image, university?.logo]}
+                          label={c.universityName || c.courseName}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent" />
@@ -576,9 +579,17 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
 
                         {/* Specs Box */}
                         <div className="p-2.5 bg-slate-50 rounded-xl space-y-1 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Tuition Fee:</span>
-                            <span className="font-bold text-slate-900 font-mono">{c.tuitionFee || "Fee not set"}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Tuition fee</span>
+                            <span className="font-bold text-slate-900 font-mono">{quote.tuitionLabel}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Commission percentage</span>
+                            <span className="font-bold text-[#ea580c]">{quote.rateLabel}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Commission amount</span>
+                            <span className="font-black text-slate-900 font-mono">{quote.amountLabel}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Duration:</span>
@@ -673,15 +684,11 @@ export const SearchProgramView: React.FC<SearchProgramViewProps> = ({
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-orange-300"
                 >
                   <div className="h-32 bg-orange-50 relative overflow-hidden">
-                    {u.image ? (
-                      <img
-                        src={u.image}
-                        alt={u.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl font-black text-orange-600">{u.name.charAt(0)}</div>
-                    )}
+                    <CampusCover
+                      sources={[u.image, u.logo]}
+                      label={u.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent" />
                     <div className="absolute bottom-2 left-3 right-3 text-white">
                       <p className="font-bold text-sm truncate">{u.name}</p>

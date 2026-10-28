@@ -181,6 +181,8 @@ export interface ApplicationRecord {
     expectedCommission: string;
     status: "Pending" | "Claimed" | "Approved" | "Paid";
     invoiceNumber?: string;
+    /** Date the partner or agent sent the claim request to admin. */
+    claimedOn?: string;
     paidDate?: string;
     referenceNumber?: string;
   };

@@ -6,9 +6,10 @@ import { performLogout } from "@/utils/auth";
 import {
   LayoutDashboard, BarChart3, Users, FileText, Building2,
   BookOpen, FolderCheck, Building, UserCog, Megaphone,
-  LogOut, ChevronLeft, ChevronRight, ShieldCheck, Headset, KeyRound, Wallet,
+  LogOut, ChevronLeft, ChevronRight, Headset, KeyRound, Wallet,
 } from "lucide-react";
 import type { AdminFeatureKey } from "@/lib/adminAccess";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 export type AdminTabKey = AdminFeatureKey;
 
@@ -45,10 +46,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const pendingDocs = students.reduce(
     (acc, s) => acc + s.documents.filter((d) => d.status === "Uploaded" || d.status === "Under Review").length, 0
   );
+  const claimRequests = applications.filter((app) => app.commission?.status === "Claimed").length;
   const badges: Partial<Record<AdminTabKey, number>> = {
     students: students.length,
     applications: applications.length,
     documents: pendingDocs,
+    commissions: claimRequests,
   };
 
   const visibleItems = NAV_ITEMS.filter((item) => canAccessAdminFeature(item.key));
@@ -77,12 +80,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         className="flex items-center gap-3 px-4 py-4"
         style={{ borderBottom: "1px solid #dde1e7" }}
       >
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: "#f97316" }}
-        >
-          <ShieldCheck className="w-5 h-5 text-white" />
-        </div>
+        <BrandMark className="h-10 w-10 shrink-0" />
         {!compact && (
           <div>
             <p className="text-sm font-black" style={{ color: "#1e293b" }}>Dakshinvedha</p>

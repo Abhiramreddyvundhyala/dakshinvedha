@@ -7,12 +7,12 @@ import {
   Building2,
   FileText,
   User,
-  GraduationCap,
   LogOut,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { StudentNavTab } from "./StudentHeader";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 interface StudentSidebarProps {
   currentTab: StudentNavTab;
@@ -53,12 +53,7 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({
       }}
     >
       <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: "1px solid #E7E5E0" }}>
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-white"
-          style={{ background: "#ea580c" }}
-        >
-          <GraduationCap className="w-5 h-5" />
-        </div>
+        <BrandMark className="h-10 w-10 shrink-0" />
         {!compact && (
           <div>
             <p className="text-sm font-bold tracking-tight leading-none" style={{ color: "#0f172a" }}>

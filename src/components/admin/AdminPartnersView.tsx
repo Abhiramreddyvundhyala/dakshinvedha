@@ -134,6 +134,37 @@ export const AdminPartnersView: React.FC = () => {
 
   const viewing = viewPartner ? b2bPartners.find((p) => p.id === viewPartner) : null;
 
+  const missingPartnerFiles = (partner: B2BPartnerProfile) => {
+    const files: Array<[string, string | undefined]> = [
+      ["Aadhaar", partner.personalDocuments.aadhaarFile],
+      ["PAN", partner.personalDocuments.panFile],
+      ["Organization PAN", partner.organizationDocuments.orgPanFile],
+      ["Registration certificate", partner.organizationDocuments.orgCertificateFile],
+      ["GST certificate", partner.organizationDocuments.gstCertificateFile],
+    ];
+    return files.filter(([, path]) => !hasStoredFile(path)).map(([label]) => label);
+  };
+
+  const verificationLabel = (partner: B2BPartnerProfile) => {
+    if (partner.verificationStatus === "Pending" && partner.profileCompleted) return "Under Review";
+    if (partner.verificationStatus === "Pending") return "Verification pending";
+    return partner.verificationStatus;
+  };
+
+  const verifyPartnerNow = (partner: B2BPartnerProfile) => {
+    const missing = missingPartnerFiles(partner);
+    if (missing.length > 0) {
+      setCreateError(`Still missing: ${missing.join(", ")}. Open each stored document, then verify.`);
+      setViewPartner(partner.id);
+      return;
+    }
+    verifyB2BPartner(partner.id);
+    setCreateError(null);
+    setSuccessMsg(`${partner.name} is verified. Account status is now Active.`);
+    setTimeout(() => setSuccessMsg(null), 4000);
+    setViewPartner(null);
+  };
+
   const openEdit = (partner: B2BPartnerProfile) => {
     setEditPartner(partner);
     setEditName(partner.name);
@@ -329,8 +360,8 @@ export const AdminPartnersView: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      {verificationIcon(partner.verificationStatus)}
-                      <span className="text-xs font-medium text-slate-600">{partner.verificationStatus}</span>
+                      {verificationIcon(partner.profileCompleted && partner.verificationStatus === "Pending" ? "Under Review" : partner.verificationStatus)}
+                      <span className="text-xs font-medium text-slate-600">{verificationLabel(partner)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm font-bold text-slate-700">
@@ -356,6 +387,15 @@ export const AdminPartnersView: React.FC = () => {
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
+                      {partner.verificationStatus !== "Verified" && partner.profileCompleted && partner.accountStatus !== "Suspended" && (
+                        <button
+                          type="button"
+                          onClick={() => verifyPartnerNow(partner)}
+                          className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold cursor-pointer"
+                        >
+                          Verify
+                        </button>
+                      )}
 
                     </div>
                   </td>
@@ -527,7 +567,7 @@ export const AdminPartnersView: React.FC = () => {
               <InfoBlock label="Email" value={viewing.email} />
               <InfoBlock label="Phone" value={viewing.phone} />
               <InfoBlock label="Account Status" value={viewing.accountStatus} />
-              <InfoBlock label="Verification" value={viewing.verificationStatus} />
+              <InfoBlock label="Verification" value={verificationLabel(viewing)} />
               <InfoBlock label="Organization" value={viewing.organizationName || "Not filled"} />
               <InfoBlock label="Org Email" value={viewing.organizationEmail || "Not filled"} />
               <InfoBlock label="Incorporation #" value={viewing.incorporationNumber || "Not filled"} />
@@ -567,28 +607,17 @@ export const AdminPartnersView: React.FC = () => {
             {createError && <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{createError}</p>}
             {viewing.verificationStatus !== "Verified" && viewing.profileCompleted && (
               <button
-                onClick={() => {
-                  const files = [
-                    viewing.personalDocuments.aadhaarFile,
-                    viewing.personalDocuments.panFile,
-                    viewing.organizationDocuments.orgPanFile,
-                    viewing.organizationDocuments.orgCertificateFile,
-                    viewing.organizationDocuments.gstCertificateFile,
-                  ];
-                  if (files.some((file) => !hasStoredFile(file))) {
-                    setCreateError("Open each stored document before verifying. A required file is still missing.");
-                    return;
-                  }
-                  verifyB2BPartner(viewing.id);
-                  setSuccessMsg(`Partner ${viewing.name} verified!`);
-                  setTimeout(() => setSuccessMsg(null), 4000);
-                  setViewPartner(null);
-                }}
+                onClick={() => verifyPartnerNow(viewing)}
                 className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2"
               >
                 <ShieldCheck className="w-4 h-4" />
-                Verify This Partner
+                Verify this partner
               </button>
+            )}
+            {viewing.verificationStatus !== "Verified" && !viewing.profileCompleted && (
+              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                Verification pending. The partner still has to submit organization documents and bank details. The Verify button appears after that.
+              </p>
             )}
             <p className="text-[11px] text-slate-500">Pause, password reset, and delete for this login are on Accounts.</p>
           </div>

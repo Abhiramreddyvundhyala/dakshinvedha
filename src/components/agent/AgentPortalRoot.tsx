@@ -5,7 +5,8 @@ import { Menu, Plus, Search } from "lucide-react";
 import { ApplicationRecord, CourseInfo, UniversityInfo } from "@/types";
 import { usePlatform } from "@/context/PlatformContext";
 import { readSessionValue } from "@/utils/accounts";
-import { figures } from "@/lib/commission";
+import { claimStage, claimStatusLabel, figures } from "@/lib/commission";
+import { CommissionBoard } from "@/components/views/CommissionBoard";
 import { newestFirst } from "@/lib/recent";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
 import { ImportantNotices } from "@/components/dashboard/ImportantNotices";
@@ -18,7 +19,7 @@ import { saveApplicationDraft } from "@/lib/portalDb";
 import { AgentSidebar, AgentNavTab } from "./AgentSidebar";
 
 export const AgentPortalRoot: React.FC = () => {
-  const { applications, recordApplication } = usePlatform();
+  const { applications, recordApplication, claimCommission } = usePlatform();
   const name = readSessionValue("dakshin_user_name") || "Agent";
   const trackingId = readSessionValue("dakshin_tracking_id") || "";
   const accountId = readSessionValue("dakshin_account_id") || "";
@@ -53,6 +54,8 @@ export const AgentPortalRoot: React.FC = () => {
   });
 
   const offers = assigned.filter((app) => app.primaryStatus.includes("Offer") || app.secondaryStatus.includes("Offer")).length;
+  const rejectedCount = assigned.filter((app) => app.primaryStatus === "Closed").length;
+  const claimableCount = assigned.filter((app) => claimStage(app) === "ready").length;
 
   const openApply = () => {
     setViewingCourse(null);
@@ -91,6 +94,7 @@ export const AgentPortalRoot: React.FC = () => {
         name={name}
         trackingId={trackingId}
         applicationCount={assigned.length}
+        claimableCount={claimableCount}
       />
 
       <div className={`flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-300 ${collapsed ? "lg:ml-[72px]" : "lg:ml-64"}`}>
@@ -107,7 +111,7 @@ export const AgentPortalRoot: React.FC = () => {
         <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-5">
           {section === "dashboard" && (
             <>
-              <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <article className="rounded-2xl border border-slate-200 bg-white p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Assigned applications</p>
                   <p className="mt-1 text-2xl font-black text-slate-900">{assigned.length}</p>
@@ -115,6 +119,18 @@ export const AgentPortalRoot: React.FC = () => {
                 <article className="rounded-2xl border border-slate-200 bg-white p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Offers in progress</p>
                   <p className="mt-1 text-2xl font-black text-slate-900">{offers}</p>
+                </article>
+                <button
+                  type="button"
+                  onClick={() => setSection("commission")}
+                  className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-left"
+                >
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">Ready to claim</p>
+                  <p className="mt-1 text-2xl font-black text-slate-900">{claimableCount}</p>
+                </button>
+                <article className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-rose-700">Rejected</p>
+                  <p className="mt-1 text-2xl font-black text-slate-900">{rejectedCount}</p>
                 </article>
                 <article className="rounded-2xl border border-slate-200 bg-white p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Agent tracking ID</p>
@@ -142,6 +158,10 @@ export const AgentPortalRoot: React.FC = () => {
                 }}
               />
             )
+          )}
+
+          {section === "commission" && (
+            <CommissionBoard applications={assigned} audience="agent" onClaim={claimCommission} />
           )}
 
           {section === "applications" && (
@@ -181,14 +201,16 @@ export const AgentPortalRoot: React.FC = () => {
                 </div>
               ) : (
                 <div className="mt-4 overflow-x-auto">
-                  <table className="w-full min-w-[820px] text-left text-xs">
+                  <table className="w-full min-w-[1040px] text-left text-xs">
                     <thead className="border-y border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                       <tr>
                         <th className="px-3 py-3">Tracking ID</th>
                         <th className="px-3 py-3">Student</th>
                         <th className="px-3 py-3">Course</th>
                         <th className="px-3 py-3">Status</th>
-                        <th className="px-3 py-3">Commission</th>
+                        <th className="px-3 py-3">Tuition fee</th>
+                        <th className="px-3 py-3">Commission %</th>
+                        <th className="px-3 py-3">Commission amount</th>
                         <th className="px-3 py-3">Tracker</th>
                         <th className="px-3 py-3 text-right">Open</th>
                       </tr>
@@ -212,11 +234,11 @@ export const AgentPortalRoot: React.FC = () => {
                                 {app.primaryStatus}
                               </span>
                             </td>
+                            <td className="px-3 py-3 font-semibold text-slate-800">{snapshot.tuitionLabel}</td>
+                            <td className="px-3 py-3 font-semibold text-orange-700">{snapshot.rateLabel}</td>
                             <td className="px-3 py-3">
-                              <p className="font-semibold text-slate-800">{snapshot.eligibleLabel}</p>
-                              <p className="text-[10px] text-slate-500">
-                                {app.primaryStatus === "Completed" ? snapshot.status : "Updates when placed"}
-                              </p>
+                              <p className="font-bold text-slate-900">{snapshot.amountLabel}</p>
+                              <p className="text-[10px] text-slate-500">{claimStatusLabel(app)}</p>
                             </td>
                             <td className="px-3 py-3">
                               <ApplicationTracker application={app} compact />

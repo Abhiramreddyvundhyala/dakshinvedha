@@ -58,7 +58,7 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
       total: mine.length,
       processing: mine.filter((app) => app.primaryStatus !== "Completed" && app.primaryStatus !== "Closed").length,
       completed: mine.filter((app) => app.primaryStatus === "Completed").length,
-      closed: mine.filter((app) => app.primaryStatus === "Closed").length,
+      rejected: mine.filter((app) => app.primaryStatus === "Closed").length,
       expected: money(rows.reduce((sum, row) => sum + row.eligible, 0), mark),
       pending: money(rows.filter((row) => row.awaiting).reduce((sum, row) => sum + row.eligible, 0), mark),
       paid: money(rows.filter((row) => row.paid).reduce((sum, row) => sum + row.eligible, 0), mark),
@@ -102,12 +102,12 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
       noteColor: "#64748b",
     },
     {
-      label: "Closed",
-      value: totals.closed,
+      label: "Rejected",
+      value: totals.rejected,
       icon: XCircle,
       iconColor: "#dc2626",
       iconBg: "#fef2f2",
-      note: "Requires attention",
+      note: "Cancelled or closed",
       noteColor: "#dc2626",
     },
   ];
@@ -128,6 +128,13 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
               </h1>
               <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
                 {partner.partnerId} &bull; {partner.organizationName || "Dakshinvedha B2B Partner"}
+              </p>
+              <p style={{ fontSize: 11, fontWeight: 700, marginTop: 6, color: partner.verificationStatus === "Verified" ? "#0284c7" : "#c2410c" }}>
+                {partner.verificationStatus === "Verified"
+                  ? "Organization status: Verified"
+                  : partner.profileCompleted
+                    ? "Organization status: Under verification. Dakshinvedha admin confirms it from Admin → Partners."
+                    : "Organization status: Verification pending. Finish the organization profile so admin can verify it."}
               </p>
             </div>
           </div>
@@ -168,8 +175,8 @@ export const B2BDashboardView: React.FC<B2BDashboardViewProps> = ({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
         {[
           { label: "Commission recorded", value: totals.expected, color: "#f97316" },
-          { label: "Awaiting payout", value: totals.pending, color: "#2563eb" },
-          { label: "Commission paid", value: totals.paid, color: "#0284c7" },
+          { label: "Claim requested", value: totals.pending, color: "#2563eb" },
+          { label: "Claimed done", value: totals.paid, color: "#0284c7" },
         ].map((s) => (
           <div key={s.label} style={{ ...CARD, padding: 16 }}>
             <p style={{ fontSize: 24, fontWeight: 900, color: s.color, margin: 0 }}>{s.value}</p>

@@ -16,6 +16,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { CourseInfo } from "@/types";
+import { courseCommissionQuote } from "@/lib/commission";
 
 interface ProgramDetailsModalProps {
   course: CourseInfo | null;
@@ -29,6 +30,8 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
   onApplyNow,
 }) => {
   if (!course) return null;
+
+  const quote = courseCommissionQuote(course);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
@@ -74,13 +77,31 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-5 text-xs">
           {/* Key Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-orange-50 border border-orange-200 rounded-xl">
             <div>
-              <span className="text-slate-400 text-[11px] font-medium">Tuition Fee</span>
+              <span className="text-orange-800/70 text-[11px] font-bold uppercase">Tuition fee</span>
               <p className="font-mono text-base font-bold text-slate-900 mt-0.5">
-                {course.tuitionFee} / yr
+                {quote.tuitionLabel}
               </p>
             </div>
+            <div>
+              <span className="text-orange-800/70 text-[11px] font-bold uppercase">Commission percentage</span>
+              <p className="font-bold text-[#ea580c] text-base mt-0.5">
+                {quote.rateLabel}
+              </p>
+            </div>
+            <div>
+              <span className="text-orange-800/70 text-[11px] font-bold uppercase">Commission amount</span>
+              <p className="font-mono text-base font-black text-slate-900 mt-0.5">
+                {quote.amountLabel}
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500 -mt-2">
+            Commission amount is the tuition fee multiplied by the commission percentage. Claim it from Finance after the student is placed.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
             <div>
               <span className="text-slate-400 text-[11px] font-medium">Application Fee</span>
               <p className="font-semibold text-slate-800 text-sm mt-0.5">
@@ -94,9 +115,9 @@ export const ProgramDetailsModal: React.FC<ProgramDetailsModalProps> = ({
               </p>
             </div>
             <div>
-              <span className="text-slate-400 text-[11px] font-medium">Agency Commission</span>
-              <p className="font-bold text-[#ea580c] text-sm mt-0.5">
-                {course.commissionRate}
+              <span className="text-slate-400 text-[11px] font-medium">Intake</span>
+              <p className="font-semibold text-[#ea580c] text-sm mt-0.5">
+                {course.activeIntake || "Not set"}
               </p>
             </div>
           </div>

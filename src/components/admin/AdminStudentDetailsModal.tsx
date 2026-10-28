@@ -35,6 +35,8 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
   onClose,
 }) => {
   const {
+    verifyStudentDocument,
+    verifyStudentPassport,
     rejectStudentDocument,
     requestDocumentReupload,
     reviewStudentEducation,
@@ -257,7 +259,7 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
               </div>
 
               <div className="space-y-3">
-                {student.documents.map((doc) => {
+                {profile.documents.map((doc) => {
                   const isVerified = doc.status === "Verified";
                   const isRejected = doc.status === "Rejected";
                   const isReupload = doc.status === "Re-upload Required";
@@ -310,6 +312,16 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
                       {/* View the file, request a re-upload, or reject it. */}
                       <div className="flex flex-wrap items-center gap-2 shrink-0">
                         <StoredFileButton bucket={doc.storageBucket || STORAGE_BUCKETS.student} path={doc.storagePath} />
+                        {!isVerified && (
+                          <button
+                            type="button"
+                            disabled={!doc.storagePath}
+                            onClick={() => verifyStudentDocument(profile.id, doc.id)}
+                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer disabled:opacity-40"
+                          >
+                            VERIFY
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() =>
@@ -407,25 +419,43 @@ export const AdminStudentDetailsModal: React.FC<AdminStudentDetailsModalProps> =
 
               {/* Passport Details */}
               <div className="p-4 bg-slate-50 border rounded-2xl space-y-3">
-                <span className="font-extrabold text-slate-900 block">PASSPORT DETAILS</span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-extrabold text-slate-900 block">PASSPORT DETAILS</span>
+                  {profile.passport.status !== "Verified" && (profile.passport.passportNumber || profile.passport.passportFile || profile.documents.some((doc) => doc.category === "Passport" && doc.storagePath)) && (
+                    <button
+                      type="button"
+                      onClick={() => verifyStudentPassport(profile.id)}
+                      className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-xs cursor-pointer"
+                    >
+                      Verify passport
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
                     <span className="text-slate-400 block text-[10px]">PASSPORT STATUS</span>
-                    <strong className="text-orange-700">{student.passport.status}</strong>
+                    <strong className="text-orange-700">{profile.passport.status}</strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">PASSPORT NUMBER</span>
-                    <strong className="font-mono">{student.passport.passportNumber || "N/A"}</strong>
+                    <strong className="font-mono">{profile.passport.passportNumber || "N/A"}</strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">COUNTRY</span>
-                    <strong>{student.passport.passportCountry || "N/A"}</strong>
+                    <strong>{profile.passport.passportCountry || "N/A"}</strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">EXPIRY DATE</span>
-                    <strong>{student.passport.expiryDate || "N/A"}</strong>
+                    <strong>{profile.passport.expiryDate || "N/A"}</strong>
                   </div>
                 </div>
+                <p className="text-[11px] text-slate-500">
+                  {profile.passport.status === "Verified"
+                    ? "This passport is verified."
+                    : profile.passport.status === "Under Review"
+                      ? "The student uploaded these details. Verify passport after you open the passport file."
+                      : "Passport details are not submitted yet, so this stays pending."}
+                </p>
               </div>
             </div>
           )}

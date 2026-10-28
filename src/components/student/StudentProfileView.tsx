@@ -471,6 +471,14 @@ export const StudentProfileView: React.FC = () => {
                 Passport pending. Can be submitted prior to CAS / visa issuance.
               </p>
             )}
+            {activeStudent.passport.status === "Under Review" && (
+              <p className="text-sky-800 font-semibold">
+                Uploaded passport details stay under review until Dakshinvedha admin verifies them. Admin opens the student, then chooses Verify passport.
+              </p>
+            )}
+            {activeStudent.passport.status === "Verified" && (
+              <p className="text-emerald-700 font-semibold">Passport verified by Dakshinvedha admin.</p>
+            )}
           </div>
         </div>
       )}
