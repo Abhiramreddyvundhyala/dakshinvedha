@@ -176,6 +176,7 @@ export interface ApplicationRecord {
     paymentStatus: string;
   };
   commission: {
+    /** What Dakshinvedha pays the B2B partner or agent. This comes from the course commission rate. */
     amount: string;
     eligibleAmount: string;
     expectedCommission: string;
@@ -185,6 +186,17 @@ export interface ApplicationRecord {
     claimedOn?: string;
     paidDate?: string;
     referenceNumber?: string;
+    /**
+     * What the university pays Dakshinvedha. Admin only.
+     * Partners and agents never see these fields.
+     */
+    universityRate?: string;
+    universityExpected?: string;
+    universityReceived?: string;
+    universityInvoicedOn?: string;
+    universityReceivedOn?: string;
+    universityReference?: string;
+    universityStatus?: "Not invoiced" | "Invoiced" | "Paid";
   };
   notes: {
     id: string;

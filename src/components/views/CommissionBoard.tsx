@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { ApplicationRecord, CommissionLedgerItem } from "@/types";
 import { currencyMark, money } from "@/lib/catalogOffers";
 import { claimStage, claimStatusLabel, figures } from "@/lib/commission";
+import { downloadCommissionPdf, type CommissionPdfDoc } from "@/lib/commissionPdf";
 import { newestFirst } from "@/lib/recent";
 
 type BoardTab = "in-process" | "claim" | "requested" | "claimed" | "ledger";
@@ -12,6 +13,7 @@ interface CommissionBoardProps {
   applications: ApplicationRecord[];
   audience: "b2b" | "agent";
   onClaim: (camsId: string) => string | null;
+  payeeLabel?: string;
   ledger?: CommissionLedgerItem[];
   ledgerError?: string | null;
 }
@@ -27,6 +29,7 @@ export const CommissionBoard: React.FC<CommissionBoardProps> = ({
   applications,
   audience,
   onClaim,
+  payeeLabel,
   ledger,
   ledgerError,
 }) => {
@@ -41,7 +44,7 @@ export const CommissionBoard: React.FC<CommissionBoardProps> = ({
     );
   }, [applications]);
 
-  const inProcess = rows.filter((row) => row.stage === "in-process");
+  const inProcess = rows.filter((row) => row.stage === "in-process" || row.stage === "waiting-university");
   const ready = rows.filter((row) => row.stage === "ready");
   const requested = rows.filter((row) => row.stage === "requested");
   const claimed = rows.filter((row) => row.stage === "claimed");
@@ -52,11 +55,15 @@ export const CommissionBoard: React.FC<CommissionBoardProps> = ({
   const showLedger = ledger !== undefined;
 
   const claim = (camsId: string) => {
+    const row = rows.find((item) => item.app.camsId === camsId);
     const error = onClaim(camsId);
     setNotice(
-      error || "Claim request sent to admin. After the transfer, admin marks it claimed done and it moves to Claimed."
+      error || "Claim request sent to admin. After the transfer, it moves to Claimed. A statement of your commission has been downloaded."
     );
-    if (!error) setTab("requested");
+    if (!error && row) {
+      downloadCommissionPdf(payeeStatement(row.app, row.snapshot, audience, payeeLabel, "Claim requested"));
+      setTab("requested");
+    }
   };
 
   return (
@@ -65,11 +72,9 @@ export const CommissionBoard: React.FC<CommissionBoardProps> = ({
         <div>
           <h3 className="text-sm font-bold text-slate-900">Commission</h3>
           <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
-            {audience === "agent"
-              ? "Each file shows the course tuition fee, the commission percentage, and the commission amount (tuition multiplied by that percentage)."
-              : "Each of your organization files shows the course tuition fee, the commission percentage, and the commission amount (tuition multiplied by that percentage)."}
-            {" "}
-            Claim commission sends a request to admin. Admin transfers the amount, then marks the claim done. It then appears under Claimed.
+            Your commission is the percentage already saved on the course, multiplied by the tuition fee.
+            A claim opens after the student is placed and Dakshinvedha has received the university payment.
+            Claiming downloads a statement of your amount. Admin then transfers it and marks the claim done.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -188,10 +193,21 @@ export const CommissionBoard: React.FC<CommissionBoardProps> = ({
                       </button>
                     ) : stage === "ready" ? (
                       <span className="text-[11px] text-slate-400">No commission on this course</span>
-                    ) : stage === "requested" ? (
-                      <span className="text-[11px] font-semibold text-amber-800">Waiting for admin</span>
-                    ) : stage === "claimed" ? (
-                      <span className="text-[11px] font-semibold text-emerald-700">Claimed done</span>
+                    ) : stage === "requested" || stage === "claimed" ? (
+                      <div className="flex flex-col items-start gap-1">
+                        <span className={`text-[11px] font-semibold ${stage === "claimed" ? "text-emerald-700" : "text-amber-800"}`}>
+                          {stage === "claimed" ? "Paid" : "Waiting for admin"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => downloadCommissionPdf(payeeStatement(app, snapshot, audience, payeeLabel, claimStatusLabel(app)))}
+                          className="text-[11px] font-bold text-orange-700 hover:text-orange-800"
+                        >
+                          Download statement
+                        </button>
+                      </div>
+                    ) : stage === "waiting-university" ? (
+                      <span className="text-[11px] text-slate-400">Waiting for the university payment</span>
                     ) : (
                       <span className="text-[11px] text-slate-400">Opens after placement</span>
                     )}
@@ -216,9 +232,38 @@ function Summary({ label, value, note }: { label: string; value: string; note: s
   );
 }
 
+function payeeStatement(
+  app: ApplicationRecord,
+  snapshot: ReturnType<typeof figures>,
+  audience: "b2b" | "agent",
+  payeeLabel: string | undefined,
+  status: string
+): CommissionPdfDoc {
+  return {
+    filename: `${app.camsId}-commission-statement.pdf`,
+    title: "Commission statement",
+    subtitle: "This statement shows the commission Dakshinvedha will pay you for this application.",
+    rows: [
+      { label: "Payee", value: payeeLabel || (audience === "agent" ? "Agent" : "B2B partner") },
+      { label: "Tracking ID", value: app.camsId },
+      { label: "Student", value: app.student.name },
+      { label: "University", value: app.university.name },
+      { label: "Course", value: app.course.courseName },
+      { label: "Tuition fee", value: snapshot.tuitionLabel },
+      { label: "Your commission rate", value: snapshot.rateLabel },
+      { label: "Your commission amount", value: snapshot.amountLabel },
+      { label: "Status", value: status },
+      { label: "Claim date", value: app.commission.claimedOn || "—" },
+      { label: "Date paid", value: app.commission.paidDate || "—" },
+      { label: "Payment reference", value: app.commission.referenceNumber || "—" },
+    ],
+    note: "This statement lists your commission only. It is the rate already saved on the course.",
+  };
+}
+
 function emptyCopy(tab: BoardTab): string {
   if (tab === "in-process") return "No applications are still in process.";
-  if (tab === "claim") return "Nothing is ready to claim. The button appears after admin marks the student placed.";
+  if (tab === "claim") return "Nothing is ready to claim. The button appears after the student is placed and Dakshinvedha has received the university payment.";
   if (tab === "requested") return "No claim is waiting with admin.";
   if (tab === "claimed") return "No commission has been marked claimed done.";
   return "No commission ledger entries yet.";

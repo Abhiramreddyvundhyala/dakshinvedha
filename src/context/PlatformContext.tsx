@@ -42,7 +42,8 @@ import {
   updateAccountStatus,
 } from "@/lib/portalDb";
 import { computeProfileCompletion } from "@/lib/profileCompletion";
-import { commissionChannel, figures, freshCommission, partnerApplications, withCommission } from "@/lib/commission";
+import { currencyMark, money } from "@/lib/catalogOffers";
+import { commissionChannel, figures, freshCommission, parseMoney, partnerApplications, universityHasPaid, withCommission } from "@/lib/commission";
 import { isUuid } from "@/lib/records";
 import { APPLICATION_STAGES, buildTimeline, buildTimelineAt, createTrackingId } from "@/utils/tracking";
 import {
@@ -180,7 +181,16 @@ interface PlatformContextType {
   recordApplication: (application: ApplicationRecord) => void;
   /** Sends a claim request to admin. Returns an error message, or null when the request is saved. */
   claimCommission: (camsId: string) => string | null;
-  settleCommission: (camsId: string, next: "Approved" | "Paid") => void;
+  settleCommission: (
+    camsId: string,
+    next: "Approved" | "Paid",
+    details?: { reference?: string; paidDate?: string }
+  ) => void;
+  /** Records the confidential amount a university pays Dakshinvedha. Returns an error message, or null when saved. */
+  recordUniversityIncome: (
+    camsId: string,
+    input: { mode: "invoice" | "payment"; amount: string; date: string; reference?: string; rate?: string }
+  ) => string | null;
   syncError: string | null;
 
   // Notices & Notifications
@@ -1430,6 +1440,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       return "This claim is already with admin.";
     }
     if (!snapshot.ready) return "Claim opens after admin marks the student placed.";
+    if (!universityHasPaid(prepared)) return "Claim opens after Dakshinvedha receives the university payment.";
     if (snapshot.eligible <= 0) return "This course has no commission amount.";
     const today = new Date().toISOString().slice(0, 10);
     const claimant = readSessionValue("dakshin_user_name") || (portalRole === "agent" ? "Agent" : "B2B partner");
@@ -1439,7 +1450,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (item.camsId !== camsId) return item;
         const nextPrepared = withCommission(item);
         const nextSnapshot = figures(nextPrepared);
-        if (nextPrepared.commission.status !== "Pending" || !nextSnapshot.ready || nextSnapshot.eligible <= 0) return item;
+        if (nextPrepared.commission.status !== "Pending" || !nextSnapshot.ready || !universityHasPaid(nextPrepared) || nextSnapshot.eligible <= 0) return item;
         return {
           ...nextPrepared,
           secondaryStatus: "Commission Processing",
@@ -1469,7 +1480,11 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     return null;
   };
 
-  const settleCommission = (camsId: string, next: "Approved" | "Paid") => {
+  const settleCommission = (
+    camsId: string,
+    next: "Approved" | "Paid",
+    details?: { reference?: string; paidDate?: string }
+  ) => {
     if (portalRole !== "admin" || !hasAdminFeature("commissions")) return;
     const today = new Date().toISOString().slice(0, 10);
     const current = applications.find((app) => app.camsId === camsId);
@@ -1480,7 +1495,10 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (next === "Approved" && status === "Pending" && !placed) return;
     if (next === "Approved" && status !== "Pending" && status !== "Claimed") return;
     if (next === "Paid" && status !== "Claimed" && status !== "Approved") return;
+    if (next === "Paid" && !universityHasPaid(prepared)) return;
     const snapshot = figures(prepared);
+    const paidDate = (details?.paidDate || today).slice(0, 10);
+    const reference = (details?.reference || "").trim();
     const updated: ApplicationRecord = {
       ...prepared,
       secondaryStatus: next === "Paid" ? "Commission Paid" : prepared.secondaryStatus,
@@ -1488,8 +1506,8 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       commission: {
         ...prepared.commission,
         status: next,
-        paidDate: next === "Paid" ? today : prepared.commission.paidDate,
-        referenceNumber: next === "Paid" ? `Claimed done ${today}` : prepared.commission.referenceNumber,
+        paidDate: next === "Paid" ? paidDate : prepared.commission.paidDate,
+        referenceNumber: next === "Paid" ? reference || `Paid ${paidDate}` : prepared.commission.referenceNumber,
       },
     };
     setApplications((prev) => prev.map((app) => (app.camsId === camsId ? updated : app)));
@@ -1503,6 +1521,49 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     }).then((error) => {
       if (error) setSyncError(error);
     });
+  };
+
+  const recordUniversityIncome = (
+    camsId: string,
+    input: { mode: "invoice" | "payment"; amount: string; date: string; reference?: string; rate?: string }
+  ): string | null => {
+    if (portalRole !== "admin" || !hasAdminFeature("commissions")) {
+      return "Only an admin can record university income.";
+    }
+    const current = applications.find((app) => app.camsId === camsId);
+    if (!current) return "That application was not found.";
+    if (commissionChannel(current) === "direct") return "A student self-apply has no commission.";
+    if (current.primaryStatus !== "Completed") return "Record university income after the student is placed.";
+    const amount = parseMoney(input.amount);
+    if (amount <= 0) return "Enter an amount greater than zero.";
+    const date = (input.date || new Date().toISOString().slice(0, 10)).slice(0, 10);
+    const mark = currencyMark([current.course]);
+    const prepared = withCommission(current);
+    const expectedNow = parseMoney(prepared.commission.universityExpected);
+    const receivedNow = parseMoney(prepared.commission.universityReceived);
+    if (prepared.commission.universityStatus === "Paid" && input.mode === "invoice") {
+      return "The university payment is already recorded.";
+    }
+    const rate = (input.rate || "").trim();
+    const nextExpected = input.mode === "invoice" ? amount : expectedNow > 0 ? expectedNow : amount;
+    const nextReceived = input.mode === "payment" ? receivedNow + amount : receivedNow;
+    const paid = input.mode === "payment" && nextReceived >= nextExpected && nextReceived > 0;
+    const updated: ApplicationRecord = {
+      ...prepared,
+      dateModified: date,
+      commission: {
+        ...prepared.commission,
+        universityRate: rate || prepared.commission.universityRate,
+        universityExpected: money(nextExpected, mark),
+        universityReceived: nextReceived > 0 ? money(nextReceived, mark) : prepared.commission.universityReceived,
+        universityInvoicedOn: input.mode === "invoice" ? date : prepared.commission.universityInvoicedOn || date,
+        universityReceivedOn: input.mode === "payment" ? date : prepared.commission.universityReceivedOn,
+        universityReference: input.mode === "payment" ? (input.reference || "").trim() : prepared.commission.universityReference,
+        universityStatus: paid ? "Paid" : "Invoiced",
+      },
+    };
+    setApplications((prev) => prev.map((app) => (app.camsId === camsId ? updated : app)));
+    return null;
   };
 
   return (
@@ -1572,6 +1633,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         recordApplication,
         claimCommission,
         settleCommission,
+        recordUniversityIncome,
         syncError,
         notices,
         publishNotice,

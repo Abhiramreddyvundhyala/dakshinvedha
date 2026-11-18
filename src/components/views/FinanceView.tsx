@@ -138,6 +138,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({ subTab = "account" }) 
           applications={partnerApps}
           audience="b2b"
           onClaim={claimCommission}
+          payeeLabel={activeB2BPartner?.organizationName || activeB2BPartner?.name || "B2B partner"}
           ledger={ledger}
           ledgerError={ledgerError}
         />

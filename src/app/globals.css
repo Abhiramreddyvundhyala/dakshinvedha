@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-libre), "Libre Baskerville", Georgia, serif;
+  --font-serif: var(--font-libre), "Libre Baskerville", Georgia, serif;
+}
+
 @layer base {
   :root {
     /* Brand tokens - orange */
@@ -17,8 +22,8 @@
     --shadow-soft-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03);
 
     /* Typography scale */
-    --font-heading: var(--font-fraunces), "Instrument Serif", Georgia, serif;
-    --font-ui: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-heading: var(--font-libre), "Libre Baskerville", Georgia, serif;
+    --font-ui: var(--font-libre), "Libre Baskerville", Georgia, serif;
   }
 
   body {
@@ -37,11 +42,11 @@
 
 /* Typography helper utilities */
 .font-heading {
-  font-family: var(--font-fraunces), "Instrument Serif", Georgia, serif;
+  font-family: var(--font-libre), "Libre Baskerville", Georgia, serif;
 }
 
 .font-ui {
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-libre), "Libre Baskerville", Georgia, serif;
 }
 
 /* Hairline border and soft layered shadow utility */

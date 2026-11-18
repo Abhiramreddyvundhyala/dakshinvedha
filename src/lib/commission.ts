@@ -77,28 +77,30 @@ export function courseCommissionQuote(course: RateCourse): {
   };
 }
 
-export type ClaimStage = "in-process" | "ready" | "requested" | "claimed";
+export type ClaimStage = "in-process" | "waiting-university" | "ready" | "requested" | "claimed";
 
-/** in-process: not placed. ready: partner or agent can claim. requested: with admin. claimed: admin marked it done. */
+/** in-process: not placed. waiting-university: placed, Dakshinvedha has not recorded the university payment. ready: payee can claim. requested: with admin. claimed: admin marked it done. */
 export function claimStage(app: ApplicationRecord): ClaimStage {
   const status = app.commission?.status || "Pending";
   if (status === "Paid") return "claimed";
   if (status === "Claimed" || status === "Approved") return "requested";
-  if (app.primaryStatus === "Completed") return "ready";
+  if (app.primaryStatus === "Completed" && universityHasPaid(app)) return "ready";
+  if (app.primaryStatus === "Completed") return "waiting-university";
   return "in-process";
 }
 
 export function claimStatusLabel(app: ApplicationRecord): string {
   const stage = claimStage(app);
   if (stage === "claimed") {
-    return app.commission?.paidDate ? `Claimed done · ${app.commission.paidDate}` : "Claimed done";
+    return app.commission?.paidDate ? `Paid to you · ${app.commission.paidDate}` : "Paid to you";
   }
   if (stage === "requested") {
     return app.commission?.claimedOn
-      ? `Requested · ${app.commission.claimedOn} · waiting for admin`
-      : "Requested · waiting for admin";
+      ? `Claim requested · ${app.commission.claimedOn}`
+      : "Claim requested";
   }
   if (stage === "ready") return "Ready to claim";
+  if (stage === "waiting-university") return "Waiting for the university payment";
   return "In process · claim opens after placement";
 }
 
@@ -201,4 +203,62 @@ export function partnerApplications<T extends {
       (partner.id && recordId === partner.id) || (partner.partnerId && trackingId === partner.partnerId)
     );
   });
+}
+
+export type UniversityIncomeStatus = "Not invoiced" | "Invoiced" | "Paid";
+
+export type UniversityIncome = {
+  status: UniversityIncomeStatus;
+  rateLabel: string;
+  expected: number;
+  received: number;
+  outstanding: number;
+  expectedLabel: string;
+  receivedLabel: string;
+  outstandingLabel: string;
+  invoicedOn: string;
+  receivedOn: string;
+  reference: string;
+  paid: boolean;
+};
+
+/** The university payment is recorded by admin. A blank record is not invoiced. */
+export function universityIncome(app: ApplicationRecord): UniversityIncome {
+  const mark = currencyMark([app.course]);
+  const stored = app.commission?.universityStatus;
+  const expected = parseMoney(app.commission?.universityExpected);
+  const received = parseMoney(app.commission?.universityReceived);
+  const outstanding = Math.max(0, expected - received);
+  const paid = stored === "Paid" || (expected > 0 && received >= expected);
+  const status: UniversityIncomeStatus = paid
+    ? "Paid"
+    : stored === "Invoiced" || expected > 0
+      ? "Invoiced"
+      : "Not invoiced";
+  return {
+    status,
+    rateLabel: displayRate(app.commission?.universityRate) === "Not set" ? "" : displayRate(app.commission?.universityRate),
+    expected,
+    received,
+    outstanding,
+    expectedLabel: expected > 0 ? money(expected, mark) : "Not set",
+    receivedLabel: received > 0 ? money(received, mark) : money(0, mark),
+    outstandingLabel: money(outstanding, mark),
+    invoicedOn: app.commission?.universityInvoicedOn || "",
+    receivedOn: app.commission?.universityReceivedOn || "",
+    reference: app.commission?.universityReference || "",
+    paid,
+  };
+}
+
+/** Payees can claim only after admin records that the university has paid Dakshinvedha in full. */
+export function universityHasPaid(app: ApplicationRecord): boolean {
+  return universityIncome(app).paid;
+}
+
+/** Admin margin on one file: university money in, minus the payee amount already on the application. */
+export function adminMargin(app: ApplicationRecord, payeeAmount: number): number {
+  const income = universityIncome(app);
+  if (!income.paid) return 0;
+  return income.received - payeeAmount;
 }

@@ -448,6 +448,13 @@ export function applicationFromRow(row: Row): ApplicationRecord | null {
       claimedOn: payloadCommission?.claimedOn,
       paidDate: asDate(row.commission_paid_date) || payloadCommission?.paidDate,
       referenceNumber: text(row.commission_reference) || payloadCommission?.referenceNumber,
+      universityRate: payloadCommission?.universityRate,
+      universityExpected: payloadCommission?.universityExpected,
+      universityReceived: payloadCommission?.universityReceived,
+      universityInvoicedOn: payloadCommission?.universityInvoicedOn,
+      universityReceivedOn: payloadCommission?.universityReceivedOn,
+      universityReference: payloadCommission?.universityReference,
+      universityStatus: payloadCommission?.universityStatus,
     },
   };
 }
