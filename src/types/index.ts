@@ -622,7 +622,6 @@ export interface B2BPartnerProfile {
     commissionPaid: string;
   };
 
-  // Team Members (up to 5)
   teamMembers?: B2BTeamMember[];
 }
 

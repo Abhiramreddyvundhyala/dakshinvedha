@@ -59,9 +59,6 @@ export default function UnifiedLoginPage() {
   const [studentPassword, setStudentPassword] = useState("");
   const [showStudentPassword, setShowStudentPassword] = useState(false);
   const [channels, setChannels] = useState({ emailOtp: false, smsOtp: false });
-  const [loginStep, setLoginStep] = useState<"password" | "otp">("password");
-  const [loginChallengeId, setLoginChallengeId] = useState("");
-  const [loginCode, setLoginCode] = useState("");
   const [signupStep, setSignupStep] = useState<"details" | "otp">("details");
   const [signupChallengeId, setSignupChallengeId] = useState("");
   const [smsCode, setSmsCode] = useState("");
@@ -131,9 +128,7 @@ export default function UnifiedLoginPage() {
   }, []);
 
   useEffect(() => {
-    setLoginStep("password");
     setSignupStep("details");
-    setLoginCode("");
     setSmsCode("");
     setEmailCode("");
   }, [authMode]);
@@ -162,64 +157,12 @@ export default function UnifiedLoginPage() {
     }
 
     setIsLoading(true);
-    if (channels.emailOtp && loginStep === "password") {
-      const response = await fetch("/api/auth/otp/login/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanEmail, password }),
-      });
-      const payload = (await response.json().catch(() => ({}))) as { error?: string; challengeId?: string };
+    const signedIn = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    if (signedIn.error) {
       setIsLoading(false);
-      if (!response.ok || !payload.challengeId) {
-        setError(payload.error || "Could not send the login code.");
-        return;
-      }
-      setLoginChallengeId(payload.challengeId);
-      setLoginCode("");
-      setLoginStep("otp");
-      setInfo(`A 6-digit code was sent to ${cleanEmail}.`);
+      setError("Those credentials were not accepted. Use the email and password issued for this portal.");
+      setRedirectNotice(null);
       return;
-    }
-
-    if (channels.emailOtp && loginStep === "otp") {
-      const code = loginCode.replace(/\D/g, "");
-      if (code.length !== 6) {
-        setIsLoading(false);
-        setError("Enter the 6-digit code from your email.");
-        return;
-      }
-      const response = await fetch("/api/auth/otp/login/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challengeId: loginChallengeId, email: cleanEmail, password, emailCode: code }),
-      });
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: string;
-        accessToken?: string;
-        refreshToken?: string;
-      };
-      if (!response.ok || !payload.accessToken || !payload.refreshToken) {
-        setIsLoading(false);
-        setError(payload.error || "Could not verify the login code.");
-        return;
-      }
-      const session = await supabase.auth.setSession({
-        access_token: payload.accessToken,
-        refresh_token: payload.refreshToken,
-      });
-      if (session.error) {
-        setIsLoading(false);
-        setError(session.error.message);
-        return;
-      }
-    } else {
-      const signedIn = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-      if (signedIn.error) {
-        setIsLoading(false);
-        setError("Those credentials were not accepted. Use the email and password issued for this portal.");
-        setRedirectNotice(null);
-        return;
-      }
     }
 
     const profile = await fetchMyProfile();
@@ -560,11 +503,7 @@ export default function UnifiedLoginPage() {
                     Log In
                   </h2>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    {loginStep === "otp"
-                      ? `Enter the 6-digit code sent to ${email.trim().toLowerCase()}.`
-                      : channels.emailOtp
-                        ? "Enter your email and password. We will email a login code before opening the dashboard."
-                        : "Enter your email address and password to access your dashboard."}
+                    Enter your email address and password to access your dashboard.
                   </p>
                 </div>
 
@@ -589,27 +528,8 @@ export default function UnifiedLoginPage() {
                     />
                   </div>
 
-                  {loginStep === "otp" && (
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Email code</label>
-                      <input
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={6}
-                        required
-                        value={loginCode}
-                        onChange={(e) => {
-                          setLoginCode(e.target.value.replace(/\D/g, "").slice(0, 6));
-                          setError(null);
-                        }}
-                        placeholder="6-digit code"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                    </div>
-                  )}
-
                   {/* Password Input */}
-                  {loginStep === "password" && <div className="space-y-1.5">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5 text-slate-400" />
@@ -644,10 +564,10 @@ export default function UnifiedLoginPage() {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                  </div>}
+                  </div>
 
                   {/* Remember Me */}
-                  {loginStep === "password" && <div className="flex items-center justify-between text-xs text-slate-600 pt-0.5">
+                  <div className="flex items-center justify-between text-xs text-slate-600 pt-0.5">
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input
                         type="checkbox"
@@ -657,7 +577,7 @@ export default function UnifiedLoginPage() {
                       />
                       <span>Stay signed in on this device</span>
                     </label>
-                  </div>}
+                  </div>
 
                   {/* Submit Button */}
                   <button
@@ -668,56 +588,15 @@ export default function UnifiedLoginPage() {
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>{loginStep === "otp" ? "Checking the code..." : "Verifying credentials..."}</span>
+                        <span>Verifying credentials...</span>
                       </>
                     ) : (
                       <>
-                        <span>{loginStep === "otp" ? "Verify and log in" : channels.emailOtp ? "Send login code" : "Log In"}</span>
+                        <span>Log In</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
-                  {loginStep === "otp" && (
-                    <div className="flex items-center justify-between text-xs">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLoginStep("password");
-                          setLoginCode("");
-                          setInfo(null);
-                          setError(null);
-                        }}
-                        className="font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
-                      >
-                        Back
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isLoading}
-                        onClick={async () => {
-                          setError(null);
-                          setIsLoading(true);
-                          const response = await fetch("/api/auth/otp/login/send", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-                          });
-                          const payload = (await response.json().catch(() => ({}))) as { error?: string; challengeId?: string };
-                          setIsLoading(false);
-                          if (!response.ok || !payload.challengeId) {
-                            setError(payload.error || "Could not send a new login code.");
-                            return;
-                          }
-                          setLoginChallengeId(payload.challengeId);
-                          setLoginCode("");
-                          setInfo(`A new code was sent to ${email.trim().toLowerCase()}.`);
-                        }}
-                        className="font-bold text-orange-600 hover:text-orange-700 cursor-pointer"
-                      >
-                        Resend code
-                      </button>
-                    </div>
-                  )}
                 </form>
 
                 <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-100 space-y-2">
@@ -755,7 +634,7 @@ export default function UnifiedLoginPage() {
                     <ul className="mt-2 space-y-1 text-[11px] text-slate-600">
                       <li>Students create an account with Sign Up. That login opens the student dashboard.</li>
                       <li>B2B owners request access. Admin issues their login from B2B Partners.</li>
-                      <li>A B2B owner can create up to 5 team logins. Agents and admin staff are created by admin.</li>
+                      <li>A B2B owner can create as many team logins as the organization needs. Agents and admin staff are created by admin.</li>
                       <li>The first admin is created in Supabase Authentication, then promoted with the SQL note in supabase/schema.sql.</li>
                     </ul>
                   </details>

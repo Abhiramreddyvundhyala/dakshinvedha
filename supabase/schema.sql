@@ -573,7 +573,7 @@ on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- Role rules. Public signup cannot become staff. Agents are not B2B team.
--- A B2B owner can have at most 5 team members.
+-- B2B organizations and the admin team have no member cap.
 -- ---------------------------------------------------------------------------
 
 create or replace function public.enforce_profile_rules()
@@ -584,7 +584,6 @@ set search_path = public
 as $$
 declare
   actor_role text;
-  team_count int;
 begin
   if tg_op = 'UPDATE' and new.role is distinct from old.role then
     -- SQL Editor has no portal user. That is how the first admin is promoted.
@@ -611,17 +610,6 @@ begin
     new.member_kind = 'team';
   else
     new.member_kind = null;
-  end if;
-
-  if new.role = 'team' then
-    select count(*) into team_count
-    from public.profiles
-    where partner_id = new.partner_id
-      and role = 'team'
-      and id <> new.id;
-    if team_count >= 5 then
-      raise exception 'A B2B owner can have at most 5 team members';
-    end if;
   end if;
 
   return new;

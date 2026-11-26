@@ -1,5 +1,6 @@
 import { recordAccountEvents, type AccountHistoryAction } from "@/lib/accountHistory";
 import { isSuperAdminTitle, parseTeamFeatures } from "@/lib/adminAccess";
+import { b2bFeaturesFromUnknown, type B2BFeatureKey } from "@/lib/b2bAccess";
 import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller, type CallerProfile } from "@/lib/authGuard";
 import { directoryFromProfile, partnerFromRow, partnerToRow, profileFromRow } from "@/lib/records";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
@@ -16,17 +17,29 @@ type ManageBody = {
   features?: unknown;
 };
 
-async function canManage(caller: CallerProfile, targetRole: string, targetPartnerId: string | null): Promise<boolean> {
+async function canManage(
+  caller: CallerProfile,
+  targetRole: string,
+  targetPartnerId: string | null,
+  partner: B2BPartnerProfile | null
+): Promise<boolean> {
   if (callerIsSuperAdmin(caller)) return true;
   if (targetRole === "student") return callerCanUseFeature(caller, "students");
   if (targetRole === "partner") return callerCanUseFeature(caller, "partners");
   if (targetRole === "agent") return callerCanUseFeature(caller, "agents");
   if (targetRole === "admin") return false;
   if (targetRole === "team") {
-    const ownOrg = caller.role === "partner" && caller.partner_id && caller.partner_id === targetPartnerId;
-    return Boolean(ownOrg) || callerCanUseFeature(caller, "partners");
+    const sameOrg = Boolean(caller.partner_id) && caller.partner_id === targetPartnerId;
+    const ownsRecord = Boolean(partner?.ownerProfileId) && partner?.ownerProfileId === caller.id;
+    const ownsEmail = Boolean(partner?.email) && partner.email.toLowerCase() === caller.email.toLowerCase();
+    const ownOrg = caller.role === "partner" && (sameOrg || ownsRecord || ownsEmail);
+    return ownOrg || callerCanUseFeature(caller, "partners");
   }
   return false;
+}
+
+function sameTeamMember(member: { id: string; email: string }, userId: string, email: string): boolean {
+  return member.id === userId || member.email.toLowerCase() === email;
 }
 
 function restoredPartnerStatus(org: B2BPartnerProfile): B2BPartnerProfile["accountStatus"] {
@@ -57,9 +70,6 @@ export async function POST(request: Request) {
   const target = targetResult.data;
   if (!target) return Response.json({ error: "That account was not found." }, { status: 404 });
 
-  const allowed = await canManage(gate.caller, String(target.role || ""), target.partner_id || null);
-  if (!allowed) return Response.json({ error: "You cannot change this account." }, { status: 403 });
-
   let partner: B2BPartnerProfile | null = null;
   const orgId = target.role === "partner" || target.role === "team" ? target.partner_id : null;
   if (orgId) {
@@ -67,12 +77,37 @@ export async function POST(request: Request) {
     if (orgResult.data) partner = partnerFromRow(orgResult.data as Record<string, unknown>);
   }
 
+  const allowed = await canManage(gate.caller, String(target.role || ""), target.partner_id || null, partner);
+  if (!allowed) return Response.json({ error: "You cannot change this account." }, { status: 403 });
+
   if (action === "password") {
     const password = (body?.password || "").trim();
     if (password.length < 6) return Response.json({ error: "Set a password of at least 6 characters." }, { status: 400 });
-    const updated = await admin.auth.admin.updateUserById(userId, { password });
+    const updated = await admin.auth.admin.updateUserById(userId, { password, email_confirm: true });
     if (updated.error) return Response.json({ error: updated.error.message }, { status: 400 });
-    return Response.json({ ok: true, password });
+    const targetEmail = String(target.email || "").toLowerCase();
+    if (target.role === "team" && partner) {
+      const members = partner.teamMembers || [];
+      const found = members.some((member) => sameTeamMember(member, userId, targetEmail));
+      partner.teamMembers = found
+        ? members.map((member) => (sameTeamMember(member, userId, targetEmail) ? { ...member, password } : member))
+        : [
+            ...members,
+            {
+              id: userId,
+              name: String(target.full_name || targetEmail),
+              email: targetEmail,
+              password,
+              role: "Team Member",
+              status: target.status === "Suspended" ? "Suspended" : "Active",
+              createdAt: new Date().toISOString().slice(0, 10),
+              trackingId: String(target.tracking_id || ""),
+            },
+          ];
+      const saved = await admin.from("partners").update(partnerToRow(partner)).eq("id", partner.id);
+      if (saved.error) return Response.json({ error: saved.error.message }, { status: 400 });
+    }
+    return Response.json({ ok: true, password, partner });
   }
 
   if (action === "status") {
@@ -166,33 +201,45 @@ export async function POST(request: Request) {
   }
 
   const fullName = (body?.fullName || "").trim();
-  const phone = (body?.phone || "").trim();
+  const phone = typeof body?.phone === "string" ? body.phone.trim() : undefined;
   if (!fullName) return Response.json({ error: "Name is required." }, { status: 400 });
 
-  const patch: Record<string, unknown> = { full_name: fullName, phone };
+  let teamFeatures: B2BFeatureKey[] | null = null;
+  const patch: Record<string, unknown> = { full_name: fullName };
+  if (phone !== undefined) patch.phone = phone;
   if (target.role === "admin" && !isSuperAdminTitle(String(target.staff_title || "")) && body?.features !== undefined) {
     patch.allowed_features = parseTeamFeatures(body.features);
   }
+  if (target.role === "team" && body?.features !== undefined) {
+    teamFeatures = b2bFeaturesFromUnknown(body.features, false);
+    patch.allowed_features = teamFeatures;
+  }
   const profilePatch = await admin.from("profiles").update(patch).eq("id", userId);
-  if (profilePatch.error) return Response.json({ error: profilePatch.error.message }, { status: 400 });
+  if (profilePatch.error) {
+    if (/allowed_features/i.test(profilePatch.error.message)) {
+      return Response.json({ error: "Run supabase/member-features.sql in the Supabase SQL editor, then save access again." }, { status: 500 });
+    }
+    return Response.json({ error: profilePatch.error.message }, { status: 400 });
+  }
 
   if (target.role === "partner" && partner) {
     partner.name = fullName;
-    partner.phone = phone;
+    if (phone !== undefined) partner.phone = phone;
     if (typeof body?.organizationName === "string") partner.organizationName = body.organizationName.trim();
     await admin.from("partners").update(partnerToRow(partner)).eq("id", partner.id);
   }
 
   if (target.role === "team" && partner) {
+    const targetEmail = String(target.email || "").toLowerCase();
     partner.teamMembers = (partner.teamMembers || []).map((member) =>
-      member.id === userId || member.email.toLowerCase() === String(target.email || "").toLowerCase()
-        ? { ...member, name: fullName }
+      sameTeamMember(member, userId, targetEmail)
+        ? { ...member, name: fullName, ...(teamFeatures ? { features: teamFeatures } : {}) }
         : member
     );
     await admin.from("partners").update(partnerToRow(partner)).eq("id", partner.id);
   }
 
-  const profile = profileFromRow({ ...target, full_name: fullName, phone });
+  const profile = profileFromRow({ ...target, full_name: fullName, ...(phone !== undefined ? { phone } : {}) });
   return Response.json({
     ok: true,
     account: profile ? directoryFromProfile(profile) : null,

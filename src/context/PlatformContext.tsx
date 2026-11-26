@@ -62,6 +62,8 @@ interface PlatformContextType {
   staffName: string;
   isSuperAdmin: boolean;
   teamFeatures: AdminFeatureKey[];
+  /** Screens saved on the signed-in profile. B2B team logins use this list. */
+  sessionGrants: string[];
   canAccessAdminFeature: (feature: AdminFeatureKey) => boolean;
   saveTeamAccess: (features: AdminFeatureKey[]) => Promise<{ ok: true } | { ok: false; error: string }>;
 
@@ -302,6 +304,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [staffTitle, setStaffTitle] = useState("");
   const [staffName, setStaffName] = useState("");
   const [teamFeatures, setTeamFeatures] = useState<AdminFeatureKey[]>(DEFAULT_TEAM_FEATURES);
+  const [sessionGrants, setSessionGrants] = useState<string[]>([]);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [dbReady, setDbReady] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -324,6 +327,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       setStaffTitle(bundle.profile.staffTitle);
       setStaffName(bundle.profile.fullName || bundle.profile.email);
       setTeamFeatures(parseTeamFeatures(bundle.profile.allowedFeatures));
+      setSessionGrants(bundle.profile.allowedFeatures || []);
       setStudents(bundle.students);
       setApplications(bundle.applications);
       setNotices(bundle.notices);
@@ -1328,9 +1332,6 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
     const partner = b2bPartners.find((p) => p.id === partnerId || p.partnerId === partnerId);
     if (!partner) return { error: "Partner not found" };
     const currentMembers = partner.teamMembers || [];
-    if (currentMembers.length >= 5) {
-      return { error: "Maximum of 5 team members allowed" };
-    }
     const email = member.email.trim().toLowerCase();
     if (email === partner.email.toLowerCase()) {
       return { error: "Use a different email from the organization owner." };
@@ -1344,6 +1345,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
       password: member.password,
       fullName: member.name.trim(),
       partnerId: partner.id,
+      features: member.features,
     });
     if (!result.ok) return { error: result.error };
     if (!result.account) return { error: "The team login was not created." };
@@ -1575,6 +1577,7 @@ export const PlatformProvider: React.FC<{ children: ReactNode }> = ({ children }
         staffName,
         isSuperAdmin,
         teamFeatures,
+        sessionGrants,
         canAccessAdminFeature: hasAdminFeature,
         saveTeamAccess,
         isStudentAuthenticated,

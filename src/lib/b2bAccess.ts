@@ -51,6 +51,14 @@ export function normalizeB2BFeatures(raw: readonly string[] | undefined, fallbac
   return ["dashboard", ...selected];
 }
 
+export function b2bFeaturesFromUnknown(raw: unknown, fallbackAll: boolean): B2BFeatureKey[] {
+  if (!Array.isArray(raw)) return normalizeB2BFeatures(undefined, fallbackAll);
+  return normalizeB2BFeatures(
+    raw.filter((item): item is string => typeof item === "string"),
+    false
+  );
+}
+
 /** Owners see every screen. A team member with no saved feature list keeps the older full menu, except Team. */
 export function canAccessB2BTab(isOwner: boolean, member: Pick<B2BTeamMember, "features"> | null, tab: string): boolean {
   if (tab === "team") return isOwner;

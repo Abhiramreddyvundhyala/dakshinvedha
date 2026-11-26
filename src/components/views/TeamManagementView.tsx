@@ -24,15 +24,16 @@ import { manageAccount } from "@/lib/portalDb";
 import { B2B_FEATURE_COPY, B2B_GRANTABLE_FEATURES, B2BFeatureKey, normalizeB2BFeatures } from "@/lib/b2bAccess";
 
 export const TeamManagementView: React.FC = () => {
-  const { activeB2BPartner, addB2BTeamMember, removeB2BTeamMember, updateB2BTeamMember } = usePlatform();
+  const { activeB2BPartner, addB2BTeamMember, removeB2BTeamMember, updateB2BTeamMember, syncAccountAccess } = usePlatform();
 
   // Form state
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
   const [formError, setFormError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,8 +58,6 @@ export const TeamManagementView: React.FC = () => {
   }
 
   const teamMembers: B2BTeamMember[] = activeB2BPartner.teamMembers || [];
-  const MAX_MEMBERS = 5;
-  const canAddMore = teamMembers.length < MAX_MEMBERS;
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,26 +111,56 @@ export const TeamManagementView: React.FC = () => {
     const newStatus = member.status === "Active" ? "Suspended" : "Active";
     const result = await manageAccount({ userId: member.id, action: "status", status: newStatus });
     if (!result.ok) {
-      setFormError(result.error);
+      setActionError(result.error);
       return;
     }
     updateB2BTeamMember(activeB2BPartner.id, member.id, { status: newStatus });
   };
 
   const handleResetPassword = async (member: B2BTeamMember) => {
-    if (resetPassword.trim().length < 6) {
-      setFormError("Password must be at least 6 characters.");
+    const issued = resetPassword.trim();
+    if (issued.length < 6) {
+      setActionError("Password must be at least 6 characters.");
       return;
     }
-    const result = await manageAccount({ userId: member.id, action: "password", password: resetPassword.trim() });
+    setActionError("");
+    const result = await manageAccount({ userId: member.id, action: "password", password: issued });
     if (!result.ok) {
-      setFormError(result.error);
+      setActionError(result.error);
       return;
     }
-    setSuccessMsg(`New password for ${member.name}: ${result.password || resetPassword.trim()}`);
-    setTimeout(() => setSuccessMsg(""), 6000);
+    const nextPassword = result.password || issued;
+    if (result.partner) {
+      syncAccountAccess({ userId: member.id, role: "team", partner: result.partner });
+    }
+    updateB2BTeamMember(activeB2BPartner.id, member.id, { password: nextPassword });
+    setRevealedCredentials((prev) => ({ ...prev, [member.id]: true }));
+    setSuccessMsg(`Password updated for ${member.name}. New password: ${nextPassword}`);
+    setTimeout(() => setSuccessMsg(""), 8000);
     setResetId(null);
     setResetPassword("");
+  };
+
+  const handleSaveAccess = async (member: B2BTeamMember) => {
+    const nextFeatures = normalizeB2BFeatures(accessFeatures, false);
+    setActionError("");
+    const result = await manageAccount({
+      userId: member.id,
+      action: "update",
+      fullName: member.name,
+      features: nextFeatures,
+    });
+    if (!result.ok) {
+      setActionError(result.error);
+      return;
+    }
+    if (result.partner) {
+      syncAccountAccess({ userId: member.id, role: "team", partner: result.partner });
+    }
+    updateB2BTeamMember(activeB2BPartner.id, member.id, { features: nextFeatures });
+    setSuccessMsg(`Updated screen access for ${member.name}. They see the new screens the next time they open the dashboard.`);
+    setTimeout(() => setSuccessMsg(""), 5000);
+    setAccessMemberId(null);
   };
 
   const toggleReveal = (memberId: string) => {
@@ -150,36 +179,23 @@ export const TeamManagementView: React.FC = () => {
             <div>
               <h1 className="text-lg sm:text-xl font-extrabold text-white">Team Management</h1>
               <p className="text-xs text-white/75 mt-0.5">
-                Create and manage team member login credentials — up to {MAX_MEMBERS} members
+                Create team logins, share the password, and choose which screens each person can open. There is no member limit.
               </p>
             </div>
           </div>
 
-          {canAddMore && (
-            <button
-              onClick={() => { setIsAddingMember(true); setFormError(""); }}
-              className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#ea580c] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Team Member</span>
-            </button>
-          )}
+          <button
+            onClick={() => { setIsAddingMember(true); setFormError(""); }}
+            className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#ea580c] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Team Member</span>
+          </button>
         </div>
 
-        {/* Slot indicator */}
-        <div className="relative z-10 mt-4 flex items-center gap-2">
-          {Array.from({ length: MAX_MEMBERS }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 rounded-full flex-1 transition-all ${
-                i < teamMembers.length ? "bg-white" : "bg-white/25"
-              }`}
-            />
-          ))}
-          <span className="text-xs text-white/80 ml-2 shrink-0">
-            {teamMembers.length}/{MAX_MEMBERS} slots used
-          </span>
-        </div>
+        <p className="relative z-10 mt-4 text-xs text-white/80">
+          {teamMembers.length} team {teamMembers.length === 1 ? "login" : "logins"}
+        </p>
       </div>
 
       {/* Success Toast */}
@@ -187,6 +203,12 @@ export const TeamManagementView: React.FC = () => {
         <div className="flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl p-4">
           <CheckCircle2 className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
           <p className="text-sm text-orange-800 font-medium">{successMsg}</p>
+        </div>
+      )}
+      {actionError && (
+        <div className="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-4">
+          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+          <p className="text-sm text-rose-800 font-medium">{actionError}</p>
         </div>
       )}
 
@@ -345,11 +367,6 @@ export const TeamManagementView: React.FC = () => {
               </p>
             </div>
           </div>
-          {!canAddMore && (
-            <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-              Limit Reached (5/5)
-            </span>
-          )}
         </div>
 
         {teamMembers.length === 0 ? (
@@ -359,16 +376,14 @@ export const TeamManagementView: React.FC = () => {
             </div>
             <p className="text-sm font-semibold text-slate-500">No team members yet</p>
             <p className="text-xs text-slate-400 mt-1 max-w-xs">
-              Create up to 5 team members and share their login credentials so they can access the portal.
+              Create team logins and share the email and password so they can access the screens you allow.
             </p>
-            {canAddMore && (
-              <button
-                onClick={() => setIsAddingMember(true)}
-                className="mt-4 px-4 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold rounded-xl cursor-pointer transition-all"
-              >
-                + Add First Team Member
-              </button>
-            )}
+            <button
+              onClick={() => setIsAddingMember(true)}
+              className="mt-4 px-4 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold rounded-xl cursor-pointer transition-all"
+            >
+              + Add First Team Member
+            </button>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -427,6 +442,13 @@ export const TeamManagementView: React.FC = () => {
                           Added: {member.createdAt}
                           {member.lastLogin && ` • Last login: ${member.lastLogin}`}
                         </p>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Screens:{" "}
+                          {normalizeB2BFeatures(member.features, !Array.isArray(member.features))
+                            .filter((feature) => feature !== "dashboard")
+                            .map((feature) => B2B_FEATURE_COPY[feature].label)
+                            .join(", ") || "Dashboard only"}
+                        </p>
                       </div>
                     </div>
 
@@ -434,9 +456,11 @@ export const TeamManagementView: React.FC = () => {
                     {resetId === member.id ? (
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start sm:self-auto shrink-0 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
                         <input
+                          type="text"
                           value={resetPassword}
                           onChange={(e) => setResetPassword(e.target.value)}
-                          className="px-2 py-1 rounded-lg border border-orange-200 text-xs font-mono min-w-[140px]"
+                          aria-label={`New password for ${member.name}`}
+                          className="px-2 py-1 rounded-lg border border-orange-200 text-xs font-mono min-w-[180px] text-slate-900"
                         />
                         <button type="button" onClick={() => setResetPassword(generatePassword())} className="px-2.5 py-1 text-xs font-bold text-orange-800">Generate</button>
                         <button type="button" onClick={() => void handleResetPassword(member)} className="px-2.5 py-1 bg-orange-600 text-white text-xs font-bold rounded-lg">Save</button>
@@ -530,9 +554,17 @@ export const TeamManagementView: React.FC = () => {
                   {accessMemberId === member.id && (
                     <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50/40 p-4">
                       <p className="text-xs font-bold text-slate-900">Screens for {member.name}</p>
+                      <p className="mt-1 text-[11px] text-slate-500">Dashboard stays on. Tick every other screen this login may open. Team management stays with you.</p>
+                      <label className="mt-3 flex items-start gap-2 text-xs text-slate-500">
+                        <input type="checkbox" checked disabled className="mt-0.5" />
+                        <span>
+                          <span className="block font-bold text-slate-800">{B2B_FEATURE_COPY.dashboard.label}</span>
+                          {B2B_FEATURE_COPY.dashboard.description}
+                        </span>
+                      </label>
                       <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {B2B_GRANTABLE_FEATURES.map((feature) => (
-                          <label key={feature} className="flex items-start gap-2 text-xs text-slate-700">
+                          <label key={feature} className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer">
                             <input
                               type="checkbox"
                               className="mt-0.5 accent-orange-600"
@@ -543,21 +575,17 @@ export const TeamManagementView: React.FC = () => {
                                 )
                               }
                             />
-                            <span>{B2B_FEATURE_COPY[feature].label}</span>
+                            <span>
+                              <span className="block font-bold text-slate-800">{B2B_FEATURE_COPY[feature].label}</span>
+                              {B2B_FEATURE_COPY[feature].description}
+                            </span>
                           </label>
                         ))}
                       </div>
                       <div className="mt-3 flex gap-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            updateB2BTeamMember(activeB2BPartner.id, member.id, {
-                              features: normalizeB2BFeatures(accessFeatures, false),
-                            });
-                            setSuccessMsg(`Updated screen access for ${member.name}.`);
-                            setTimeout(() => setSuccessMsg(""), 4000);
-                            setAccessMemberId(null);
-                          }}
+                          onClick={() => void handleSaveAccess(member)}
                           className="px-3 py-1.5 bg-[#ea580c] text-white text-xs font-bold rounded-lg"
                         >
                           Save access
@@ -597,15 +625,20 @@ export const TeamManagementView: React.FC = () => {
                         </div>
 
                         {/* Password */}
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Key className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <Key className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                             <span className="text-[11px] text-slate-400 shrink-0">Password</span>
-                            <span className="font-mono text-xs text-orange-300 truncate">{member.password}</span>
+                            <span className="font-mono text-sm font-bold text-white break-all">
+                              {member.password
+                                ? member.password
+                                : "Not stored yet. Use Password to set one. It will stay visible here and become the login password."}
+                            </span>
                           </div>
                           <button
-                            onClick={() => handleCopy(member.password, `pwd-${member.id}`)}
-                            className="shrink-0 p-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors cursor-pointer"
+                            onClick={() => member.password && handleCopy(member.password, `pwd-${member.id}`)}
+                            disabled={!member.password}
+                            className="shrink-0 p-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors cursor-pointer disabled:opacity-40"
                             title="Copy password"
                           >
                             {copiedField === `pwd-${member.id}` ? (

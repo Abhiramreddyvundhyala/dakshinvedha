@@ -24,7 +24,7 @@ import { readSessionValue } from "@/utils/accounts";
 import { canAccessB2BTab } from "@/lib/b2bAccess";
 
 export const PartnerPortalRoot: React.FC = () => {
-  const { applications, updateApplicationStatus, activeB2BPartner, portalRole, recordApplication } = usePlatform();
+  const { applications, updateApplicationStatus, activeB2BPartner, portalRole, recordApplication, sessionGrants } = usePlatform();
 
   // Profile completion state (once wizard is submitted in session, show dashboard)
   const [profileJustCompleted, setProfileJustCompleted] = useState(false);
@@ -73,7 +73,14 @@ export const PartnerPortalRoot: React.FC = () => {
     !isOwner && activeB2BPartner
       ? (activeB2BPartner.teamMembers || []).find((member) => member.email.toLowerCase() === sessionEmail.toLowerCase()) || null
       : null;
-  const canOpen = (tab: NavItemKey) => canAccessB2BTab(isOwner, teamMember, tab);
+  const accessMember =
+    teamMember == null
+      ? null
+      : {
+          ...teamMember,
+          features: sessionGrants.length > 0 ? sessionGrants : teamMember.features,
+        };
+  const canOpen = (tab: NavItemKey) => canAccessB2BTab(isOwner, accessMember, tab);
   const retiredFinance =
     currentTab === "finance-promotional-commission" ||
     currentTab === "finance-accommodation-commission" ||

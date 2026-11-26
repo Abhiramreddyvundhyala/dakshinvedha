@@ -231,7 +231,19 @@ async function writePartner(partner: B2BPartnerProfile): Promise<string | null> 
   if (!isUuid(partner.id)) return "This organization is not stored in the database yet.";
   const supabase = getSupabase();
   if (!supabase) return SETUP;
-  const { error } = await supabase.from("partners").update(partnerToRow(partner)).eq("id", partner.id);
+  const existing = await supabase.from("partners").select("payload").eq("id", partner.id).maybeSingle();
+  const previous = existing.data?.payload ? partnerFromRow({ payload: existing.data.payload } as Record<string, unknown>) : null;
+  const merged: B2BPartnerProfile = {
+    ...partner,
+    teamMembers: (partner.teamMembers || []).map((member) => {
+      if (member.password) return member;
+      const prior = (previous?.teamMembers || []).find(
+        (item) => item.id === member.id || item.email.toLowerCase() === member.email.toLowerCase()
+      );
+      return prior?.password ? { ...member, password: prior.password } : member;
+    }),
+  };
+  const { error } = await supabase.from("partners").update(partnerToRow(merged)).eq("id", partner.id);
   return error ? explain(error.message) : null;
 }
 

@@ -345,7 +345,10 @@ export function blankPartner(input: {
 
 export function stripPartner(partner: B2BPartnerProfile): B2BPartnerProfile {
   const next: B2BPartnerProfile = { ...partner, password: undefined };
-  next.teamMembers = (partner.teamMembers || []).map((member) => ({ ...member, password: "" }));
+  next.teamMembers = (partner.teamMembers || []).map((member) => ({
+    ...member,
+    password: typeof member.password === "string" ? member.password : "",
+  }));
   return next;
 }
 
@@ -606,5 +609,5 @@ export function ledgerFromRow(row: Row): CommissionLedgerItem {
 }
 
 export function teamMemberPublic(member: B2BTeamMember): B2BTeamMember {
-  return { ...member, password: "" };
+  return { ...member, password: typeof member.password === "string" ? member.password : "" };
 }

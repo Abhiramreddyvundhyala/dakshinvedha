@@ -116,6 +116,7 @@ export const AdminTeamView: React.FC = () => {
       return;
     }
     const features = parseTeamFeatures(form.features);
+    let noticeMs = 4000;
 
     if (editMember) {
       if (email !== editMember.email.toLowerCase()) {
@@ -124,6 +125,11 @@ export const AdminTeamView: React.FC = () => {
       }
       if (editMember.isOwner) {
         setFormError("The Super Admin login is not edited as a team member.");
+        return;
+      }
+      const nextPassword = password.trim();
+      if (nextPassword && nextPassword.length < 6) {
+        setFormError("Set a password of at least 6 characters, or leave it blank to keep the current one.");
         return;
       }
       const result = await manageAccount({
@@ -137,7 +143,17 @@ export const AdminTeamView: React.FC = () => {
         setFormError(result.error);
         return;
       }
-      setSuccessMsg(`${form.name} updated.`);
+      if (nextPassword) {
+        const reset = await manageAccount({ userId: editMember.id, action: "password", password: nextPassword });
+        if (!reset.ok) {
+          setFormError(reset.error);
+          return;
+        }
+        setSuccessMsg(`${form.name} updated. New password: ${reset.password || nextPassword}`);
+        noticeMs = 12000;
+      } else {
+        setSuccessMsg(`${form.name} updated.`);
+      }
     } else {
       if (password.trim().length < 6) {
         setFormError("Set a password of at least 6 characters.");
@@ -157,10 +173,11 @@ export const AdminTeamView: React.FC = () => {
         return;
       }
       setSuccessMsg(`${form.name} can sign in with ${email} / ${issued}. Tracking ID ${result.account.trackingId}.`);
+      noticeMs = 12000;
     }
     setShowModal(false);
     await refresh();
-    setTimeout(() => setSuccessMsg(null), 4000);
+    setTimeout(() => setSuccessMsg(null), noticeMs);
   };
 
   return (
@@ -169,7 +186,7 @@ export const AdminTeamView: React.FC = () => {
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: "#1e293b", margin: 0 }}>Team</h1>
           <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
-            Create a login for each staff member and tick the screens they may use. Pause, reset, and delete are on Accounts.
+            Create a login for each staff member and tick the screens they may use. There is no limit on team size. Pause, reset, and delete are also on Accounts.
           </p>
         </div>
         <button onClick={openAdd} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, background: "#f97316", color: "#ffffff", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer" }}>
@@ -297,18 +314,18 @@ export const AdminTeamView: React.FC = () => {
                   <input type={type} value={key === "name" ? form.name : key === "email" ? form.email : form.phone} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={INPUT_STYLE} />
                 </div>
               ))}
-              {!editMember && (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>Login password *</label>
-                    <button type="button" onClick={() => setPassword(generatePassword())} style={{ border: "none", background: "none", color: "#ea580c", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Generate</button>
-                  </div>
-                  <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} style={INPUT_STYLE} />
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>{editMember ? "New password" : "Login password *"}</label>
+                  <button type="button" onClick={() => setPassword(generatePassword())} style={{ border: "none", background: "none", color: "#ea580c", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Generate</button>
                 </div>
-              )}
-              {editMember && (
-                <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>Pause, password reset, and delete for this login are on Accounts.</p>
-              )}
+                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editMember ? "Leave blank to keep the current password" : "Visible password to share"} style={INPUT_STYLE} />
+                <p style={{ fontSize: 11, color: "#94a3b8", margin: "6px 0 0" }}>
+                  {editMember
+                    ? "The password is shown here as you type. Saving replaces the login password immediately."
+                    : "This password is visible so you can share it. Pause and delete stay on Accounts."}
+                </p>
+              </div>
               <div>
                 <p style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", margin: "4px 0 8px" }}>Screens this person may use</p>
                 <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 10px" }}>Dashboard stays on so they have a home page. Tick the rest for this login only.</p>

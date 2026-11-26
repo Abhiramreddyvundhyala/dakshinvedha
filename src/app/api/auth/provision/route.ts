@@ -1,4 +1,5 @@
 import { parseTeamFeatures } from "@/lib/adminAccess";
+import { b2bFeaturesFromUnknown } from "@/lib/b2bAccess";
 import { callerCanUseFeature, callerIsSuperAdmin, isGuardError, requireCaller } from "@/lib/authGuard";
 import { createConfirmedUser, nextTrackingCode } from "@/lib/createPortalUser";
 import { blankPartner, directoryFromProfile, partnerFromRow, partnerToRow, profileFromRow, type DirectoryAccount } from "@/lib/records";
@@ -104,8 +105,12 @@ export async function POST(request: Request) {
     staff_title: role === "admin" ? "Team" : null,
     department: null,
   };
+  const teamFeatures = role === "team" ? b2bFeaturesFromUnknown(body?.features, true) : null;
   if (role === "admin") {
     profilePatch.allowed_features = parseTeamFeatures(body?.features);
+  }
+  if (role === "team" && teamFeatures) {
+    profilePatch.allowed_features = teamFeatures;
   }
   const updated = await admin.from("profiles").update(profilePatch).eq("id", userId).select("*").maybeSingle();
   if (updated.error || !updated.data) {
@@ -129,11 +134,12 @@ export async function POST(request: Request) {
           id: userId,
           name: fullName,
           email,
-          password: "",
+          password,
           role: "Team Member",
           status: "Active",
           createdAt: new Date().toISOString().slice(0, 10),
           trackingId: issued.code,
+          features: teamFeatures || undefined,
         },
       ];
       await admin.from("partners").update(partnerToRow(org)).eq("id", org.id);
