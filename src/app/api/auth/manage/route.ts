@@ -29,9 +29,10 @@ async function canManage(
   if (targetRole === "agent") return callerCanUseFeature(caller, "agents");
   if (targetRole === "admin") return false;
   if (targetRole === "team") {
+    const ownerEmail = partner?.email || "";
     const sameOrg = Boolean(caller.partner_id) && caller.partner_id === targetPartnerId;
     const ownsRecord = Boolean(partner?.ownerProfileId) && partner?.ownerProfileId === caller.id;
-    const ownsEmail = Boolean(partner?.email) && partner.email.toLowerCase() === caller.email.toLowerCase();
+    const ownsEmail = Boolean(ownerEmail) && ownerEmail.toLowerCase() === caller.email.toLowerCase();
     const ownOrg = caller.role === "partner" && (sameOrg || ownsRecord || ownsEmail);
     return ownOrg || callerCanUseFeature(caller, "partners");
   }
