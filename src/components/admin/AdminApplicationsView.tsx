@@ -6,6 +6,7 @@ import { ApplicationRecord } from "@/types";
 import { listDirectory } from "@/lib/portalDb";
 import type { DirectoryAccount } from "@/lib/records";
 import { APPLICATION_STAGES, primaryForStage, resolveTimeline } from "@/utils/tracking";
+import { commissionChannel } from "@/lib/commission";
 import { newestFirst } from "@/lib/recent";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
 import { ApplicationTracker } from "@/components/shared/ApplicationTracker";
@@ -22,9 +23,14 @@ import {
   Ban,
   X,
   Sparkles,
+  Plus,
 } from "lucide-react";
 
-export const AdminApplicationsView: React.FC = () => {
+interface AdminApplicationsViewProps {
+  onAddApplication?: () => void;
+}
+
+export const AdminApplicationsView: React.FC<AdminApplicationsViewProps> = ({ onAddApplication }) => {
   const { applications, updateApplicationStatus } = usePlatform();
 
   const [search, setSearch] = useState("");
@@ -94,6 +100,16 @@ export const AdminApplicationsView: React.FC = () => {
             Applying sets stage 1. Choose the current stage once here. The student tracker uses that same stage.
           </p>
         </div>
+        {onAddApplication && (
+          <button
+            type="button"
+            onClick={onAddApplication}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            Add New Application
+          </button>
+        )}
       </div>
 
       {/* Filter Bar */}
@@ -141,7 +157,23 @@ export const AdminApplicationsView: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredApps.map((app) => {
-                const isStudentSelf = app.counselorName?.includes("Student");
+                const channel = commissionChannel(app);
+                const channelLabel =
+                  channel === "b2b"
+                    ? "Partner B2B"
+                    : channel === "agent"
+                      ? "Agent"
+                      : app.counselorName?.includes("Student")
+                        ? "Student Portal"
+                        : "Direct";
+                const channelClass =
+                  channel === "b2b"
+                    ? "bg-blue-100 text-blue-800"
+                    : channel === "agent"
+                      ? "bg-sky-100 text-sky-800"
+                      : channelLabel === "Student Portal"
+                        ? "bg-orange-100 text-orange-800"
+                        : "bg-emerald-100 text-emerald-800";
 
                 return (
                   <tr key={app.camsId} className="hover:bg-orange-50/40 transition-colors">
@@ -159,14 +191,8 @@ export const AdminApplicationsView: React.FC = () => {
                     </td>
                     <td className="p-4 font-semibold text-slate-700">{app.course.activeIntake}</td>
                     <td className="p-4">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          isStudentSelf
-                            ? "bg-orange-100 text-orange-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {isStudentSelf ? "Student Portal" : "Partner B2B"}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${channelClass}`}>
+                        {channelLabel}
                       </span>
                     </td>
                     <td className="p-4">

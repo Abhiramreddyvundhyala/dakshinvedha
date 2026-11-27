@@ -17,15 +17,42 @@ import { AdminAgentsView } from "./AdminAgentsView";
 import { AdminAnalyticsView } from "./AdminAnalyticsView";
 import { AdminAccountsView } from "./AdminAccountsView";
 import { AdminCommissionsView } from "./AdminCommissionsView";
-import { StudentProfile } from "@/types";
+import { StudentApplicationWizardModal } from "@/components/student/StudentApplicationWizardModal";
+import { ApplicationRecord, StudentProfile } from "@/types";
 import { usePlatform } from "@/context/PlatformContext";
+import { CheckCircle2 } from "lucide-react";
 
 export const AdminPortalRoot: React.FC = () => {
-  const { canAccessAdminFeature } = usePlatform();
+  const { canAccessAdminFeature, recordApplication, staffName } = usePlatform();
   const [currentTab, setCurrentTab] = useState<AdminTabKey>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedStudentForDetails, setSelectedStudentForDetails] = useState<StudentProfile | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [applyKey, setApplyKey] = useState(0);
+  const [applyNotice, setApplyNotice] = useState<string | null>(null);
+
+  const openApply = () => {
+    setApplyKey((key) => key + 1);
+    setApplyOpen(true);
+  };
+
+  const handleFiled = (app: ApplicationRecord) => {
+    const counselor = staffName || "Dakshinvedha Admin";
+    recordApplication({
+      ...app,
+      counselorName: counselor,
+      partnerTrackingId: undefined,
+      partnerRecordId: undefined,
+      agentTrackingId: undefined,
+      agentProfileId: undefined,
+    });
+    setCurrentTab("applications");
+    setApplyNotice(`Application ${app.camsId} submitted for ${app.student.name}.`);
+    window.setTimeout(() => setApplyNotice(null), 4500);
+  };
+
+  const canApply = canAccessAdminFeature("applications");
 
   const openTab = (tab: AdminTabKey) => {
     setCurrentTab(canAccessAdminFeature(tab) ? tab : "dashboard");
@@ -62,10 +89,14 @@ export const AdminPortalRoot: React.FC = () => {
         <AdminTopbar currentTab={currentTab} onOpenMenu={() => setMobileOpen(true)} />
 
         <main className="flex-1 p-3 sm:p-6 overflow-auto">
-          {currentTab === "dashboard" && <AdminDashboardView onNavigateTab={openTab} />}
+          {currentTab === "dashboard" && (
+            <AdminDashboardView onNavigateTab={openTab} onAddApplication={canApply ? openApply : undefined} />
+          )}
           {currentTab === "analytics" && <AdminAnalyticsView />}
           {currentTab === "students" && <AdminStudentsView onSelectStudent={(s) => setSelectedStudentForDetails(s)} />}
-          {currentTab === "applications" && <AdminApplicationsView />}
+          {currentTab === "applications" && (
+            <AdminApplicationsView onAddApplication={canApply ? openApply : undefined} />
+          )}
           {currentTab === "universities" && <AdminUniversitiesView />}
           {currentTab === "courses" && <AdminCoursesView />}
           {currentTab === "documents" && <AdminDocumentsQueueView />}
@@ -81,6 +112,28 @@ export const AdminPortalRoot: React.FC = () => {
       <AdminStudentDetailsModal
         student={selectedStudentForDetails}
         onClose={() => setSelectedStudentForDetails(null)}
+      />
+
+      {applyNotice && (
+        <div className="fixed top-20 right-6 z-50 bg-white px-4 py-3 rounded-xl shadow-lg border border-orange-200 flex items-center gap-3">
+          <div className="w-7 h-7 rounded-full bg-orange-50 flex items-center justify-center shrink-0 text-orange-500">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-700">{applyNotice}</p>
+        </div>
+      )}
+
+      <StudentApplicationWizardModal
+        key={applyKey}
+        isOpen={applyOpen}
+        onClose={() => setApplyOpen(false)}
+        fileFromProfile={false}
+        counselorName={staffName || "Dakshinvedha Admin"}
+        onApplicationCompleted={handleFiled}
+        onGoToDashboard={() => {
+          setApplyOpen(false);
+          setCurrentTab("dashboard");
+        }}
       />
     </div>
   );

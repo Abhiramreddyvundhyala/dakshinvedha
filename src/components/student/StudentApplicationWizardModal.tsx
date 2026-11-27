@@ -55,6 +55,9 @@ interface StudentApplicationWizardModalProps {
   initialCourse?: CourseInfo | null;
   onApplicationCompleted: (app: ApplicationRecord) => void;
   onGoToDashboard: () => void;
+  /** When false, the form is a new direct application and is not filed against the signed-in student profile. */
+  fileFromProfile?: boolean;
+  counselorName?: string;
 }
 
 export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardModalProps> = ({
@@ -63,6 +66,8 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
   initialCourse,
   onApplicationCompleted,
   onGoToDashboard,
+  fileFromProfile = true,
+  counselorName = "B2B partner",
 }) => {
   const {
     activeStudent,
@@ -74,6 +79,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
     deleteEducation,
     uploadDocument,
   } = usePlatform();
+  const profile = fileFromProfile ? activeStudent : null;
 
   // Wizard Step: 1 to 8
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -188,34 +194,34 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // Pre-fill profile fields from activeStudent
   useEffect(() => {
-    if (activeStudent && isOpen) {
-      setFirstName(activeStudent.firstName || activeStudent.name.split(" ")[0] || "Student");
-      setMiddleName(activeStudent.middleName || "");
-      setLastName(activeStudent.lastName || activeStudent.name.split(" ").slice(1).join(" ") || "");
-      setDob(activeStudent.personal.dob || "");
-      setGender(activeStudent.personal.gender || "");
-      setEmail(activeStudent.email || "");
-      setMobile(activeStudent.mobile || "");
-      setAltMobile(activeStudent.alternateMobile || "");
-      setNationality(activeStudent.personal.nationality || "Indian");
-      setCountryOfResidence(activeStudent.personal.countryOfResidence || "India");
-      setStreetAddress(activeStudent.personal.address.street || "");
-      setCity(activeStudent.personal.address.city || "");
-      setStateName(activeStudent.personal.address.state || "");
-      setPostalCode(activeStudent.personal.address.postalCode || "");
+    if (profile && isOpen) {
+      setFirstName(profile.firstName || profile.name.split(" ")[0] || "Student");
+      setMiddleName(profile.middleName || "");
+      setLastName(profile.lastName || profile.name.split(" ").slice(1).join(" ") || "");
+      setDob(profile.personal.dob || "");
+      setGender(profile.personal.gender || "");
+      setEmail(profile.email || "");
+      setMobile(profile.mobile || "");
+      setAltMobile(profile.alternateMobile || "");
+      setNationality(profile.personal.nationality || "Indian");
+      setCountryOfResidence(profile.personal.countryOfResidence || "India");
+      setStreetAddress(profile.personal.address.street || "");
+      setCity(profile.personal.address.city || "");
+      setStateName(profile.personal.address.state || "");
+      setPostalCode(profile.personal.address.postalCode || "");
 
-      setHasPassport(activeStudent.passport.hasPassport || "NO");
-      setPassportNumber(activeStudent.passport.passportNumber || "");
-      setPassportCountry(activeStudent.passport.passportCountry || "");
-      setDateOfIssue(activeStudent.passport.dateOfIssue || "");
-      setExpiryDate(activeStudent.passport.expiryDate || "");
-      setPlaceOfIssue(activeStudent.passport.placeOfIssue || "");
+      setHasPassport(profile.passport.hasPassport || "NO");
+      setPassportNumber(profile.passport.passportNumber || "");
+      setPassportCountry(profile.passport.passportCountry || "");
+      setDateOfIssue(profile.passport.dateOfIssue || "");
+      setExpiryDate(profile.passport.expiryDate || "");
+      setPlaceOfIssue(profile.passport.placeOfIssue || "");
 
-      setQualificationsList(activeStudent.education || []);
+      setQualificationsList(profile.education || []);
 
-      setTestsStatus(activeStudent.testsStatus || "YES");
-      if (activeStudent.standardizedTests && activeStudent.standardizedTests.length > 0) {
-        const firstTest = activeStudent.standardizedTests[0];
+      setTestsStatus(profile.testsStatus || "YES");
+      if (profile.standardizedTests && profile.standardizedTests.length > 0) {
+        const firstTest = profile.standardizedTests[0];
         setSelectedTestType(firstTest.type as any);
         setTestScoreOverall(firstTest.overallScore || "");
         setTestSubL(firstTest.subScores?.listening || "");
@@ -224,10 +230,10 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
         setTestSubS(firstTest.subScores?.speaking || "");
       }
 
-      setPrefStudyLevel(activeStudent.studyPreferences.preferredStudyLevel || "Postgraduate");
+      setPrefStudyLevel(profile.studyPreferences.preferredStudyLevel || "Postgraduate");
 
       setUploadedDocs(
-        (activeStudent.documents || []).map((d) => ({
+        (profile.documents || []).map((d) => ({
           category: d.category,
           title: d.title,
           fileName: d.fileName || `${d.category}.pdf`,
@@ -238,7 +244,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
         }))
       );
     }
-  }, [activeStudent, isOpen]);
+  }, [profile, isOpen]);
 
   // Derived current University and Course objects
   const currentUniv = useMemo(() => {
@@ -322,7 +328,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
 
   // Frontend Eligibility check
   const eligibilityProfile = useMemo((): StudentProfile | null => {
-    if (activeStudent) return activeStudent;
+    if (profile) return profile;
     const tests =
       testsStatus === "YES"
         ? [
@@ -346,7 +352,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
       passport: { hasPassport, passportNumber },
     } as unknown as StudentProfile;
   }, [
-    activeStudent,
+    profile,
     qualificationsList,
     testsStatus,
     selectedTestType,
@@ -428,7 +434,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
       activeBacklogs: eduActiveBacklogs,
     };
     if (editingEduId) {
-      updateEducation(editingEduId, payload);
+      if (profile) updateEducation(editingEduId, payload);
       setQualificationsList((prev) =>
         prev.map((item) => (item.id === editingEduId ? { ...item, ...payload } : item))
       );
@@ -439,7 +445,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
         verificationStatus: "Pending",
       };
       setQualificationsList((prev) => [...prev, created]);
-      addEducation(payload);
+      if (profile) addEducation(payload);
     }
     setShowAddEduModal(false);
     resetEduForm();
@@ -453,7 +459,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
       return;
     }
     const notes = applicationNotes || `Application for ${currentCourse.courseName} at ${currentUniv.name}.`;
-    if (activeStudent) {
+    if (profile) {
       const newApp = submitStudentApplication({
         universityId: currentUniv.id,
         courseId: currentCourse.id,
@@ -505,7 +511,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
       secondaryStatus: "Documents Pending",
       dateAdded: today,
       dateModified: today,
-      counselorName: "B2B partner",
+      counselorName,
       qualifications: qualificationsList.map((item) => ({
         id: item.id,
         highestQualification: item.degree || item.level,
@@ -1068,7 +1074,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                           type="button"
                           onClick={() => {
                             setQualificationsList((prev) => prev.filter((item) => item.id !== q.id));
-                            deleteEducation(q.id);
+                            if (profile) deleteEducation(q.id);
                           }}
                           className="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Delete qualification"
@@ -1529,7 +1535,7 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                                 if (!file) return;
                                 setUploadError(null);
                                 setUploadingCat(item.cat);
-                                const upload = activeStudent
+                                const upload = profile
                                   ? uploadStudentFile(file, item.cat)
                                   : uploadForCurrentUser(file, item.cat);
                                 void upload.then((result) => {
@@ -1551,14 +1557,16 @@ export const StudentApplicationWizardModal: React.FC<StudentApplicationWizardMod
                                     ...prev.filter((d) => d.category !== item.cat),
                                     newDoc,
                                   ]);
-                                  uploadDocument({
-                                    category: item.cat as DocumentCategoryType,
-                                    title: item.name,
-                                    fileName: result.fileName,
-                                    fileSize: result.fileSize,
-                                    storagePath: result.path,
-                                    storageBucket: result.bucket,
-                                  });
+                                  if (profile) {
+                                    uploadDocument({
+                                      category: item.cat as DocumentCategoryType,
+                                      title: item.name,
+                                      fileName: result.fileName,
+                                      fileSize: result.fileSize,
+                                      storagePath: result.path,
+                                      storageBucket: result.bucket,
+                                    });
+                                  }
                                 });
                               }}
                             />

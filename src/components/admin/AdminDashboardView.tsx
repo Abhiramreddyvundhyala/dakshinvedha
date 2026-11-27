@@ -5,12 +5,13 @@ import { usePlatform } from "@/context/PlatformContext";
 import { AdminTabKey } from "./AdminSidebar";
 import {
   Users, FileText, Building, CheckCircle2,
-  AlertTriangle, ArrowRight, Award, Globe, UserCheck, Briefcase,
+  AlertTriangle, ArrowRight, Award, Globe, UserCheck, Briefcase, Plus,
 } from "lucide-react";
 import { newestFirst } from "@/lib/recent";
 
 interface AdminDashboardViewProps {
   onNavigateTab: (tab: AdminTabKey) => void;
+  onAddApplication?: () => void;
 }
 
 const card = {
@@ -97,7 +98,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Closed:                  { bg: "#fef2f2", color: "#dc2626" },
 };
 
-export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNavigateTab }) => {
+export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNavigateTab, onAddApplication }) => {
   const { students, applications, universities, courses, b2bPartners } = usePlatform();
 
   const totalStudents   = students.length;
@@ -142,9 +143,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ onNaviga
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
       {/* Page Title */}
-      <div>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: "#1e293b", margin: 0 }}>Dashboard</h1>
-        <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>Dakshinvedha Abroad Solutions — Admin Overview</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: "#1e293b", margin: 0 }}>Dashboard</h1>
+          <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>Dakshinvedha Abroad Solutions — Admin Overview</p>
+        </div>
+        {onAddApplication && (
+          <button
+            type="button"
+            onClick={onAddApplication}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 8, background: "#f97316", color: "#ffffff", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer" }}
+          >
+            <Plus style={{ width: 15, height: 15 }} />
+            Add New Application
+          </button>
+        )}
       </div>
 
       {/* KPI Row */}
